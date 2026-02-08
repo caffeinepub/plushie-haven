@@ -1,42 +1,114 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Add uploaded coloring pages to the static Coloring Book PDF",
+  "title": "Remove Coloring page feature completely (frontend-only)",
   "requirements": [
     {
-      "id": "REQ-60",
-      "summary": "Update the static `/assets/coloring-book.pdf` to include the two uploaded PNGs as additional high-contrast black-and-white coloring pages suitable for letter/A4 printing.",
+      "id": "REQ-74",
+      "summary": "Remove the /coloring route from the TanStack Router configuration.",
       "acceptanceCriteria": [
-        "Visiting `/assets/coloring-book.pdf` in the browser successfully loads a PDF (HTTP 200) in a deployed build.",
-        "The PDF contains two additional pages that match the uploaded images (bear plush line art and the creature with hat/flowers line art).",
-        "The added pages are high-contrast black line art on white background with no unintended background tinting or compression artifacts that make lines blurry when printed.",
-        "The Home page download button continues to open the updated PDF in a new tab via the existing link `/assets/coloring-book.pdf`."
+        "`frontend/src/App.tsx` no longer imports `./pages/ColoringPage`.",
+        "`frontend/src/App.tsx` no longer defines a route with `path: '/coloring'`.",
+        "The app builds successfully with no unused-import or missing-module errors related to `ColoringPage`."
       ],
       "file_operations": [
         {
-          "path": "frontend/public/assets/coloring-book.pdf",
+          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Replace/update the static coloring book PDF so it includes two new pages derived from the existing static asset PNGs `frontend/public/assets/colorifyai-1770544927646.png` and `frontend/public/assets/colorifyai-1770544979559.png`, ensuring clean black line art (no unexpected color fills), white background, and letter/A4-friendly page sizing for crisp printing."
+          "description": "Remove the `ColoringPage` import, remove the `coloringRoute` definition, and remove the `coloringRoute` entry from `routeTree` so `/coloring` is no longer registered."
         }
       ]
     },
     {
-      "id": "REQ-61",
-      "summary": "Commit the two uploaded PNG source images into frontend static assets without changing filenames.",
+      "id": "REQ-75",
+      "summary": "Remove the Coloring navigation link from both desktop and mobile menus.",
       "acceptanceCriteria": [
-        "Both PNG files are present in the deployed frontend static files and can be fetched directly by the browser at their committed static-asset paths.",
-        "The committed filenames exactly match: `colorifyai-1770544927646.png` and `colorifyai-1770544979559.png`."
+        "`frontend/src/components/Nav.tsx` has no nav link with `href: '/coloring'` and no label `Coloring`.",
+        "Desktop navigation no longer displays a “Coloring” button.",
+        "Mobile navigation sheet no longer displays a “Coloring” button."
       ],
       "file_operations": [
         {
-          "path": "frontend/public/assets/colorifyai-1770544927646.png",
-          "operation": "create",
-          "description": "Add the original uploaded bear plush line-art PNG to frontend static assets, preserving the exact filename for direct browser fetch."
+          "path": "frontend/src/components/Nav.tsx",
+          "operation": "modify",
+          "description": "Delete the `/coloring` entry from the `navLinks` array so neither desktop nor mobile navigation renders a Coloring link."
+        }
+      ]
+    },
+    {
+      "id": "REQ-76",
+      "summary": "Delete the Coloring page implementation and ensure it is no longer referenced.",
+      "acceptanceCriteria": [
+        "`frontend/src/pages/ColoringPage.tsx` is removed from the codebase.",
+        "No TypeScript compile errors occur due to references to `ColoringPage`.",
+        "A project-wide search shows no remaining imports of `./pages/ColoringPage` and no remaining references to `ColoringPage`."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/ColoringPage.tsx",
+          "operation": "delete",
+          "description": "Remove the Coloring page component file from the project."
         },
         {
-          "path": "frontend/public/assets/colorifyai-1770544979559.png",
-          "operation": "create",
-          "description": "Add the original uploaded creature-with-hat/flowers line-art PNG to frontend static assets, preserving the exact filename for direct browser fetch."
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Ensure all imports/references to `ColoringPage` are removed so deleting the file does not break the build."
+        }
+      ]
+    },
+    {
+      "id": "REQ-77",
+      "summary": "Remove Coloring-related static assets (PNG/PDF and associated files) from shipped frontend assets.",
+      "acceptanceCriteria": [
+        "`/assets/coloring/icoloring-9sd9.png` is removed from the frontend static assets.",
+        "Any Coloring-related PDF/static assets previously added for Coloring are removed from the frontend static assets.",
+        "A project-wide search shows no remaining references to `/assets/coloring/` or `icoloring-9sd9.png`."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/public/assets/coloring/icoloring-9sd9.png",
+          "operation": "delete",
+          "description": "Delete the Coloring preview PNG referenced by the removed Coloring feature."
+        },
+        {
+          "path": "frontend/public/assets/coloring/plushie-haven-coloring-page-1.pdf",
+          "operation": "delete",
+          "description": "Delete the Coloring-related PDF asset from the frontend static assets."
+        },
+        {
+          "path": "frontend/public/assets/coloring-book.pdf",
+          "operation": "delete",
+          "description": "Delete the Coloring-related PDF asset from the frontend static assets."
+        },
+        {
+          "path": "frontend/public/assets/icoloring-9sd9.png",
+          "operation": "delete",
+          "description": "Delete any duplicate/alternate location copy of the Coloring PNG from the frontend static assets, if present in this path."
+        }
+      ]
+    },
+    {
+      "id": "REQ-78",
+      "summary": "Remove any remaining user-facing Coloring references across the frontend UI and content.",
+      "acceptanceCriteria": [
+        "A project-wide search for \"Coloring\" and \"/coloring\" finds no remaining user-facing labels/links/routes related to the removed feature.",
+        "No page displays headings, helper text, or calls-to-action related to Coloring after the change."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/Layout.tsx",
+          "operation": "modify",
+          "description": "Audit header/footer links and remove any remaining user-facing references to \"Coloring\" or \"/coloring\" if present (none expected based on current structure)."
+        },
+        {
+          "path": "frontend/src/pages/HomePage.tsx",
+          "operation": "modify",
+          "description": "Audit homepage CTAs/feature cards and remove any remaining user-facing references to \"Coloring\" or \"/coloring\" if present."
+        },
+        {
+          "path": "frontend/src/content/articles.ts",
+          "operation": "modify",
+          "description": "Audit article metadata/content and remove any remaining user-facing references to \"Coloring\" or \"/coloring\" if present."
         }
       ]
     }

@@ -1,4 +1,84 @@
 {
   "kind": "feature_evidence_report",
-  "features": []
+  "features": [
+    {
+      "featureId": "feature-remove-the-coloring-page-route-from-the-app-router-so-coloring-is-no-longer-a-valid-page-including-removing-the-coloringpage-import-the-coloringroute-definition-and-the-coloringroute-entry-in-the-routetree-in-frontend-src-app-tsx",
+      "featureTitle": "Remove the Coloring page route from the app router so `/coloring` is no longer a valid page, including removing the `ColoringPage` import, the `coloringRoute` definition, and the `coloringRoute` entry in the `routeTree` in `frontend/src/App.tsx`.",
+      "files": [
+        "frontend/src/App.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-74"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-remove-the-coloring-link-from-the-site-navigation-so-users-cannot-navigate-to-coloring-from-either-desktop-or-mobile-menus-by-deleting-the-coloring-entry-from-navlinks-in-frontend-src-components-nav-tsx",
+      "featureTitle": "Remove the Coloring link from the site navigation so users cannot navigate to `/coloring` from either desktop or mobile menus by deleting the `/coloring` entry from `navLinks` in `frontend/src/components/Nav.tsx`.",
+      "files": [
+        "frontend/src/components/Nav.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-75"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-delete-the-coloring-page-implementation-file-frontend-src-pages-coloringpage-tsx-and-ensure-no-remaining-frontend-code-imports-or-references-it",
+      "featureTitle": "Delete the Coloring page implementation file `frontend/src/pages/ColoringPage.tsx` and ensure no remaining frontend code imports or references it.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/pages/ColoringPage.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-76"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-remove-coloring-related-static-assets-from-the-frontend-project-delete-the-uploaded-coloring-png-and-any-associated-coloring-pdf-assets-so-no-coloring-assets-remain-in-the-shipped-frontend-static-files",
+      "featureTitle": "Remove Coloring-related static assets from the frontend project (delete the uploaded Coloring PNG and any associated Coloring PDF/assets) so no Coloring assets remain in the shipped frontend static files.",
+      "files": [],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-77"
+      ],
+      "confidence": "high"
+    }
+  ]
 }

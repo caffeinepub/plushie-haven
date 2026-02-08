@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 41,
+  "projectStateVersion": 51,
   "summary": "Build a lifestyle website for adult plushie enthusiasts named \"Plushie Haven.\"",
   "architectural_notes": [
     "Visual theme direction updated: prioritize an ‘adorable’ aesthetic with a pink + baby blue palette (supersedes prior guidance to avoid blue/purple-dominant palettes).",
@@ -12,14 +12,11 @@
     "Community Board moderation direction: designate the currently authenticated Internet Identity principal as the admin (for now); admins can edit/delete any post, while regular users can delete only their own posts.",
     "Profiles direction: build both individual profile pages and a public profile directory; profiles are publicly viewable but only editable when logged in; users are hidden from the directory by default unless they opt in (and can opt out). Profile fields include avatar, display name, bio, links, and plushie collection images (and future optional fields).",
     "Header account display: when signed in, show the user’s Profile display name in the header (replacing the person icon); when signed out, show the existing Sign In UI.",
-    "Next planned feature: add comments to Community Board posts (text and optional image attachments), including comment counts in the posts list and a post detail view for reading/adding comments."
+    "Coloring section decision updated: remove the entire Coloring page/section from the site (remove the /coloring route and its UI)."
   ],
   "known_issues": [
     "Random empty circle and square placeholders appear in the UI; user requested to fill them with intended content or remove them.",
-    "Home page hero image next to the “Plushie Haven” title (alt text “A cozy collection of beloved plushies”) is not displaying for the user (no image shown).",
-    "Coloring Book PDF download/addition is not working (link/button or static asset not functioning as expected).",
-    "Coloring Book PDF download still does not work for the user after the latest deployment (Version 17).",
-    "Coloring Book PDF download still not working for the user after attempted adjustment / Draft Version 18 deployment."
+    "Home page hero image next to the “Plushie Haven” title (alt text “A cozy collection of beloved plushies”) is not displaying for the user (no image shown)."
   ],
   "isFixRequest": false,
   "existing_features": [
@@ -366,6 +363,134 @@
         "REQ-59"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-ensure-the-coloring-book-pdf-static-asset-is-present-in-the-deployed-frontend-and-is-served-successfully-at-the-exact-url-assets-coloring-book-pdf-the-same-url-used-by-the-home-page-download-link-so-clicking-the-download-button-no-longer-opens-a-blank-white-not-found-page",
+      "title": "Ensure the Coloring Book PDF static asset is present in the deployed frontend and is served successfully at the exact URL `/assets/coloring-book.pdf` (the same URL used by the Home page download link), so clicking the download button no longer opens a blank white “Not Found” page.",
+      "reqIds": [
+        "REQ-62"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-simple-developer-facing-verification-step-in-the-codebase-documentation-or-a-lightweight-script-that-checks-the-deployed-static-build-includes-assets-coloring-book-pdf-to-prevent-regressions-where-the-pdf-is-missing-from-production-builds",
+      "title": "Add a simple developer-facing verification step in the codebase (documentation or a lightweight script) that checks the deployed/static build includes `/assets/coloring-book.pdf`, to prevent regressions where the PDF is missing from production builds.",
+      "reqIds": [
+        "REQ-63"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-the-coloring-book-feature-from-the-frontend-home-page-by-deleting-the-entire-coloring-book-download-section-ui-including-its-card-button-link-availability-loading-states-and-error-alerts-from-frontend-src-pages-homepage-tsx-so-the-home-page-no-longer-displays-any-coloring-book-related-call-to-action-or-messaging",
+      "title": "Remove the Coloring Book feature from the frontend Home page by deleting the entire \"Coloring Book Download Section\" UI (including its card, button/link, availability/loading states, and error alerts) from `frontend/src/pages/HomePage.tsx`, so the Home page no longer displays any coloring-book-related call-to-action or messaging.",
+      "reqIds": [
+        "REQ-64"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-all-home-page-code-that-supports-the-coloring-book-download-flow-including-imports-used-only-for-the-coloring-book-section-e-g-download-alertcircle-alert-alertdescription-the-usestaticassetavailability-assets-coloring-book-pdf-usage-download-click-verification-logic-that-checks-assets-coloring-book-pdf-and-any-related-react-state-e-g-downloaderror-ensure-frontend-src-pages-homepage-tsx-has-no-remaining-references-to-assets-coloring-book-pdf",
+      "title": "Remove all Home page code that supports the Coloring Book download flow, including: imports used only for the Coloring Book section (e.g., `Download`, `AlertCircle`, `Alert`, `AlertDescription`), the `useStaticAssetAvailability('/assets/coloring-book.pdf')` usage, download-click verification logic that checks `/assets/coloring-book.pdf`, and any related React state (e.g., `downloadError`). Ensure `frontend/src/pages/HomePage.tsx` has no remaining references to `/assets/coloring-book.pdf`.",
+      "reqIds": [
+        "REQ-65"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-any-remaining-coloring-book-references-elsewhere-in-the-frontend-text-labels-links-asset-path-checks-or-documentation-comments-so-the-application-contains-no-user-facing-coloring-book-feature-entry-points",
+      "title": "Remove any remaining Coloring Book references elsewhere in the frontend (text labels, links, asset-path checks, or documentation/comments) so the application contains no user-facing Coloring Book feature entry points.",
+      "reqIds": [
+        "REQ-66"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-new-coloring-section-page-in-the-frontend-that-can-be-visited-at-a-dedicated-route-e-g-coloring-and-presents-a-single-coloring-page-based-on-the-user-uploaded-image-icoloring-9sd9-png-with-clear-english-headings-and-descriptive-helper-text-that-match-the-existing-plushie-haven-styling",
+      "title": "Create a new Coloring section/page in the frontend that can be visited at a dedicated route (e.g. `/coloring`) and presents a single coloring page based on the user-uploaded image `icoloring-9sd9.png`, with clear English headings and descriptive helper text that match the existing Plushie Haven styling.",
+      "reqIds": [
+        "REQ-67"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-navigation-access-to-the-new-coloring-section-in-the-existing-site-navigation-so-users-can-reach-it-from-both-desktop-and-mobile-menus",
+      "title": "Add navigation access to the new Coloring section in the existing site navigation so users can reach it from both desktop and mobile menus.",
+      "reqIds": [
+        "REQ-68"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-downloadable-one-page-pdf-generated-from-the-uploaded-image-icoloring-9sd9-png-as-a-static-frontend-asset-and-provide-a-prominent-download-button-link-on-the-coloring-page-that-downloads-opens-the-pdf-in-a-new-tab",
+      "title": "Add a downloadable, one-page PDF generated from the uploaded image `icoloring-9sd9.png` as a static frontend asset, and provide a prominent Download button/link on the Coloring page that downloads/opens the PDF in a new tab.",
+      "reqIds": [
+        "REQ-69"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-make-the-coloring-page-download-experience-resilient-check-availability-of-the-pdf-static-asset-and-disable-the-download-control-with-a-clear-english-message-when-the-pdf-is-missing-or-cannot-be-reached-using-the-existing-usestaticassetavailability-hook",
+      "title": "Make the Coloring page download experience resilient: check availability of the PDF static asset and disable the Download control with a clear English message when the PDF is missing or cannot be reached, using the existing `useStaticAssetAvailability` hook.",
+      "reqIds": [
+        "REQ-70"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-store-the-uploaded-image-icoloring-9sd9-png-as-a-static-frontend-asset-and-reference-it-from-the-coloring-page-preview-using-a-stable-url-path",
+      "title": "Store the uploaded image `icoloring-9sd9.png` as a static frontend asset and reference it from the Coloring page preview using a stable URL path.",
+      "reqIds": [
+        "REQ-71"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-the-pdf-download-button-feature-from-the-coloring-page-frontend-src-pages-coloringpage-tsx-while-keeping-the-coloring-page-itself-and-the-existing-pdf-asset-in-the-project-this-includes-removing-the-download-availability-check-ui-states-the-download-button-link-and-any-related-imports-constants-state-that-are-only-used-to-support-downloading",
+      "title": "Remove the PDF download button/feature from the Coloring page (`frontend/src/pages/ColoringPage.tsx`) while keeping the Coloring page itself and the existing PDF asset in the project. This includes removing the download availability check UI states, the Download button/link, and any related imports/constants/state that are only used to support downloading.",
+      "reqIds": [
+        "REQ-72"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-user-facing-text-on-the-coloring-page-frontend-src-pages-coloringpage-tsx-so-it-no-longer-instructs-the-user-to-download-the-coloring-page-since-the-download-feature-is-being-removed-while-keeping-the-text-in-clear-friendly-english-that-matches-the-existing-plushie-haven-style",
+      "title": "Update the user-facing text on the Coloring page (`frontend/src/pages/ColoringPage.tsx`) so it no longer instructs the user to download the coloring page (since the download feature is being removed), while keeping the text in clear, friendly English that matches the existing Plushie Haven style.",
+      "reqIds": [
+        "REQ-73"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-the-coloring-page-route-from-the-app-router-so-coloring-is-no-longer-a-valid-page-including-removing-the-coloringpage-import-the-coloringroute-definition-and-the-coloringroute-entry-in-the-routetree-in-frontend-src-app-tsx",
+      "title": "Remove the Coloring page route from the app router so `/coloring` is no longer a valid page, including removing the `ColoringPage` import, the `coloringRoute` definition, and the `coloringRoute` entry in the `routeTree` in `frontend/src/App.tsx`.",
+      "reqIds": [
+        "REQ-74"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-the-coloring-link-from-the-site-navigation-so-users-cannot-navigate-to-coloring-from-either-desktop-or-mobile-menus-by-deleting-the-coloring-entry-from-navlinks-in-frontend-src-components-nav-tsx",
+      "title": "Remove the Coloring link from the site navigation so users cannot navigate to `/coloring` from either desktop or mobile menus by deleting the `/coloring` entry from `navLinks` in `frontend/src/components/Nav.tsx`.",
+      "reqIds": [
+        "REQ-75"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-delete-the-coloring-page-implementation-file-frontend-src-pages-coloringpage-tsx-and-ensure-no-remaining-frontend-code-imports-or-references-it",
+      "title": "Delete the Coloring page implementation file `frontend/src/pages/ColoringPage.tsx` and ensure no remaining frontend code imports or references it.",
+      "reqIds": [
+        "REQ-76"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-coloring-related-static-assets-from-the-frontend-project-delete-the-uploaded-coloring-png-and-any-associated-coloring-pdf-assets-so-no-coloring-assets-remain-in-the-shipped-frontend-static-files",
+      "title": "Remove Coloring-related static assets from the frontend project (delete the uploaded Coloring PNG and any associated Coloring PDF/assets) so no Coloring assets remain in the shipped frontend static files.",
+      "reqIds": [
+        "REQ-77"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -582,54 +707,10 @@
       "status": "pending"
     },
     {
-      "id": "AR-37",
-      "summary": "Add a downloadable Coloring Book PDF to Plushie Haven (provide a clear UI link/button to download a PDF file).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-38",
-      "summary": "Add a downloadable Coloring Book PDF file to the frontend as a static asset that is served by the deployed site.",
-      "reqIds": [
-        "REQ-50"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-39",
-      "summary": "Ensure the Coloring Book PDF is included as a static frontend asset and is served correctly in production at the exact URL currently used by the Home page download button: `/assets/coloring-book.pdf`.",
-      "reqIds": [
-        "REQ-52"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-40",
-      "summary": "Ensure the Coloring Book PDF is actually present in the deployed frontend and is served successfully at the exact URL used by the Home page CTA: `/assets/coloring-book.pdf`.",
-      "reqIds": [
-        "REQ-54"
-      ],
-      "status": "pending"
-    },
-    {
       "id": "AR-41",
-      "summary": "Update the Coloring Book PDF to include the user-provided new content (“add this to color book”).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-42",
-      "summary": "Update the static coloring book PDF served at the exact URL `/assets/coloring-book.pdf` to include the two user-uploaded images as additional coloring pages: `colorifyai-1770544927646.png` and `colorifyai-1770544979559.png`. The updated PDF must preserve clean black-and-white line art (no unexpected color fills) and print cleanly on letter/A4 pages.",
+      "summary": "Remove any remaining Coloring-related user-facing text, links, or references anywhere else in the frontend so there are no entry points or mentions of a Coloring feature in the UI.",
       "reqIds": [
-        "REQ-60"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-43",
-      "summary": "Add the two uploaded source images to the frontend static assets (so the project retains the originals used to build the PDF) without changing their filenames: `colorifyai-1770544927646.png` and `colorifyai-1770544979559.png`.",
-      "reqIds": [
-        "REQ-61"
+        "REQ-78"
       ],
       "status": "pending"
     }

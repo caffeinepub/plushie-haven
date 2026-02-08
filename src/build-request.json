@@ -1,54 +1,125 @@
 {
   "kind": "build_request",
-  "title": "Add uploaded coloring pages to the Coloring Book PDF",
+  "title": "Remove the Coloring page feature completely",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-60",
-      "text": "Update the static coloring book PDF served at the exact URL `/assets/coloring-book.pdf` to include the two user-uploaded images as additional coloring pages: `colorifyai-1770544927646.png` and `colorifyai-1770544979559.png`. The updated PDF must preserve clean black-and-white line art (no unexpected color fills) and print cleanly on letter/A4 pages.",
+      "id": "REQ-74",
+      "text": "Remove the Coloring page route from the app router so `/coloring` is no longer a valid page, including removing the `ColoringPage` import, the `coloringRoute` definition, and the `coloringRoute` entry in the `routeTree` in `frontend/src/App.tsx`.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-4",
+          "msg-7",
+          "msg-10"
         ],
         "quotes": [
-          "add this to color book"
+          "remove the coloring page completely",
+          "remove everything",
+          "yes"
         ]
       },
       "acceptanceCriteria": [
-        "Visiting `/assets/coloring-book.pdf` in the browser successfully loads a PDF (HTTP 200) in a deployed build.",
-        "The PDF contains two additional pages that match the uploaded images (bear plush line art and the creature with hat/flowers line art).",
-        "The added pages are high-contrast black line art on white background with no unintended background tinting or compression artifacts that make lines blurry when printed.",
-        "The Home page download button continues to open the updated PDF in a new tab via the existing link `/assets/coloring-book.pdf`."
+        "`frontend/src/App.tsx` no longer imports `./pages/ColoringPage`.",
+        "`frontend/src/App.tsx` no longer defines a route with `path: '/coloring'`.",
+        "The app builds successfully with no unused-import or missing-module errors related to `ColoringPage`."
       ]
     },
     {
-      "id": "REQ-61",
-      "text": "Add the two uploaded source images to the frontend static assets (so the project retains the originals used to build the PDF) without changing their filenames: `colorifyai-1770544927646.png` and `colorifyai-1770544979559.png`.",
+      "id": "REQ-75",
+      "text": "Remove the Coloring link from the site navigation so users cannot navigate to `/coloring` from either desktop or mobile menus by deleting the `/coloring` entry from `navLinks` in `frontend/src/components/Nav.tsx`.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-4",
+          "msg-7",
+          "msg-10"
         ],
         "quotes": [
-          "add this to color book"
+          "remove the coloring page completely",
+          "remove everything",
+          "yes"
         ]
       },
       "acceptanceCriteria": [
-        "Both PNG files are present in the deployed frontend static files and can be fetched directly by the browser at their committed static-asset paths.",
-        "The committed filenames exactly match: `colorifyai-1770544927646.png` and `colorifyai-1770544979559.png`."
+        "`frontend/src/components/Nav.tsx` has no nav link with `href: '/coloring'` and no label `Coloring`.",
+        "Desktop navigation no longer displays a “Coloring” button.",
+        "Mobile navigation sheet no longer displays a “Coloring” button."
+      ]
+    },
+    {
+      "id": "REQ-76",
+      "text": "Delete the Coloring page implementation file `frontend/src/pages/ColoringPage.tsx` and ensure no remaining frontend code imports or references it.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4",
+          "msg-7",
+          "msg-10"
+        ],
+        "quotes": [
+          "remove the coloring page completely",
+          "remove everything",
+          "yes"
+        ]
+      },
+      "acceptanceCriteria": [
+        "`frontend/src/pages/ColoringPage.tsx` is removed from the codebase.",
+        "No TypeScript compile errors occur due to references to `ColoringPage`.",
+        "A project-wide search shows no remaining imports of `./pages/ColoringPage` and no remaining references to `ColoringPage`."
+      ]
+    },
+    {
+      "id": "REQ-77",
+      "text": "Remove Coloring-related static assets from the frontend project (delete the uploaded Coloring PNG and any associated Coloring PDF/assets) so no Coloring assets remain in the shipped frontend static files.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-7",
+          "msg-10"
+        ],
+        "quotes": [
+          "remove everything",
+          "yes"
+        ]
+      },
+      "acceptanceCriteria": [
+        "`/assets/coloring/icoloring-9sd9.png` is removed from the frontend static assets.",
+        "Any Coloring-related PDF/static assets previously added for Coloring are removed from the frontend static assets.",
+        "A project-wide search shows no remaining references to `/assets/coloring/` or `icoloring-9sd9.png`."
+      ]
+    },
+    {
+      "id": "REQ-78",
+      "text": "Remove any remaining Coloring-related user-facing text, links, or references anywhere else in the frontend so there are no entry points or mentions of a Coloring feature in the UI.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4",
+          "msg-7",
+          "msg-10"
+        ],
+        "quotes": [
+          "remove the coloring page completely",
+          "remove everything",
+          "yes"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A project-wide search for \"Coloring\" and \"/coloring\" finds no remaining user-facing labels/links/routes related to the removed feature.",
+        "No page displays headings, helper text, or calls-to-action related to Coloring after the change."
       ]
     }
   ],
   "constraints": [
-    "Do not change any immutable frontend paths listed in SYSTEM_CONTEXT (e.g., `frontend/src/main.tsx`, `frontend/src/hooks/useInternetIdentity.ts`, `frontend/src/hooks/useActor.ts`, `frontend/src/components/ui`).",
-    "Keep the coloring book download URL exactly `/assets/coloring-book.pdf` (do not change the route, filename, or query params).",
-    "Do not introduce any new backend canisters or external storage/services; this is a frontend static-asset update."
+    "Do not modify any files under `frontend/src/components/ui` (read-only shadcn components).",
+    "Do not modify immutable frontend hook entrypoints listed in SYSTEM_CONTEXT (`frontend/src/hooks/useInternetIdentity.ts(x)`, `frontend/src/hooks/useActor.ts`, `frontend/src/main.tsx`).",
+    "No backend changes are required for removing the Coloring page; keep the single-actor Motoko backend unchanged."
   ],
   "nonGoals": [
-    "Redesigning the Home page Coloring Book CTA UI/wording (beyond ensuring it continues to work).",
-    "Adding a PDF viewer page or in-app preview experience.",
-    "Changing any unrelated plushie images, theme tokens, or other site content."
+    "Do not replace the removed Coloring page with a different page or new feature.",
+    "Do not add redirects, analytics, or tracking for `/coloring` unless explicitly requested.",
+    "Do not change unrelated navigation structure, theming, or layout beyond removing Coloring entries."
   ],
   "imageRequirements": {
     "required": [],

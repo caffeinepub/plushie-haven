@@ -1,10 +1,10 @@
 {
-  "frontend/src/App.tsx": "Main application component that sets up routing with TanStack Router, wraps the app with ThemeProvider and AgeGate, and defines all routes including profiles directory and new individual profile detail route at /profiles/$principal.",
+  "frontend/src/App.tsx": "Main application component that sets up routing with TanStack Router, wraps the app with ThemeProvider and AgeGate, and defines all routes (Home, Articles, Gallery, Community, Events, About, Contact, Profiles) without the Coloring route.",
   "frontend/src/components/AgeGate.tsx": "Age verification component that displays an 18+ confirmation dialog on first visit, stores confirmation in localStorage, and blocks access if declined.",
   "frontend/src/components/Layout.tsx": "Main layout component with sticky header featuring a circular teddy bear logo with baby blue border and soft shadow, navigation, auth controls, and footer with pastel pink heart icon and baby blue hover effects.",
-  "frontend/src/components/Nav.tsx": "Responsive navigation component with rounded pill-style buttons featuring baby blue active states, gentle shadows on hover, mobile sheet menu, and new Profiles link.",
+  "frontend/src/components/Nav.tsx": "Responsive navigation component with rounded pill-style buttons featuring baby blue active states, gentle shadows on hover, mobile sheet menu, displaying links for Home, Articles, Gallery, Community, Events, and Profiles.",
   "frontend/src/components/AuthControls.tsx": "Authentication UI component displaying user's profile display name (or short principal fallback) in header dropdown trigger when signed in, with admin claim and sign-out menu actions; shows Sign In button when logged out.",
-  "frontend/src/pages/HomePage.tsx": "Landing page with hero section, resilient coloring book download card using shared asset verification utility for both initial check and click-time validation with improved error messaging, Plushie Moments gallery, feature cards, and community CTA section.",
+  "frontend/src/pages/HomePage.tsx": "Landing page with hero section, Plushie Moments gallery, feature cards, and community CTA section.",
   "frontend/src/pages/ArticlesPage.tsx": "Articles listing page displaying all articles from static content with category badges, read time, and type-safe navigation to detail pages using params prop.",
   "frontend/src/pages/ArticleDetailPage.tsx": "Individual article view page that displays full article content with proper formatting, category badge, and back navigation.",
   "frontend/src/pages/GalleryPage.tsx": "Gallery page displaying a responsive grid of six dedicated plushie images with meaningful alt text, titles, descriptions, and soft shadow hover effects matching the pink and baby blue theme.",
@@ -37,5 +37,8 @@
   "frontend/src/components/community/PostLikeButton.tsx": "Reusable post like button component displaying like count with heart icon, toggling like/unlike state for authenticated users, showing loading states during mutations, and prompting sign-in for unauthenticated users.",
   "frontend/src/components/community/PostComments.tsx": "Inline comments UI component for a single post that renders a collapsible comments section with comment count toggle, authenticated comment creation form with textarea and submit button, comments list with loading/empty states, and sign-in prompt for unauthenticated users.",
   "frontend/src/hooks/useStaticAssetAvailability.ts": "React Query hook that checks static asset availability by delegating to the shared checkStaticAssetAvailability utility with proper caching and retry configuration.",
-  "frontend/src/utils/staticAssetCheck.ts": "Shared utility function that verifies static asset availability using a robust strategy (HEAD request with GET fallback) to handle production environments that may not support HEAD requests."
+  "frontend/src/utils/staticAssetCheck.ts": "Shared utility function that verifies static asset availability using a robust strategy (HEAD request with GET fallback) to handle production environments that may not support HEAD requests.",
+  "frontend/src/pages/ColoringPage.tsx": "Coloring page displaying a preview of the Plushie Haven logo coloring image with tips section; download functionality has been removed while keeping the preview image and page structure intact.",
+  "frontend/public/assets/coloring/plushie-haven-coloring-page-1.pdf": "Static PDF asset containing the one-page Plushie Haven coloring page for download.",
+  "frontend/public/assets/coloring/icoloring-9sd9.png": "Static preview image of the Plushie Haven logo coloring page displayed on the Coloring page."
 }

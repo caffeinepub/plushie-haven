@@ -1,31 +1,75 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T10:06:19.606Z",
+  "generatedAt": "2026-02-08T11:01:44.232Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 0,
+    "total": 5,
+    "implemented": 4,
     "items": [
       {
-        "id": "REQ-60",
-        "summary": "Update the static coloring book PDF served at the exact URL `/assets/coloring-book.pdf` to include the two user-uploaded images as additional coloring pages: `colorifyai-1770544927646.png` and `colorifyai-1770544979559.png`. The updated PDF must preserve clean black-and-white line art (no unexpected color fills) and print cleanly on letter/A4 pages.",
-        "status": "missing",
+        "id": "REQ-74",
+        "summary": "Remove the Coloring page route from the app router so `/coloring` is no longer a valid page, including removing the `ColoringPage` import, the `coloringRoute` definition, and the `coloringRoute` entry in the `routeTree` in `frontend/src/App.tsx`.",
+        "status": "implemented",
         "plannedFiles": [
-          "frontend/public/assets/coloring-book.pdf"
+          "frontend/src/App.tsx"
         ],
-        "matchedFiles": []
+        "matchedFiles": [
+          "frontend/src/App.tsx"
+        ]
       },
       {
-        "id": "REQ-61",
-        "summary": "Add the two uploaded source images to the frontend static assets (so the project retains the originals used to build the PDF) without changing their filenames: `colorifyai-1770544927646.png` and `colorifyai-1770544979559.png`.",
+        "id": "REQ-75",
+        "summary": "Remove the Coloring link from the site navigation so users cannot navigate to `/coloring` from either desktop or mobile menus by deleting the `/coloring` entry from `navLinks` in `frontend/src/components/Nav.tsx`.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/Nav.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/Nav.tsx"
+        ]
+      },
+      {
+        "id": "REQ-76",
+        "summary": "Delete the Coloring page implementation file `frontend/src/pages/ColoringPage.tsx` and ensure no remaining frontend code imports or references it.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/ColoringPage.tsx",
+          "frontend/src/App.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/ColoringPage.tsx",
+          "frontend/src/App.tsx"
+        ]
+      },
+      {
+        "id": "REQ-77",
+        "summary": "Remove Coloring-related static assets from the frontend project (delete the uploaded Coloring PNG and any associated Coloring PDF/assets) so no Coloring assets remain in the shipped frontend static files.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/public/assets/coloring/icoloring-9sd9.png",
+          "frontend/public/assets/coloring/plushie-haven-coloring-page-1.pdf",
+          "frontend/public/assets/coloring-book.pdf",
+          "frontend/public/assets/icoloring-9sd9.png"
+        ],
+        "matchedFiles": [
+          "frontend/public/assets/coloring/icoloring-9sd9.png",
+          "frontend/public/assets/coloring/plushie-haven-coloring-page-1.pdf",
+          "frontend/public/assets/coloring-book.pdf",
+          "frontend/public/assets/icoloring-9sd9.png"
+        ]
+      },
+      {
+        "id": "REQ-78",
+        "summary": "Remove any remaining Coloring-related user-facing text, links, or references anywhere else in the frontend so there are no entry points or mentions of a Coloring feature in the UI.",
         "status": "missing",
         "plannedFiles": [
-          "frontend/public/assets/colorifyai-1770544927646.png",
-          "frontend/public/assets/colorifyai-1770544979559.png"
+          "frontend/src/components/Layout.tsx",
+          "frontend/src/pages/HomePage.tsx",
+          "frontend/src/content/articles.ts"
         ],
         "matchedFiles": []
       }
@@ -34,7 +78,15 @@
   "changedFiles": [
     "build-request.json",
     "feature_evidence.json",
+    "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/public/assets/coloring-book.pdf",
+    "frontend/public/assets/coloring/icoloring-9sd9.png",
+    "frontend/public/assets/coloring/plushie-haven-coloring-page-1.pdf",
+    "frontend/public/assets/icoloring-9sd9.png",
+    "frontend/src/App.tsx",
+    "frontend/src/components/Nav.tsx",
+    "frontend/src/pages/ColoringPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",
