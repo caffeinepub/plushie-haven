@@ -1,127 +1,42 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "User profiles: directory, public profile pages, and authenticated editing",
+  "title": "Add uploaded coloring pages to the static Coloring Book PDF",
   "requirements": [
     {
-      "id": "REQ-34",
-      "summary": "Add typed frontend bindings and React Query hooks for profile directory, profile viewing, and authenticated save with cache invalidation and readable errors",
+      "id": "REQ-60",
+      "summary": "Update the static `/assets/coloring-book.pdf` to include the two uploaded PNGs as additional high-contrast black-and-white coloring pages suitable for letter/A4 printing.",
       "acceptanceCriteria": [
-        "React Query hooks exist for: list directory profiles, get profile by principal, get caller profile, and save caller profile.",
-        "After saving a profile, the relevant cached queries (caller profile and that principal’s profile and directory listing when applicable) are invalidated/refetched so the UI updates without a manual reload.",
-        "Errors from profile calls are surfaced as readable English messages (reusing the existing error normalization pattern where applicable)."
+        "Visiting `/assets/coloring-book.pdf` in the browser successfully loads a PDF (HTTP 200) in a deployed build.",
+        "The PDF contains two additional pages that match the uploaded images (bear plush line art and the creature with hat/flowers line art).",
+        "The added pages are high-contrast black line art on white background with no unintended background tinting or compression artifacts that make lines blurry when printed.",
+        "The Home page download button continues to open the updated PDF in a new tab via the existing link `/assets/coloring-book.pdf`."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/backend.d.ts",
+          "path": "frontend/public/assets/coloring-book.pdf",
           "operation": "modify",
-          "description": "Update/align the typed frontend backend bindings for the new/updated profile capabilities required by the UI (directory listing, get by principal, get caller profile, save caller profile). Ensure the directory listing result includes enough information to link to an individual profile (e.g., principal or an equivalent identifier)."
-        },
-        {
-          "path": "frontend/src/hooks/useProfileQueries.ts",
-          "operation": "create",
-          "description": "Create React Query hooks for profiles: directory listing, profile-by-principal, caller profile (for editing), and save caller profile. Use the existing actor dependency pattern via useActor, invalidate/refetch relevant cached queries after save, and normalize errors into readable English using normalizeActorError. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/utils/profileImages.ts",
-          "operation": "create",
-          "description": "Add shared helpers for profile image handling on the frontend: convert validated File -> Uint8Array -> ExternalBlob (for avatar and plushie images) and build safe preview URLs for local files. Use the blob-storage ExternalBlob capabilities to produce direct URLs for saved images and support upload progress if needed. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/utils/actorError.ts",
-          "operation": "modify",
-          "description": "Extend error normalization (without changing the existing pattern) to cover common profile authorization/visibility failures (e.g., private profile not available) with clear English messages."
+          "description": "Replace/update the static coloring book PDF so it includes two new pages derived from the existing static asset PNGs `frontend/public/assets/colorifyai-1770544927646.png` and `frontend/public/assets/colorifyai-1770544979559.png`, ensuring clean black line art (no unexpected color fills), white background, and letter/A4-friendly page sizing for crisp printing."
         }
       ]
     },
     {
-      "id": "REQ-35",
-      "summary": "Add a Profiles section with a public directory page and individual profile pages with clear empty/unavailable states",
+      "id": "REQ-61",
+      "summary": "Commit the two uploaded PNG source images into frontend static assets without changing filenames.",
       "acceptanceCriteria": [
-        "A Profiles directory route exists and renders a list/grid of opted-in profiles with at least avatar (if present), display name (fallback to a safe label if absent), and a link to the profile detail page.",
-        "A Profile detail route exists that renders the selected user’s profile data (avatar, display name, bio, links, plushie collection images).",
-        "If the directory is empty, the page shows an English empty state (e.g., “No profiles yet” with a short explanation).",
-        "If a profile is not viewable due to opt-out/private status, the UI shows an English message indicating it is not available."
+        "Both PNG files are present in the deployed frontend static files and can be fetched directly by the browser at their committed static-asset paths.",
+        "The committed filenames exactly match: `colorifyai-1770544927646.png` and `colorifyai-1770544979559.png`."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/ProfilesDirectoryPage.tsx",
+          "path": "frontend/public/assets/colorifyai-1770544927646.png",
           "operation": "create",
-          "description": "Create the public Profiles directory page that fetches opted-in profiles via the new React Query hook and renders a grid/list using existing shadcn-ui components (e.g., Card, Button) for consistent styling. Include an English empty state when no profiles are listed. Use blob-storage ExternalBlob.getDirectURL to display avatar images when present. Verify the component's usage instructions before implementing."
+          "description": "Add the original uploaded bear plush line-art PNG to frontend static assets, preserving the exact filename for direct browser fetch."
         },
         {
-          "path": "frontend/src/pages/ProfilePage.tsx",
+          "path": "frontend/public/assets/colorifyai-1770544979559.png",
           "operation": "create",
-          "description": "Create the Profile detail page that loads a profile by principal and renders avatar, display name (with safe fallback), bio, links, and plushie collection images. Show a clear English message when the profile is not available to the viewer (e.g., private/opted out). Use blob-storage ExternalBlob.getDirectURL to render stored images. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/profiles/ProfileLinksList.tsx",
-          "operation": "create",
-          "description": "Add a small presentational component to render a profile’s links list with safe URL handling and readable labels, composed from existing UI components. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/profiles/ProfileImageGrid.tsx",
-          "operation": "create",
-          "description": "Add a presentational component to render plushie collection images in a responsive grid using existing UI components and blob-storage ExternalBlob direct URLs. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Wire the new Profiles routes into TanStack Router: add a directory route (e.g., /profiles) and a profile detail route (e.g., /profiles/$principal) without altering unrelated route structure."
-        }
-      ]
-    },
-    {
-      "id": "REQ-36",
-      "summary": "Implement authenticated profile editing on the profile page for the profile owner only, including image uploads/previews and directory opt-in toggle",
-      "acceptanceCriteria": [
-        "When not signed in, no profile editing UI is shown.",
-        "When signed in and viewing your own profile, an Edit Profile form is available with Save/Cancel behavior and appropriate loading/disabled states while saving.",
-        "The form supports toggling directory opt-in/out and saving persists the change and updates the directory behavior accordingly.",
-        "Avatar upload supports common web image types (PNG/JPEG/WebP) and shows a preview before saving.",
-        "Plushie collection images support adding multiple images, showing previews, and removing selected images before saving."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/profiles/EditProfilePanel.tsx",
-          "operation": "create",
-          "description": "Create an owner-only Edit Profile panel used on the Profile page. Compose existing shadcn-ui form controls (Input, Textarea, Button, Label, Alert, Card) and implement Save/Cancel with loading/disabled states. Use the authorization (Internet Identity) state to hide all editing controls when unauthenticated or not the owner. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/profiles/AvatarUploader.tsx",
-          "operation": "create",
-          "description": "Create an avatar upload control supporting PNG/JPEG/WebP validation and local preview before saving. Reuse existing imageAttachment validation utilities where appropriate, and convert files to blob-storage ExternalBlob for saving. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/profiles/PlushieImagesEditor.tsx",
-          "operation": "create",
-          "description": "Create a multi-image editor for plushie collection images: add multiple, preview, remove before saving. Convert selected files to blob-storage ExternalBlob instances for saving, and keep a local preview list for unsaved changes. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/ProfilePage.tsx",
-          "operation": "modify",
-          "description": "Integrate owner detection (compare route principal to Internet Identity principal) and wire in Edit Profile UI only when viewing your own profile while authenticated. Use the new profile hooks to load caller profile for editing, save updates, and refresh displayed data after save."
-        },
-        {
-          "path": "frontend/src/utils/imageAttachment.ts",
-          "operation": "modify",
-          "description": "Extend existing image validation utilities (without changing existing callers) to support multi-file selection workflows and consistent validation messages for avatar/plushie uploads (PNG/JPEG/WebP), while continuing to centralize accepted types and size checks."
-        }
-      ]
-    },
-    {
-      "id": "REQ-37",
-      "summary": "Add navigation access to the Profiles section while preserving existing layout and avoiding immutable frontend paths",
-      "acceptanceCriteria": [
-        "The primary navigation includes a “Profiles” link that routes to the Profiles directory page.",
-        "Navigation styling remains consistent with the existing cozy pastel theme and component patterns.",
-        "No changes are made to files under the listed immutable frontend paths."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/Nav.tsx",
-          "operation": "modify",
-          "description": "Add a new “Profiles” entry to the existing navigation links that routes to the Profiles directory page, keeping styling and structure consistent with current Nav patterns and without changing unrelated layout behavior."
+          "description": "Add the original uploaded creature-with-hat/flowers line-art PNG to frontend static assets, preserving the exact filename for direct browser fetch."
         }
       ]
     }

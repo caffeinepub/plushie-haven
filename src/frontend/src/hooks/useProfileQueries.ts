@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
+import { useInternetIdentity } from './useInternetIdentity';
 import { normalizeActorError } from '../utils/actorError';
-import type { UserProfile, UserProfileEdit } from '../backend';
+import type { UserProfile, UserProfileEdit, FollowCounts } from '../backend';
 import { Principal } from '@dfinity/principal';
 
 /**
@@ -47,6 +48,9 @@ export function useGetUserProfile(principalString: string) {
  */
 export function useGetCallerUserProfile() {
   const { actor, isFetching: actorFetching } = useActor();
+  const { identity } = useInternetIdentity();
+
+  const isAuthenticated = identity && !identity.getPrincipal().isAnonymous();
 
   const query = useQuery<UserProfile | null>({
     queryKey: ['currentUserProfile'],
@@ -54,7 +58,7 @@ export function useGetCallerUserProfile() {
       if (!actor) throw new Error('Actor not available');
       return actor.getCallerUserProfile();
     },
-    enabled: !!actor && !actorFetching,
+    enabled: !!actor && !actorFetching && isAuthenticated,
     retry: false,
   });
 
@@ -91,6 +95,122 @@ export function useSaveCallerUserProfile() {
     },
     onError: (error) => {
       throw new Error(normalizeActorError(error));
+    },
+  });
+}
+
+// Profile Follow
+export function useGetFollowSummary(targetPrincipal: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery({
+    queryKey: ['followSummary', targetPrincipal],
+    queryFn: async () => {
+      if (!actor) return { followersCount: 0n, followingCount: 0n, callerFollowsTarget: false };
+      try {
+        const principal = Principal.fromText(targetPrincipal);
+        const [counts, callerFollows] = await Promise.all([
+          actor.getFollowCounts(principal),
+          actor.doesCallerFollow(principal),
+        ]);
+        return {
+          followersCount: counts.followers,
+          followingCount: counts.following,
+          callerFollowsTarget: callerFollows,
+        };
+      } catch (error) {
+        console.error('Error fetching follow summary:', error);
+        return { followersCount: 0n, followingCount: 0n, callerFollowsTarget: false };
+      }
+    },
+    enabled: !!actor && !isFetching && !!targetPrincipal,
+  });
+}
+
+export function useFollowProfile() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (targetPrincipal: string) => {
+      if (!actor) throw new Error('Actor not initialized');
+      const principal = Principal.fromText(targetPrincipal);
+      return actor.follow(principal);
+    },
+    onSuccess: (_, targetPrincipal) => {
+      queryClient.invalidateQueries({ queryKey: ['followSummary', targetPrincipal] });
+    },
+  });
+}
+
+export function useUnfollowProfile() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (targetPrincipal: string) => {
+      if (!actor) throw new Error('Actor not initialized');
+      const principal = Principal.fromText(targetPrincipal);
+      return actor.unfollow(principal);
+    },
+    onSuccess: (_, targetPrincipal) => {
+      queryClient.invalidateQueries({ queryKey: ['followSummary', targetPrincipal] });
+    },
+  });
+}
+
+// Profile Likes
+export function useGetProfileLikeSummary(targetPrincipal: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery({
+    queryKey: ['profileLike', targetPrincipal],
+    queryFn: async () => {
+      if (!actor) return { likeCount: 0n, callerLiked: false };
+      try {
+        const principal = Principal.fromText(targetPrincipal);
+        const [likeCount, callerLiked] = await Promise.all([
+          actor.getProfileLikeCount(principal),
+          actor.isProfileLikedByCaller(principal),
+        ]);
+        return { likeCount, callerLiked };
+      } catch (error) {
+        console.error('Error fetching profile like summary:', error);
+        return { likeCount: 0n, callerLiked: false };
+      }
+    },
+    enabled: !!actor && !isFetching && !!targetPrincipal,
+  });
+}
+
+export function useLikeProfile() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (targetPrincipal: string) => {
+      if (!actor) throw new Error('Actor not initialized');
+      const principal = Principal.fromText(targetPrincipal);
+      return actor.likeProfile(principal);
+    },
+    onSuccess: (_, targetPrincipal) => {
+      queryClient.invalidateQueries({ queryKey: ['profileLike', targetPrincipal] });
+    },
+  });
+}
+
+export function useUnlikeProfile() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (targetPrincipal: string) => {
+      if (!actor) throw new Error('Actor not initialized');
+      const principal = Principal.fromText(targetPrincipal);
+      return actor.unlikeProfile(principal);
+    },
+    onSuccess: (_, targetPrincipal) => {
+      queryClient.invalidateQueries({ queryKey: ['profileLike', targetPrincipal] });
     },
   });
 }

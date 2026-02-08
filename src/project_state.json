@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 23,
+  "projectStateVersion": 41,
   "summary": "Build a lifestyle website for adult plushie enthusiasts named \"Plushie Haven.\"",
   "architectural_notes": [
     "Visual theme direction updated: prioritize an ‘adorable’ aesthetic with a pink + baby blue palette (supersedes prior guidance to avoid blue/purple-dominant palettes).",
@@ -10,11 +10,16 @@
     "UI polish: do not leave unexplained placeholder shapes (e.g., empty circle/square). Replace with intended branding/icons or remove from the layout.",
     "Home page hero/title area: replace the small circular placeholder to the left of the large blue “Plushie Haven” text (above the tagline paragraph) with the teddy bear logo (do not leave it empty).",
     "Community Board moderation direction: designate the currently authenticated Internet Identity principal as the admin (for now); admins can edit/delete any post, while regular users can delete only their own posts.",
-    "Profiles direction: build both individual profile pages and a public profile directory; profiles are publicly viewable but only editable when logged in; users are hidden from the directory by default unless they opt in (and can opt out). Profile fields include avatar, display name, bio, links, and plushie collection images (and future optional fields)."
+    "Profiles direction: build both individual profile pages and a public profile directory; profiles are publicly viewable but only editable when logged in; users are hidden from the directory by default unless they opt in (and can opt out). Profile fields include avatar, display name, bio, links, and plushie collection images (and future optional fields).",
+    "Header account display: when signed in, show the user’s Profile display name in the header (replacing the person icon); when signed out, show the existing Sign In UI.",
+    "Next planned feature: add comments to Community Board posts (text and optional image attachments), including comment counts in the posts list and a post detail view for reading/adding comments."
   ],
   "known_issues": [
     "Random empty circle and square placeholders appear in the UI; user requested to fill them with intended content or remove them.",
-    "Home page hero image next to the “Plushie Haven” title (alt text “A cozy collection of beloved plushies”) is not displaying for the user (no image shown)."
+    "Home page hero image next to the “Plushie Haven” title (alt text “A cozy collection of beloved plushies”) is not displaying for the user (no image shown).",
+    "Coloring Book PDF download/addition is not working (link/button or static asset not functioning as expected).",
+    "Coloring Book PDF download still does not work for the user after the latest deployment (Version 17).",
+    "Coloring Book PDF download still not working for the user after attempted adjustment / Draft Version 18 deployment."
   ],
   "isFixRequest": false,
   "existing_features": [
@@ -241,6 +246,126 @@
         "REQ-37"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-update-the-header-authentication-control-so-that-when-a-user-is-signed-in-the-dropdown-trigger-displays-the-user-s-chosen-username-their-profile-display-name-instead-of-the-person-user-icon-and-short-principal-text",
+      "title": "Update the header authentication control so that when a user is signed in, the dropdown trigger displays the user’s chosen username (their Profile display name) instead of the person/user icon and short principal text.",
+      "reqIds": [
+        "REQ-38"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fetch-and-keep-the-signed-in-user-s-profile-display-name-up-to-date-in-the-header-auth-control-by-using-the-existing-profile-query-for-the-caller-s-profile-ensure-the-header-label-updates-automatically-after-the-user-saves-changes-their-profile-display-name-without-a-full-page-reload",
+      "title": "Fetch and keep the signed-in user’s profile display name up-to-date in the header auth control by using the existing profile query for the caller’s profile; ensure the header label updates automatically after the user saves/changes their profile display name (without a full page reload).",
+      "reqIds": [
+        "REQ-39"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-generated-frontend-backend-bindings-types-and-add-react-query-hooks-to-call-the-new-follow-like-canister-methods-following-existing-patterns-in-frontend-src-hooks-usequeries-ts-and-frontend-src-hooks-useprofilequeries-ts-query-invalidation-after-successful-mutations-must-refresh-relevant-counts-states",
+      "title": "Update the generated frontend backend bindings/types and add React Query hooks to call the new follow + like canister methods, following existing patterns in `frontend/src/hooks/useQueries.ts` and `frontend/src/hooks/useProfileQueries.ts` (query invalidation after successful mutations must refresh relevant counts/states).",
+      "reqIds": [
+        "REQ-42"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-post-like-ui-to-the-community-board-frontend-src-pages-communityboardpage-tsx-render-a-like-button-and-like-count-on-each-post-in-the-main-list-if-the-user-is-not-signed-in-clicking-like-must-show-an-english-error-message-prompting-sign-in-if-signed-in-clicking-toggles-like-unlike-and-updates-the-count-use-clear-non-technical-english-text-labels",
+      "title": "Add post-like UI to the Community Board (`frontend/src/pages/CommunityBoardPage.tsx`): render a Like button and like count on each post in the main list. If the user is not signed in, clicking Like must show an English error message prompting sign-in; if signed in, clicking toggles like/unlike and updates the count. Use clear, non-technical English text labels.",
+      "reqIds": [
+        "REQ-43"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-usable-profiles-follow-experience-1-add-an-individual-profile-route-e-g-profiles-principal-wired-into-frontend-src-app-tsx-2-update-the-profiles-directory-frontend-src-pages-profilesdirectorypage-tsx-so-view-profile-is-enabled-and-navigates-to-the-individual-profile-page-and-3-on-the-individual-profile-page-render-follow-unfollow-and-profile-like-unlike-controls-with-follower-following-counts-and-profile-like-count-require-sign-in-for-follow-like-actions-and-show-english-sign-in-prompts-when-unauthenticated-users-attempt-actions",
+      "title": "Implement a usable Profiles follow experience: (1) add an individual profile route (e.g. `/profiles/$principal`) wired into `frontend/src/App.tsx`, (2) update the Profiles directory (`frontend/src/pages/ProfilesDirectoryPage.tsx`) so “View Profile” is enabled and navigates to the individual profile page, and (3) on the individual profile page, render Follow/Unfollow and Profile Like/Unlike controls with follower/following counts and profile like count. Require sign-in for follow/like actions and show English sign-in prompts when unauthenticated users attempt actions.",
+      "reqIds": [
+        "REQ-44"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-generated-frontend-backend-bindings-types-and-add-react-query-hooks-in-frontend-src-hooks-usequeries-ts-for-1-listing-comments-for-a-post-2-creating-a-comment-for-a-post-and-3-fetching-comment-counts-per-post-including-appropriate-query-invalidation-after-successful-comment-creation",
+      "title": "Update the generated frontend backend bindings/types and add React Query hooks in `frontend/src/hooks/useQueries.ts` for: (1) listing comments for a post, (2) creating a comment for a post, and (3) fetching comment counts per post, including appropriate query invalidation after successful comment creation.",
+      "reqIds": [
+        "REQ-47"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-frontend-src-pages-communityboardpage-tsx-to-display-comment-counts-for-each-post-in-the-posts-list-and-provide-an-in-place-comments-ui-per-post-that-allows-browsing-comments-and-when-authenticated-adding-a-new-comment",
+      "title": "Update `frontend/src/pages/CommunityBoardPage.tsx` to display comment counts for each post in the posts list and provide an in-place comments UI per post that allows browsing comments and (when authenticated) adding a new comment.",
+      "reqIds": [
+        "REQ-48"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-seeded-site-content-to-include-clothing-items-onesies-leotards-oversized-sweaters-and-accessories-pacifiers-lock-and-key-necklaces-thigh-high-socks-as-part-of-plushie-haven-s-lifestyle-content-using-safe-non-explicit-english-user-facing-text",
+      "title": "Update the seeded site content to include clothing items (onesies, leotards, oversized sweaters) and accessories (pacifiers, lock-and-key necklaces, thigh-high socks) as part of Plushie Haven’s lifestyle content, using safe, non-explicit, English user-facing text.",
+      "reqIds": [
+        "REQ-49"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-clear-ui-call-to-action-to-download-the-coloring-book-pdf-including-a-prominent-button-link-on-an-existing-page-using-english-user-facing-text-and-matching-the-current-plushie-haven-styling",
+      "title": "Add a clear UI call-to-action to download the Coloring Book PDF (including a prominent button/link) on an existing page, using English user-facing text and matching the current Plushie Haven styling.",
+      "reqIds": [
+        "REQ-51"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-make-the-home-page-coloring-book-download-call-to-action-resilient-when-the-pdf-is-missing-or-fails-to-load-if-assets-coloring-book-pdf-cannot-be-reached-disable-the-download-button-and-show-a-clear-english-message-explaining-the-download-is-temporarily-unavailable",
+      "title": "Make the Home page Coloring Book download call-to-action resilient when the PDF is missing or fails to load: if `/assets/coloring-book.pdf` cannot be reached, disable the download button and show a clear English message explaining the download is temporarily unavailable.",
+      "reqIds": [
+        "REQ-53"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-make-the-static-asset-availability-check-compatible-with-production-hosting-by-updating-frontend-src-hooks-usestaticassetavailability-ts-to-not-rely-solely-on-an-http-head-request-which-may-be-unsupported-and-to-fall-back-to-a-lightweight-get-check-when-needed",
+      "title": "Make the static-asset availability check compatible with production hosting by updating `frontend/src/hooks/useStaticAssetAvailability.ts` to not rely solely on an HTTP `HEAD` request (which may be unsupported), and to fall back to a lightweight `GET` check when needed.",
+      "reqIds": [
+        "REQ-55"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-home-page-download-cta-in-frontend-src-pages-homepage-tsx-so-that-when-the-pdf-is-available-the-download-action-uses-a-standard-link-behavior-e-g-an-a-href-assets-coloring-book-pdf-target-blank-rel-noopener-noreferrer-around-the-button-rather-than-only-window-open-and-show-a-clear-english-error-message-if-a-user-attempts-to-download-but-the-file-cannot-be-reached",
+      "title": "Update the Home page download CTA in `frontend/src/pages/HomePage.tsx` so that when the PDF is available the download action uses a standard link behavior (e.g., an `<a href=\"/assets/coloring-book.pdf\" target=\"_blank\" rel=\"noopener noreferrer\">` around the button) rather than only `window.open`, and show a clear English error message if a user attempts to download but the file cannot be reached.",
+      "reqIds": [
+        "REQ-56"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-make-the-home-page-coloring-book-pdf-download-work-reliably-in-production-at-the-exact-url-assets-coloring-book-pdf-ensuring-the-asset-is-included-in-the-deployed-frontend-static-files-and-can-be-fetched-successfully-by-the-browser",
+      "title": "Make the Home page Coloring Book PDF download work reliably in production at the exact URL `/assets/coloring-book.pdf`, ensuring the asset is included in the deployed frontend static files and can be fetched successfully by the browser.",
+      "reqIds": [
+        "REQ-57"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-frontend-src-pages-homepage-tsx-so-the-download-click-verification-does-not-rely-solely-on-an-http-head-request-which-may-be-blocked-unsupported-in-some-hosting-setups-it-must-use-a-fallback-strategy-compatible-with-production-hosting-e-g-attempt-head-then-fall-back-to-a-lightweight-get-check-before-preventing-navigation-and-showing-an-error",
+      "title": "Update `frontend/src/pages/HomePage.tsx` so the download click verification does not rely solely on an HTTP `HEAD` request (which may be blocked/unsupported in some hosting setups); it must use a fallback strategy compatible with production hosting (e.g., attempt `HEAD`, then fall back to a lightweight `GET` check) before preventing navigation and showing an error.",
+      "reqIds": [
+        "REQ-58"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-clear-user-facing-failure-mode-on-the-home-page-download-cta-when-the-availability-state-is-unknown-or-inconsistent-e-g-the-initial-availability-check-indicates-available-but-the-click-time-check-fails-using-concise-english-text-and-keeping-the-existing-plushie-haven-styling",
+      "title": "Add a clear, user-facing failure mode on the Home page download CTA when the availability state is unknown or inconsistent (e.g., the initial availability check indicates available but the click-time check fails), using concise English text and keeping the existing Plushie Haven styling.",
+      "reqIds": [
+        "REQ-59"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -391,6 +516,120 @@
       "summary": "Add backend canister methods to support a public profile directory and profile CRUD flows needed by the UI: (1) get the caller’s profile (for editing), (2) get a profile by principal with the access rules described, (3) save/update the caller’s profile, and (4) list directory profiles (only those opted in).",
       "reqIds": [
         "REQ-33"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-28",
+      "summary": "Replace the header’s person/user icon with the signed-in user’s chosen username (Profile display name). When logged out, keep showing “Sign In” (or equivalent).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-29",
+      "summary": "Expand the Community Board to support comments on posts (including text and optional image attachments), with comment counts shown on the posts list and within a post detail view.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-30",
+      "summary": "Add likes and emoji reactions to Community Board posts (one like per user plus reactions), showing counts on the posts list and within a post detail view.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-31",
+      "summary": "Add follow functionality as a community feature (users can follow other user profiles), with follow counts and an optional “Following” feed/filter experience.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-32",
+      "summary": "Extend the Motoko backend (single main actor in `backend/main.mo`) to support following between user principals (profile follows), including storing follow relationships and exposing canister methods to: (1) follow a target user principal, (2) unfollow a target user principal, (3) check whether the caller follows a target user principal, and (4) fetch follow counts for a target user principal (followers count and following count). Enforce that only authenticated users can follow/unfollow and that users cannot follow themselves.",
+      "reqIds": [
+        "REQ-40"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-33",
+      "summary": "Extend the Motoko backend (in `backend/main.mo`) to support likes with one-like-per-user semantics for: (a) Community Board posts and (b) user profiles. Add canister methods to like/unlike a post by post id, query whether the caller has liked a post, and fetch like counts; and likewise like/unlike a profile by principal, query whether the caller has liked a profile, and fetch profile like counts. Enforce that only authenticated users can like/unlike.",
+      "reqIds": [
+        "REQ-41"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-34",
+      "summary": "Extend the Motoko backend in `backend/main.mo` to support comments on Community Board posts, including a new `Comment` data type and canister methods to create and list comments for a given post.",
+      "reqIds": [
+        "REQ-45"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-35",
+      "summary": "Add backend query support for displaying comment counts per post without requiring the UI to fetch full comment lists for every post in the feed.",
+      "reqIds": [
+        "REQ-46"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-36",
+      "summary": "Add/expand site content to include clothing items (onesies, leotards, oversized sweaters) and accessories (pacifiers, lock-and-key necklaces, thigh-high socks).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-37",
+      "summary": "Add a downloadable Coloring Book PDF to Plushie Haven (provide a clear UI link/button to download a PDF file).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-38",
+      "summary": "Add a downloadable Coloring Book PDF file to the frontend as a static asset that is served by the deployed site.",
+      "reqIds": [
+        "REQ-50"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-39",
+      "summary": "Ensure the Coloring Book PDF is included as a static frontend asset and is served correctly in production at the exact URL currently used by the Home page download button: `/assets/coloring-book.pdf`.",
+      "reqIds": [
+        "REQ-52"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-40",
+      "summary": "Ensure the Coloring Book PDF is actually present in the deployed frontend and is served successfully at the exact URL used by the Home page CTA: `/assets/coloring-book.pdf`.",
+      "reqIds": [
+        "REQ-54"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-41",
+      "summary": "Update the Coloring Book PDF to include the user-provided new content (“add this to color book”).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-42",
+      "summary": "Update the static coloring book PDF served at the exact URL `/assets/coloring-book.pdf` to include the two user-uploaded images as additional coloring pages: `colorifyai-1770544927646.png` and `colorifyai-1770544979559.png`. The updated PDF must preserve clean black-and-white line art (no unexpected color fills) and print cleanly on letter/A4 pages.",
+      "reqIds": [
+        "REQ-60"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-43",
+      "summary": "Add the two uploaded source images to the frontend static assets (so the project retains the originals used to build the PDF) without changing their filenames: `colorifyai-1770544927646.png` and `colorifyai-1770544979559.png`.",
+      "reqIds": [
+        "REQ-61"
       ],
       "status": "pending"
     }

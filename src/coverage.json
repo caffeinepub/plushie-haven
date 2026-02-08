@@ -1,134 +1,40 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T07:12:58.018Z",
+  "generatedAt": "2026-02-08T10:06:19.606Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 7,
-    "implemented": 4,
+    "total": 2,
+    "implemented": 0,
     "items": [
       {
-        "id": "REQ-31",
-        "summary": "Extend the backend user profile model to support a full profile with the following fields: avatar image (bytes + content type), display name, bio, links, plushie collection images (multiple images, each bytes + content type), and a public directory opt-in flag. Keep fields optional where appropriate to support future optional fields without breaking callers.",
-        "status": "unknown",
-        "plannedFiles": [],
+        "id": "REQ-60",
+        "summary": "Update the static coloring book PDF served at the exact URL `/assets/coloring-book.pdf` to include the two user-uploaded images as additional coloring pages: `colorifyai-1770544927646.png` and `colorifyai-1770544979559.png`. The updated PDF must preserve clean black-and-white line art (no unexpected color fills) and print cleanly on letter/A4 pages.",
+        "status": "missing",
+        "plannedFiles": [
+          "frontend/public/assets/coloring-book.pdf"
+        ],
         "matchedFiles": []
       },
       {
-        "id": "REQ-32",
-        "summary": "Update backend authorization rules for profiles to match: profiles are publicly viewable when the profile owner has opted into the public directory; otherwise, viewing a profile is restricted to the owner and admins. Editing a profile (saving) requires the caller to be authenticated.",
-        "status": "unknown",
-        "plannedFiles": [],
+        "id": "REQ-61",
+        "summary": "Add the two uploaded source images to the frontend static assets (so the project retains the originals used to build the PDF) without changing their filenames: `colorifyai-1770544927646.png` and `colorifyai-1770544979559.png`.",
+        "status": "missing",
+        "plannedFiles": [
+          "frontend/public/assets/colorifyai-1770544927646.png",
+          "frontend/public/assets/colorifyai-1770544979559.png"
+        ],
         "matchedFiles": []
-      },
-      {
-        "id": "REQ-33",
-        "summary": "Add backend canister methods to support a public profile directory and profile CRUD flows needed by the UI: (1) get the caller’s profile (for editing), (2) get a profile by principal with the access rules described, (3) save/update the caller’s profile, and (4) list directory profiles (only those opted in).",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-34",
-        "summary": "Update the generated/typed frontend backend bindings and React Query hooks to support: fetching the public profile directory, fetching a profile by principal, fetching the signed-in user’s own profile for editing, and saving the signed-in user’s profile. Ensure queries invalidate/refresh appropriately after a successful save.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/backend.d.ts",
-          "frontend/src/hooks/useProfileQueries.ts",
-          "frontend/src/utils/profileImages.ts",
-          "frontend/src/utils/actorError.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/backend.d.ts",
-          "frontend/src/hooks/useProfileQueries.ts",
-          "frontend/src/utils/profileImages.ts",
-          "frontend/src/utils/actorError.ts"
-        ]
-      },
-      {
-        "id": "REQ-35",
-        "summary": "Add a new Profiles section to the frontend including: (1) a public profile directory page that shows only opted-in profiles, and (2) an individual profile page that can be visited publicly when opted-in. Include clear English empty states when no profiles are listed or when a profile is not available to the viewer.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/ProfilesDirectoryPage.tsx",
-          "frontend/src/pages/ProfilePage.tsx",
-          "frontend/src/components/profiles/ProfileLinksList.tsx",
-          "frontend/src/components/profiles/ProfileImageGrid.tsx",
-          "frontend/src/App.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/ProfilesDirectoryPage.tsx",
-          "frontend/src/pages/ProfilePage.tsx",
-          "frontend/src/components/profiles/ProfileLinksList.tsx",
-          "frontend/src/components/profiles/ProfileImageGrid.tsx",
-          "frontend/src/App.tsx"
-        ]
-      },
-      {
-        "id": "REQ-36",
-        "summary": "Implement authenticated profile editing: on the individual profile page, if the viewer is the profile owner (same Internet Identity principal), show an Edit Profile UI that allows updating all profile fields (avatar, display name, bio, links, plushie collection images) and toggling directory opt-in/out. Editing must require login; unauthenticated users must not see editing controls.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/profiles/EditProfilePanel.tsx",
-          "frontend/src/components/profiles/AvatarUploader.tsx",
-          "frontend/src/components/profiles/PlushieImagesEditor.tsx",
-          "frontend/src/pages/ProfilePage.tsx",
-          "frontend/src/utils/imageAttachment.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/profiles/EditProfilePanel.tsx",
-          "frontend/src/components/profiles/AvatarUploader.tsx",
-          "frontend/src/components/profiles/PlushieImagesEditor.tsx",
-          "frontend/src/pages/ProfilePage.tsx",
-          "frontend/src/utils/imageAttachment.ts"
-        ]
-      },
-      {
-        "id": "REQ-37",
-        "summary": "Add navigation access to the new Profiles section in the existing site navigation without changing unrelated layout structure or modifying immutable frontend paths.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/Nav.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/Nav.tsx"
-        ]
       }
     ]
   },
   "changedFiles": [
-    "backend/blob-storage/Mixin.mo",
-    "backend/blob-storage/Storage.mo",
-    "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
-    "caffeine.lock.json",
     "feature_evidence.json",
-    "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/App.tsx",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/components/Nav.tsx",
-    "frontend/src/components/community/PostActions.tsx",
-    "frontend/src/components/profiles/AvatarUploader.tsx",
-    "frontend/src/components/profiles/EditProfilePanel.tsx",
-    "frontend/src/components/profiles/PlushieImagesEditor.tsx",
-    "frontend/src/components/profiles/ProfileImageGrid.tsx",
-    "frontend/src/components/profiles/ProfileLinksList.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useProfileQueries.ts",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/CommunityBoardPage.tsx",
-    "frontend/src/pages/ProfilePage.tsx",
-    "frontend/src/pages/ProfilesDirectoryPage.tsx",
-    "frontend/src/utils/actorError.ts",
-    "frontend/src/utils/imageAttachment.ts",
-    "frontend/src/utils/profileImages.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

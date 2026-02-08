@@ -18,29 +18,48 @@ export function normalizeActorError(error: unknown): string {
         return 'Please sign in to perform this action.';
       }
       if (message.includes('Only users can')) {
-        return 'Please sign in to access this feature.';
+        return 'Please sign in to perform this action.';
       }
-      return 'You do not have permission to perform this action.';
+      return 'You are not authorized to perform this action.';
     }
-    
+
     // Handle profile visibility errors
-    if (message.includes('private') || message.includes('not available')) {
-      return 'This profile is not publicly available.';
+    if (message.includes('Profile is not public')) {
+      return 'This profile is private and cannot be viewed.';
     }
-    
-    // Handle not found errors
-    if (message.includes('not found')) {
-      return 'The requested item could not be found.';
-    }
-    
+
     // Handle validation errors
     if (message.includes('cannot be empty')) {
       return 'Please fill in all required fields.';
     }
-    
-    // Return original message if it's already user-friendly
+
+    // Handle comment-specific errors
+    if (message.includes('Post does not exist')) {
+      return 'This post no longer exists.';
+    }
+
+    // Handle generic post errors
+    if (message.includes('Post not found')) {
+      return 'Post not found.';
+    }
+
+    // Handle event errors
+    if (message.includes('Event not found')) {
+      return 'Event not found.';
+    }
+
+    if (message.includes('Start time must be before end time')) {
+      return 'Event start time must be before end time.';
+    }
+
+    // Handle follow errors
+    if (message.includes('cannot follow yourself')) {
+      return 'You cannot follow yourself.';
+    }
+
+    // Return the original message if no specific match
     return message;
   }
-  
+
   return 'An unexpected error occurred. Please try again.';
 }

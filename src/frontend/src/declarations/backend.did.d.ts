@@ -10,6 +10,13 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface Comment {
+  'content' : string,
+  'createdAt' : Time,
+  'authorName' : [] | [string],
+  'author' : Principal,
+  'postId' : bigint,
+}
 export interface Event {
   'id' : bigint,
   'startTime' : Time,
@@ -22,6 +29,7 @@ export interface Event {
   'location' : string,
 }
 export type ExternalBlob = Uint8Array;
+export interface FollowCounts { 'followers' : bigint, 'following' : bigint }
 export interface ImageAttachment {
   'contentType' : string,
   'bytes' : Uint8Array,
@@ -85,6 +93,7 @@ export interface _SERVICE {
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'createComment' : ActorMethod<[bigint, [] | [string], string], Comment>,
   'createEvent' : ActorMethod<
     [[] | [string], string, string, string, Time, Time],
     bigint
@@ -94,17 +103,31 @@ export interface _SERVICE {
     bigint
   >,
   'deletePost' : ActorMethod<[bigint], undefined>,
+  'doesCallerFollow' : ActorMethod<[Principal], boolean>,
   'editPost' : ActorMethod<[bigint, string, string, [] | [string]], undefined>,
+  'follow' : ActorMethod<[Principal], undefined>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getCommentCounts' : ActorMethod<[Array<bigint>], Array<[bigint, bigint]>>,
+  'getComments' : ActorMethod<[bigint], Array<Comment>>,
   'getEvent' : ActorMethod<[bigint], Event>,
+  'getFollowCounts' : ActorMethod<[Principal], FollowCounts>,
   'getPost' : ActorMethod<[bigint], LegacyPost>,
+  'getPostLikeCount' : ActorMethod<[bigint], bigint>,
+  'getProfileLikeCount' : ActorMethod<[Principal], bigint>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'isPostLikedByCaller' : ActorMethod<[bigint], boolean>,
+  'isProfileLikedByCaller' : ActorMethod<[Principal], boolean>,
+  'likePost' : ActorMethod<[bigint], undefined>,
+  'likeProfile' : ActorMethod<[Principal], undefined>,
   'listDirectoryProfiles' : ActorMethod<[], Array<UserProfile>>,
   'listEvents' : ActorMethod<[], Array<Event>>,
   'listPosts' : ActorMethod<[], Array<LegacyPost>>,
   'saveCallerUserProfile' : ActorMethod<[UserProfileEdit], undefined>,
+  'unfollow' : ActorMethod<[Principal], undefined>,
+  'unlikePost' : ActorMethod<[bigint], undefined>,
+  'unlikeProfile' : ActorMethod<[Principal], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

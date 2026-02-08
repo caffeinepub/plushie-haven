@@ -1,11 +1,34 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart, Users, Calendar, BookOpen } from 'lucide-react';
+import { Heart, Users, Calendar, BookOpen, Download, AlertCircle } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
+import { useStaticAssetAvailability } from '@/hooks/useStaticAssetAvailability';
+import { checkStaticAssetAvailability } from '@/utils/staticAssetCheck';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function HomePage() {
   const [heroImageError, setHeroImageError] = useState(false);
+  const [downloadError, setDownloadError] = useState(false);
+  const { data: isPdfAvailable, isLoading: isPdfCheckLoading } = useStaticAssetAvailability('/assets/coloring-book.pdf');
+
+  const handleDownloadClick = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // Reset any previous error
+    setDownloadError(false);
+    
+    // Verify the PDF is still reachable before allowing navigation
+    try {
+      const isAvailable = await checkStaticAssetAvailability('/assets/coloring-book.pdf');
+      if (!isAvailable) {
+        e.preventDefault();
+        setDownloadError(true);
+      }
+    } catch (error) {
+      // Catch any unhandled errors to prevent unhandled promise rejections
+      e.preventDefault();
+      setDownloadError(true);
+    }
+  };
 
   return (
     <div className="flex flex-col">
@@ -73,6 +96,68 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Coloring Book Download Section */}
+      <section className="container py-16 md:py-24">
+        <Card className="border-2 bg-gradient-to-br from-primary/5 via-background to-secondary/5 shadow-xl">
+          <CardHeader className="text-center pb-4">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 ring-4 ring-primary/20">
+              <Download className="h-8 w-8 text-primary" />
+            </div>
+            <CardTitle className="text-3xl md:text-4xl">Free Plushie Coloring Book</CardTitle>
+            <CardDescription className="text-base md:text-lg mt-2">
+              Download our exclusive coloring book featuring adorable plushie designs. Perfect for relaxation and creative expression!
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center gap-4 pt-2">
+            <p className="text-center text-sm text-muted-foreground max-w-xl">
+              Enjoy hours of creative fun with our carefully curated collection of plushie illustrations. Print and color at your leisure.
+            </p>
+            
+            {isPdfCheckLoading ? (
+              <Button size="lg" className="gap-2" disabled>
+                <Download className="h-5 w-5 animate-pulse" />
+                Checking availability...
+              </Button>
+            ) : isPdfAvailable ? (
+              <div className="flex flex-col items-center gap-3 w-full max-w-xl">
+                <Button size="lg" className="gap-2" asChild>
+                  <a
+                    href="/assets/coloring-book.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={handleDownloadClick}
+                  >
+                    <Download className="h-5 w-5" />
+                    Download Coloring Book (PDF)
+                  </a>
+                </Button>
+                {downloadError && (
+                  <Alert variant="destructive" className="w-full">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      The download could not be reached right now. Please try again later or check your internet connection.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-3 w-full max-w-xl">
+                <Button size="lg" className="gap-2" disabled>
+                  <Download className="h-5 w-5" />
+                  Download Coloring Book (PDF)
+                </Button>
+                <Alert variant="destructive" className="w-full">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    The coloring book download is temporarily unavailable. Please try again later.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </section>
 
       {/* Plushie Moments Section */}

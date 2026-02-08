@@ -25,6 +25,13 @@ export const UserRole = IDL.Variant({
   'guest' : IDL.Null,
 });
 export const Time = IDL.Int;
+export const Comment = IDL.Record({
+  'content' : IDL.Text,
+  'createdAt' : Time,
+  'authorName' : IDL.Opt(IDL.Text),
+  'author' : IDL.Principal,
+  'postId' : IDL.Nat,
+});
 export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const Link = IDL.Record({ 'url' : IDL.Text, 'displayName' : IDL.Text });
 export const UserProfile = IDL.Record({
@@ -45,6 +52,10 @@ export const Event = IDL.Record({
   'description' : IDL.Text,
   'author' : IDL.Principal,
   'location' : IDL.Text,
+});
+export const FollowCounts = IDL.Record({
+  'followers' : IDL.Nat,
+  'following' : IDL.Nat,
 });
 export const ImageAttachment = IDL.Record({
   'contentType' : IDL.Text,
@@ -97,6 +108,11 @@ export const idlService = IDL.Service({
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'createComment' : IDL.Func(
+      [IDL.Nat, IDL.Opt(IDL.Text), IDL.Text],
+      [Comment],
+      [],
+    ),
   'createEvent' : IDL.Func(
       [IDL.Opt(IDL.Text), IDL.Text, IDL.Text, IDL.Text, Time, Time],
       [IDL.Nat],
@@ -114,25 +130,43 @@ export const idlService = IDL.Service({
       [],
     ),
   'deletePost' : IDL.Func([IDL.Nat], [], []),
+  'doesCallerFollow' : IDL.Func([IDL.Principal], [IDL.Bool], ['query']),
   'editPost' : IDL.Func(
       [IDL.Nat, IDL.Text, IDL.Text, IDL.Opt(IDL.Text)],
       [],
       [],
     ),
+  'follow' : IDL.Func([IDL.Principal], [], []),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+  'getCommentCounts' : IDL.Func(
+      [IDL.Vec(IDL.Nat)],
+      [IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Nat))],
+      ['query'],
+    ),
+  'getComments' : IDL.Func([IDL.Nat], [IDL.Vec(Comment)], ['query']),
   'getEvent' : IDL.Func([IDL.Nat], [Event], ['query']),
+  'getFollowCounts' : IDL.Func([IDL.Principal], [FollowCounts], ['query']),
   'getPost' : IDL.Func([IDL.Nat], [LegacyPost], ['query']),
+  'getPostLikeCount' : IDL.Func([IDL.Nat], [IDL.Nat], ['query']),
+  'getProfileLikeCount' : IDL.Func([IDL.Principal], [IDL.Nat], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
       ['query'],
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'isPostLikedByCaller' : IDL.Func([IDL.Nat], [IDL.Bool], ['query']),
+  'isProfileLikedByCaller' : IDL.Func([IDL.Principal], [IDL.Bool], ['query']),
+  'likePost' : IDL.Func([IDL.Nat], [], []),
+  'likeProfile' : IDL.Func([IDL.Principal], [], []),
   'listDirectoryProfiles' : IDL.Func([], [IDL.Vec(UserProfile)], ['query']),
   'listEvents' : IDL.Func([], [IDL.Vec(Event)], ['query']),
   'listPosts' : IDL.Func([], [IDL.Vec(LegacyPost)], ['query']),
   'saveCallerUserProfile' : IDL.Func([UserProfileEdit], [], []),
+  'unfollow' : IDL.Func([IDL.Principal], [], []),
+  'unlikePost' : IDL.Func([IDL.Nat], [], []),
+  'unlikeProfile' : IDL.Func([IDL.Principal], [], []),
 });
 
 export const idlInitArgs = [];
@@ -155,6 +189,13 @@ export const idlFactory = ({ IDL }) => {
     'guest' : IDL.Null,
   });
   const Time = IDL.Int;
+  const Comment = IDL.Record({
+    'content' : IDL.Text,
+    'createdAt' : Time,
+    'authorName' : IDL.Opt(IDL.Text),
+    'author' : IDL.Principal,
+    'postId' : IDL.Nat,
+  });
   const ExternalBlob = IDL.Vec(IDL.Nat8);
   const Link = IDL.Record({ 'url' : IDL.Text, 'displayName' : IDL.Text });
   const UserProfile = IDL.Record({
@@ -175,6 +216,10 @@ export const idlFactory = ({ IDL }) => {
     'description' : IDL.Text,
     'author' : IDL.Principal,
     'location' : IDL.Text,
+  });
+  const FollowCounts = IDL.Record({
+    'followers' : IDL.Nat,
+    'following' : IDL.Nat,
   });
   const ImageAttachment = IDL.Record({
     'contentType' : IDL.Text,
@@ -227,6 +272,11 @@ export const idlFactory = ({ IDL }) => {
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'createComment' : IDL.Func(
+        [IDL.Nat, IDL.Opt(IDL.Text), IDL.Text],
+        [Comment],
+        [],
+      ),
     'createEvent' : IDL.Func(
         [IDL.Opt(IDL.Text), IDL.Text, IDL.Text, IDL.Text, Time, Time],
         [IDL.Nat],
@@ -244,25 +294,43 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'deletePost' : IDL.Func([IDL.Nat], [], []),
+    'doesCallerFollow' : IDL.Func([IDL.Principal], [IDL.Bool], ['query']),
     'editPost' : IDL.Func(
         [IDL.Nat, IDL.Text, IDL.Text, IDL.Opt(IDL.Text)],
         [],
         [],
       ),
+    'follow' : IDL.Func([IDL.Principal], [], []),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+    'getCommentCounts' : IDL.Func(
+        [IDL.Vec(IDL.Nat)],
+        [IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Nat))],
+        ['query'],
+      ),
+    'getComments' : IDL.Func([IDL.Nat], [IDL.Vec(Comment)], ['query']),
     'getEvent' : IDL.Func([IDL.Nat], [Event], ['query']),
+    'getFollowCounts' : IDL.Func([IDL.Principal], [FollowCounts], ['query']),
     'getPost' : IDL.Func([IDL.Nat], [LegacyPost], ['query']),
+    'getPostLikeCount' : IDL.Func([IDL.Nat], [IDL.Nat], ['query']),
+    'getProfileLikeCount' : IDL.Func([IDL.Principal], [IDL.Nat], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
         ['query'],
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'isPostLikedByCaller' : IDL.Func([IDL.Nat], [IDL.Bool], ['query']),
+    'isProfileLikedByCaller' : IDL.Func([IDL.Principal], [IDL.Bool], ['query']),
+    'likePost' : IDL.Func([IDL.Nat], [], []),
+    'likeProfile' : IDL.Func([IDL.Principal], [], []),
     'listDirectoryProfiles' : IDL.Func([], [IDL.Vec(UserProfile)], ['query']),
     'listEvents' : IDL.Func([], [IDL.Vec(Event)], ['query']),
     'listPosts' : IDL.Func([], [IDL.Vec(LegacyPost)], ['query']),
     'saveCallerUserProfile' : IDL.Func([UserProfileEdit], [], []),
+    'unfollow' : IDL.Func([IDL.Principal], [], []),
+    'unlikePost' : IDL.Func([IDL.Nat], [], []),
+    'unlikeProfile' : IDL.Func([IDL.Principal], [], []),
   });
 };
 

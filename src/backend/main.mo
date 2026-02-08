@@ -3,15 +3,13 @@ import Map "mo:core/Map";
 import Array "mo:core/Array";
 import Runtime "mo:core/Runtime";
 import Principal "mo:core/Principal";
+import List "mo:core/List";
+import Iter "mo:core/Iter";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
-import List "mo:core/List";
-import Iter "mo:core/Iter";
-import Migration "migration";
 
-(with migration = Migration.run)
 actor {
   // Authorization
   let accessControlState = AccessControl.initState();
@@ -20,7 +18,7 @@ actor {
   // Storage
   include MixinStorage();
 
-  // Full User Profile
+  // User Profile Types
   public type Link = {
     url : Text;
     displayName : Text;
@@ -35,7 +33,6 @@ actor {
     publicDirectory : Bool;
   };
 
-  // Partial profile for editing
   public type UserProfileEdit = {
     displayName : Text;
     bio : Text;
@@ -47,8 +44,7 @@ actor {
 
   let userProfiles = Map.empty<Principal, UserProfile>();
 
-  // Profile CRUD methods
-
+  // Profile CRUD
   public shared ({ caller }) func saveCallerUserProfile(profileEdit : UserProfileEdit) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can save profiles");
@@ -88,7 +84,7 @@ actor {
     userProfiles.values().toArray().filter(func(profile) { profile.publicDirectory });
   };
 
-  // Legacy (unchanged) for backward compatibility
+  // Legacy (unchanged)
   type ImageAttachment = {
     bytes : [Nat8];
     contentType : Text;
@@ -187,8 +183,8 @@ actor {
   };
 
   public shared ({ caller }) func editPost(id : Nat, newTitle : Text, newBody : Text, newAuthorName : ?Text) : async () {
-    if (not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Only admins can edit posts");
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can edit posts");
     };
 
     if (newTitle.trim(#char ' ').size() == 0) { Runtime.trap("Title cannot be empty") };
@@ -197,6 +193,12 @@ actor {
     let post = switch (posts.get(id)) {
       case (null) { Runtime.trap("Post not found") };
       case (?post) { post };
+    };
+
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      if (post.author != caller) {
+        Runtime.trap("Unauthorized: Only the author or an admin can edit this post");
+      };
     };
 
     let updatedPost : LegacyPost = {
@@ -247,5 +249,280 @@ actor {
       case (null) { Runtime.trap("Event not found") };
       case (?event) { event };
     };
+  };
+
+  // Follow system
+  type FollowInfo = {
+    followers : List.List<Principal>;
+    following : List.List<Principal>;
+  };
+
+  let followData = Map.empty<Principal, FollowInfo>();
+
+  public type FollowCounts = {
+    followers : Nat;
+    following : Nat;
+  };
+
+  public shared ({ caller }) func follow(target : Principal) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can follow others");
+    };
+
+    if (caller == target) {
+      Runtime.trap("You cannot follow yourself");
+    };
+
+    let callerFollows = switch (followData.get(caller)) {
+      case (null) {
+        {
+          followers = List.empty<Principal>();
+          following = List.empty<Principal>();
+        };
+      };
+      case (?f) { f };
+    };
+
+    let targetFollows = switch (followData.get(target)) {
+      case (null) {
+        {
+          followers = List.empty<Principal>();
+          following = List.empty<Principal>();
+        };
+      };
+      case (?f) { f };
+    };
+
+    let alreadyFollowing = callerFollows.following.any(func(u) { u == target });
+
+    if (alreadyFollowing) { return };
+
+    callerFollows.following.add(target);
+    targetFollows.followers.add(caller);
+
+    followData.add(caller, callerFollows);
+    followData.add(target, targetFollows);
+  };
+
+  public shared ({ caller }) func unfollow(target : Principal) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can unfollow");
+    };
+
+    switch (followData.get(caller)) {
+      case (null) { return };
+      case (?info) {
+        let newFollowing = List.empty<Principal>();
+        info.following.forEach(func(x) { if (x != target) { newFollowing.add(x) } });
+        info.following.clear();
+        info.following.addAll(newFollowing.values());
+
+        let newFollowers = List.empty<Principal>();
+        switch (followData.get(target)) {
+          case (null) {};
+          case (?targetInfo) {
+            targetInfo.followers.forEach(func(x) {
+              if (x != caller) { newFollowers.add(x) };
+            });
+            targetInfo.followers.clear();
+            targetInfo.followers.addAll(newFollowers.values());
+          };
+        };
+      };
+    };
+  };
+
+  public query ({ caller }) func doesCallerFollow(target : Principal) : async Bool {
+    switch (followData.get(caller)) {
+      case (null) { false };
+      case (?info) {
+        info.following.any(func(u) { u == target });
+      };
+    };
+  };
+
+  public query ({ caller }) func getFollowCounts(user : Principal) : async FollowCounts {
+    let info = switch (followData.get(user)) {
+      case (null) {
+        {
+          followers = List.empty<Principal>();
+          following = List.empty<Principal>();
+        };
+      };
+      case (?data) { data };
+    };
+    {
+      followers = info.followers.size();
+      following = info.following.size();
+    };
+  };
+
+  // Likes system
+  let postLikes = Map.empty<Nat, List.List<Principal>>();
+  let profileLikes = Map.empty<Principal, List.List<Principal>>();
+
+  public shared ({ caller }) func likePost(postId : Nat) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can like posts");
+    };
+
+    switch (posts.get(postId)) {
+      case (null) { Runtime.trap("Post does not exist!") };
+      case (?_post) {};
+    };
+
+    let likes = switch (postLikes.get(postId)) {
+      case (null) { List.empty<Principal>() };
+      case (?list) { list };
+    };
+
+    if (likes.any(func(u) { u == caller })) {
+      return;
+    };
+
+    likes.add(caller);
+    postLikes.add(postId, likes);
+  };
+
+  public shared ({ caller }) func unlikePost(postId : Nat) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can unlike posts");
+    };
+
+    switch (posts.get(postId)) {
+      case (null) { Runtime.trap("Post does not exist!") };
+      case (?_) {};
+    };
+
+    switch (postLikes.get(postId)) {
+      case (null) {};
+      case (?likes) {
+        let filtered = likes.filter(func(user) { user != caller });
+        postLikes.add(postId, filtered);
+      };
+    };
+  };
+
+  public query ({ caller }) func isPostLikedByCaller(postId : Nat) : async Bool {
+    switch (postLikes.get(postId)) {
+      case (null) { false };
+      case (?likes) {
+        likes.any(func(u) { u == caller });
+      };
+    };
+  };
+
+  public query ({ caller }) func getPostLikeCount(postId : Nat) : async Nat {
+    switch (postLikes.get(postId)) {
+      case (null) { 0 };
+      case (?likes) { likes.size() };
+    };
+  };
+
+  public shared ({ caller }) func likeProfile(profile : Principal) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can like profiles");
+    };
+
+    let likes = switch (profileLikes.get(profile)) {
+      case (null) { List.empty<Principal>() };
+      case (?list) { list };
+    };
+
+    if (likes.any(func(u) { u == caller })) {
+      return;
+    };
+
+    likes.add(caller);
+    profileLikes.add(profile, likes);
+  };
+
+  public shared ({ caller }) func unlikeProfile(profile : Principal) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can unlike profiles");
+    };
+
+    switch (profileLikes.get(profile)) {
+      case (null) {};
+      case (?likes) {
+        let filtered = likes.filter(func(user) { user != caller });
+        profileLikes.add(profile, filtered);
+      };
+    };
+  };
+
+  public query ({ caller }) func isProfileLikedByCaller(profile : Principal) : async Bool {
+    switch (profileLikes.get(profile)) {
+      case (null) { false };
+      case (?likes) {
+        likes.any(func(u) { u == caller });
+      };
+    };
+  };
+
+  public query ({ caller }) func getProfileLikeCount(profile : Principal) : async Nat {
+    switch (profileLikes.get(profile)) {
+      case (null) { 0 };
+      case (?likes) { likes.size() };
+    };
+  };
+
+  // === NEW COMMENT SYSTEM ===
+
+  public type Comment = {
+    postId : Nat;
+    author : Principal;
+    authorName : ?Text;
+    content : Text;
+    createdAt : Time.Time;
+  };
+
+  let comments = Map.empty<Nat, List.List<Comment>>();
+
+  public shared ({ caller }) func createComment(postId : Nat, authorName : ?Text, content : Text) : async Comment {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can comment");
+    };
+
+    switch (posts.get(postId)) {
+      case (null) { Runtime.trap("Post does not exist!") };
+      case (?_) {};
+    };
+
+    let comment : Comment = {
+      postId;
+      author = caller;
+      authorName;
+      content;
+      createdAt = Time.now();
+    };
+
+    let postComments = switch (comments.get(postId)) {
+      case (null) { List.empty<Comment>() };
+      case (?list) { list };
+    };
+
+    postComments.add(comment);
+    comments.add(postId, postComments);
+
+    comment;
+  };
+
+  public query ({ caller }) func getComments(postId : Nat) : async [Comment] {
+    switch (comments.get(postId)) {
+      case (null) { [] };
+      case (?postComments) { postComments.toArray() };
+    };
+  };
+
+  public query ({ caller }) func getCommentCounts(postIds : [Nat]) : async [(Nat, Nat)] {
+    // Return array of (postId, commentCount)
+    postIds.map(func(id) {
+      let count = switch (comments.get(id)) {
+        case (null) { 0 };
+        case (?list) { list.size() };
+      };
+      (id, count);
+    });
   };
 };

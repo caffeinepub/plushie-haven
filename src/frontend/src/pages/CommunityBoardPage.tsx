@@ -7,10 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { MessageSquare, User, Clock, X } from 'lucide-react';
+import { User, Clock, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { PostImageAttachment } from '../components/community/PostImageAttachment';
 import { PostActions } from '../components/community/PostActions';
+import { PostLikeButton } from '../components/community/PostLikeButton';
+import { PostComments } from '../components/community/PostComments';
 import LoadingState from '../components/LoadingState';
 import { normalizeActorError } from '../utils/actorError';
 import type { LegacyPost } from '../backend';
@@ -309,18 +311,20 @@ export default function CommunityBoardPage() {
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <p className="whitespace-pre-wrap text-foreground">{post.body}</p>
+                      <p className="whitespace-pre-wrap text-base leading-relaxed">{post.body}</p>
                       <PostImageAttachment image={post.image} />
+                      <div className="flex items-center gap-2 pt-2">
+                        <PostLikeButton postId={post.id} />
+                      </div>
+                      <PostComments postId={post.id} />
                     </CardContent>
                   </Card>
                 );
               })
           ) : (
             <Card className="border-2 shadow-soft">
-              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                <MessageSquare className="mb-4 h-12 w-12 text-muted-foreground" />
-                <h3 className="mb-2 text-lg font-semibold">No posts yet</h3>
-                <p className="text-muted-foreground">Be the first to share your plushie story!</p>
+              <CardContent className="py-12 text-center">
+                <p className="text-muted-foreground">No posts yet. Be the first to share!</p>
               </CardContent>
             </Card>
           )}

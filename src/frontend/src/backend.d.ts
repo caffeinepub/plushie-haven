@@ -14,23 +14,13 @@ export class ExternalBlob {
     static fromBytes(blob: Uint8Array<ArrayBuffer>): ExternalBlob;
     withUploadProgress(onProgress: (percentage: number) => void): ExternalBlob;
 }
-export interface UserProfileEdit {
-    bio: string;
-    displayName: string;
-    plushieImages: Array<ExternalBlob>;
-    links: Array<Link>;
-    publicDirectory: boolean;
-    avatar?: ExternalBlob;
-}
 export type Time = bigint;
-export interface LegacyPost {
-    id: bigint;
-    title: string;
-    body: string;
+export interface Comment {
+    content: string;
     createdAt: Time;
     authorName?: string;
     author: Principal;
-    image?: ImageAttachment;
+    postId: bigint;
 }
 export interface Event {
     id: bigint;
@@ -43,13 +33,34 @@ export interface Event {
     author: Principal;
     location: string;
 }
-export interface Link {
-    url: string;
-    displayName: string;
-}
 export interface ImageAttachment {
     contentType: string;
     bytes: Uint8Array;
+}
+export interface UserProfileEdit {
+    bio: string;
+    displayName: string;
+    plushieImages: Array<ExternalBlob>;
+    links: Array<Link>;
+    publicDirectory: boolean;
+    avatar?: ExternalBlob;
+}
+export interface LegacyPost {
+    id: bigint;
+    title: string;
+    body: string;
+    createdAt: Time;
+    authorName?: string;
+    author: Principal;
+    image?: ImageAttachment;
+}
+export interface FollowCounts {
+    followers: bigint;
+    following: bigint;
+}
+export interface Link {
+    url: string;
+    displayName: string;
 }
 export interface UserProfile {
     bio: string;
@@ -66,18 +77,33 @@ export enum UserRole {
 }
 export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    createComment(postId: bigint, authorName: string | null, content: string): Promise<Comment>;
     createEvent(authorName: string | null, title: string, description: string, location: string, startTime: Time, endTime: Time): Promise<bigint>;
     createPost(authorName: string | null, title: string, body: string, imageBytes: Uint8Array | null, imageContentType: string | null): Promise<bigint>;
     deletePost(id: bigint): Promise<void>;
+    doesCallerFollow(target: Principal): Promise<boolean>;
     editPost(id: bigint, newTitle: string, newBody: string, newAuthorName: string | null): Promise<void>;
+    follow(target: Principal): Promise<void>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
+    getCommentCounts(postIds: Array<bigint>): Promise<Array<[bigint, bigint]>>;
+    getComments(postId: bigint): Promise<Array<Comment>>;
     getEvent(id: bigint): Promise<Event>;
+    getFollowCounts(user: Principal): Promise<FollowCounts>;
     getPost(id: bigint): Promise<LegacyPost>;
+    getPostLikeCount(postId: bigint): Promise<bigint>;
+    getProfileLikeCount(profile: Principal): Promise<bigint>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
+    isPostLikedByCaller(postId: bigint): Promise<boolean>;
+    isProfileLikedByCaller(profile: Principal): Promise<boolean>;
+    likePost(postId: bigint): Promise<void>;
+    likeProfile(profile: Principal): Promise<void>;
     listDirectoryProfiles(): Promise<Array<UserProfile>>;
     listEvents(): Promise<Array<Event>>;
     listPosts(): Promise<Array<LegacyPost>>;
     saveCallerUserProfile(profileEdit: UserProfileEdit): Promise<void>;
+    unfollow(target: Principal): Promise<void>;
+    unlikePost(postId: bigint): Promise<void>;
+    unlikeProfile(profile: Principal): Promise<void>;
 }

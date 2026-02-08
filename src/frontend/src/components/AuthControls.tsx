@@ -1,5 +1,6 @@
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useActor } from '../hooks/useActor';
+import { useGetCallerUserProfile } from '../hooks/useProfileQueries';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, LogOut, Shield } from 'lucide-react';
+import { LogOut, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { normalizeActorError } from '../utils/actorError';
 import { UserRole } from '../backend';
@@ -19,6 +20,7 @@ export default function AuthControls() {
   const { identity, login, clear, isLoggingIn, isInitializing } = useInternetIdentity();
   const { actor } = useActor();
   const queryClient = useQueryClient();
+  const { data: userProfile, isLoading: profileLoading } = useGetCallerUserProfile();
 
   const isAuthenticated = identity && !identity.getPrincipal().isAnonymous();
 
@@ -53,15 +55,17 @@ export default function AuthControls() {
     );
   }
 
+  // Determine display name: use profile displayName if available, otherwise fall back to short principal
   const principalText = identity.getPrincipal().toString();
   const shortPrincipal = `${principalText.slice(0, 5)}...${principalText.slice(-3)}`;
+  
+  const displayName = userProfile?.displayName?.trim() || shortPrincipal;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <User className="h-4 w-4" />
-          <span className="hidden sm:inline">{shortPrincipal}</span>
+        <Button variant="outline" size="sm">
+          {profileLoading ? shortPrincipal : displayName}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
