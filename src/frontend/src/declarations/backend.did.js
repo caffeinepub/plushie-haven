@@ -8,47 +8,261 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
+export const _CaffeineStorageCreateCertificateResult = IDL.Record({
+  'method' : IDL.Text,
+  'blob_hash' : IDL.Text,
+});
+export const _CaffeineStorageRefillInformation = IDL.Record({
+  'proposed_top_up_amount' : IDL.Opt(IDL.Nat),
+});
+export const _CaffeineStorageRefillResult = IDL.Record({
+  'success' : IDL.Opt(IDL.Bool),
+  'topped_up_amount' : IDL.Opt(IDL.Nat),
+});
+export const UserRole = IDL.Variant({
+  'admin' : IDL.Null,
+  'user' : IDL.Null,
+  'guest' : IDL.Null,
+});
 export const Time = IDL.Int;
-export const Post = IDL.Record({
+export const ExternalBlob = IDL.Vec(IDL.Nat8);
+export const Link = IDL.Record({ 'url' : IDL.Text, 'displayName' : IDL.Text });
+export const UserProfile = IDL.Record({
+  'bio' : IDL.Text,
+  'displayName' : IDL.Text,
+  'plushieImages' : IDL.Vec(ExternalBlob),
+  'links' : IDL.Vec(Link),
+  'publicDirectory' : IDL.Bool,
+  'avatar' : IDL.Opt(ExternalBlob),
+});
+export const Event = IDL.Record({
+  'id' : IDL.Nat,
+  'startTime' : Time,
+  'title' : IDL.Text,
+  'endTime' : Time,
+  'createdAt' : Time,
+  'authorName' : IDL.Opt(IDL.Text),
+  'description' : IDL.Text,
+  'author' : IDL.Principal,
+  'location' : IDL.Text,
+});
+export const ImageAttachment = IDL.Record({
+  'contentType' : IDL.Text,
+  'bytes' : IDL.Vec(IDL.Nat8),
+});
+export const LegacyPost = IDL.Record({
   'id' : IDL.Nat,
   'title' : IDL.Text,
   'body' : IDL.Text,
   'createdAt' : Time,
   'authorName' : IDL.Opt(IDL.Text),
   'author' : IDL.Principal,
+  'image' : IDL.Opt(ImageAttachment),
+});
+export const UserProfileEdit = IDL.Record({
+  'bio' : IDL.Text,
+  'displayName' : IDL.Text,
+  'plushieImages' : IDL.Vec(ExternalBlob),
+  'links' : IDL.Vec(Link),
+  'publicDirectory' : IDL.Bool,
+  'avatar' : IDL.Opt(ExternalBlob),
 });
 
 export const idlService = IDL.Service({
-  'createPost' : IDL.Func(
-      [IDL.Opt(IDL.Text), IDL.Text, IDL.Text],
+  '_caffeineStorageBlobIsLive' : IDL.Func(
+      [IDL.Vec(IDL.Nat8)],
+      [IDL.Bool],
+      ['query'],
+    ),
+  '_caffeineStorageBlobsToDelete' : IDL.Func(
+      [],
+      [IDL.Vec(IDL.Vec(IDL.Nat8))],
+      ['query'],
+    ),
+  '_caffeineStorageConfirmBlobDeletion' : IDL.Func(
+      [IDL.Vec(IDL.Vec(IDL.Nat8))],
+      [],
+      [],
+    ),
+  '_caffeineStorageCreateCertificate' : IDL.Func(
+      [IDL.Text],
+      [_CaffeineStorageCreateCertificateResult],
+      [],
+    ),
+  '_caffeineStorageRefillCashier' : IDL.Func(
+      [IDL.Opt(_CaffeineStorageRefillInformation)],
+      [_CaffeineStorageRefillResult],
+      [],
+    ),
+  '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
+  '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'createEvent' : IDL.Func(
+      [IDL.Opt(IDL.Text), IDL.Text, IDL.Text, IDL.Text, Time, Time],
       [IDL.Nat],
       [],
     ),
-  'getPost' : IDL.Func([IDL.Nat], [Post], ['query']),
-  'listPosts' : IDL.Func([], [IDL.Vec(Post)], ['query']),
+  'createPost' : IDL.Func(
+      [
+        IDL.Opt(IDL.Text),
+        IDL.Text,
+        IDL.Text,
+        IDL.Opt(IDL.Vec(IDL.Nat8)),
+        IDL.Opt(IDL.Text),
+      ],
+      [IDL.Nat],
+      [],
+    ),
+  'deletePost' : IDL.Func([IDL.Nat], [], []),
+  'editPost' : IDL.Func(
+      [IDL.Nat, IDL.Text, IDL.Text, IDL.Opt(IDL.Text)],
+      [],
+      [],
+    ),
+  'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
+  'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+  'getEvent' : IDL.Func([IDL.Nat], [Event], ['query']),
+  'getPost' : IDL.Func([IDL.Nat], [LegacyPost], ['query']),
+  'getUserProfile' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Opt(UserProfile)],
+      ['query'],
+    ),
+  'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'listDirectoryProfiles' : IDL.Func([], [IDL.Vec(UserProfile)], ['query']),
+  'listEvents' : IDL.Func([], [IDL.Vec(Event)], ['query']),
+  'listPosts' : IDL.Func([], [IDL.Vec(LegacyPost)], ['query']),
+  'saveCallerUserProfile' : IDL.Func([UserProfileEdit], [], []),
 });
 
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
+  const _CaffeineStorageCreateCertificateResult = IDL.Record({
+    'method' : IDL.Text,
+    'blob_hash' : IDL.Text,
+  });
+  const _CaffeineStorageRefillInformation = IDL.Record({
+    'proposed_top_up_amount' : IDL.Opt(IDL.Nat),
+  });
+  const _CaffeineStorageRefillResult = IDL.Record({
+    'success' : IDL.Opt(IDL.Bool),
+    'topped_up_amount' : IDL.Opt(IDL.Nat),
+  });
+  const UserRole = IDL.Variant({
+    'admin' : IDL.Null,
+    'user' : IDL.Null,
+    'guest' : IDL.Null,
+  });
   const Time = IDL.Int;
-  const Post = IDL.Record({
+  const ExternalBlob = IDL.Vec(IDL.Nat8);
+  const Link = IDL.Record({ 'url' : IDL.Text, 'displayName' : IDL.Text });
+  const UserProfile = IDL.Record({
+    'bio' : IDL.Text,
+    'displayName' : IDL.Text,
+    'plushieImages' : IDL.Vec(ExternalBlob),
+    'links' : IDL.Vec(Link),
+    'publicDirectory' : IDL.Bool,
+    'avatar' : IDL.Opt(ExternalBlob),
+  });
+  const Event = IDL.Record({
+    'id' : IDL.Nat,
+    'startTime' : Time,
+    'title' : IDL.Text,
+    'endTime' : Time,
+    'createdAt' : Time,
+    'authorName' : IDL.Opt(IDL.Text),
+    'description' : IDL.Text,
+    'author' : IDL.Principal,
+    'location' : IDL.Text,
+  });
+  const ImageAttachment = IDL.Record({
+    'contentType' : IDL.Text,
+    'bytes' : IDL.Vec(IDL.Nat8),
+  });
+  const LegacyPost = IDL.Record({
     'id' : IDL.Nat,
     'title' : IDL.Text,
     'body' : IDL.Text,
     'createdAt' : Time,
     'authorName' : IDL.Opt(IDL.Text),
     'author' : IDL.Principal,
+    'image' : IDL.Opt(ImageAttachment),
+  });
+  const UserProfileEdit = IDL.Record({
+    'bio' : IDL.Text,
+    'displayName' : IDL.Text,
+    'plushieImages' : IDL.Vec(ExternalBlob),
+    'links' : IDL.Vec(Link),
+    'publicDirectory' : IDL.Bool,
+    'avatar' : IDL.Opt(ExternalBlob),
   });
   
   return IDL.Service({
-    'createPost' : IDL.Func(
-        [IDL.Opt(IDL.Text), IDL.Text, IDL.Text],
+    '_caffeineStorageBlobIsLive' : IDL.Func(
+        [IDL.Vec(IDL.Nat8)],
+        [IDL.Bool],
+        ['query'],
+      ),
+    '_caffeineStorageBlobsToDelete' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Vec(IDL.Nat8))],
+        ['query'],
+      ),
+    '_caffeineStorageConfirmBlobDeletion' : IDL.Func(
+        [IDL.Vec(IDL.Vec(IDL.Nat8))],
+        [],
+        [],
+      ),
+    '_caffeineStorageCreateCertificate' : IDL.Func(
+        [IDL.Text],
+        [_CaffeineStorageCreateCertificateResult],
+        [],
+      ),
+    '_caffeineStorageRefillCashier' : IDL.Func(
+        [IDL.Opt(_CaffeineStorageRefillInformation)],
+        [_CaffeineStorageRefillResult],
+        [],
+      ),
+    '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
+    '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'createEvent' : IDL.Func(
+        [IDL.Opt(IDL.Text), IDL.Text, IDL.Text, IDL.Text, Time, Time],
         [IDL.Nat],
         [],
       ),
-    'getPost' : IDL.Func([IDL.Nat], [Post], ['query']),
-    'listPosts' : IDL.Func([], [IDL.Vec(Post)], ['query']),
+    'createPost' : IDL.Func(
+        [
+          IDL.Opt(IDL.Text),
+          IDL.Text,
+          IDL.Text,
+          IDL.Opt(IDL.Vec(IDL.Nat8)),
+          IDL.Opt(IDL.Text),
+        ],
+        [IDL.Nat],
+        [],
+      ),
+    'deletePost' : IDL.Func([IDL.Nat], [], []),
+    'editPost' : IDL.Func(
+        [IDL.Nat, IDL.Text, IDL.Text, IDL.Opt(IDL.Text)],
+        [],
+        [],
+      ),
+    'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
+    'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+    'getEvent' : IDL.Func([IDL.Nat], [Event], ['query']),
+    'getPost' : IDL.Func([IDL.Nat], [LegacyPost], ['query']),
+    'getUserProfile' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Opt(UserProfile)],
+        ['query'],
+      ),
+    'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'listDirectoryProfiles' : IDL.Func([], [IDL.Vec(UserProfile)], ['query']),
+    'listEvents' : IDL.Func([], [IDL.Vec(Event)], ['query']),
+    'listPosts' : IDL.Func([], [IDL.Vec(LegacyPost)], ['query']),
+    'saveCallerUserProfile' : IDL.Func([UserProfileEdit], [], []),
   });
 };
 

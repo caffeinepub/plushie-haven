@@ -2,131 +2,92 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-create-the-core-frontend-app-for-an-adult-plushie-lover-lifestyle-website-named-plushie-haven-including-a-responsive-layout-with-header-navigation-footer-and-the-following-pages-sections-with-english-user-facing-text-home-hero-intro-articles-guides-list-detail-gallery-image-grid-community-board-posts-list-create-post-events-upcoming-list-about-and-contact-non-email-form-ui-with-copy-to-clipboard-or-mailto-link",
-      "featureTitle": "Create the core frontend app for an adult plushie lover lifestyle website named “Plushie Haven”, including a responsive layout with header navigation, footer, and the following pages/sections with English user-facing text: Home (hero + intro), Articles/Guides (list + detail), Gallery (image grid), Community Board (posts list + create post), Events (upcoming list), About, and Contact (non-email form UI with copy-to-clipboard or mailto link).",
+      "featureId": "feature-update-the-generated-typed-frontend-backend-bindings-and-react-query-hooks-to-support-fetching-the-public-profile-directory-fetching-a-profile-by-principal-fetching-the-signed-in-user-s-own-profile-for-editing-and-saving-the-signed-in-user-s-profile-ensure-queries-invalidate-refresh-appropriately-after-a-successful-save",
+      "featureTitle": "Update the generated/typed frontend backend bindings and React Query hooks to support: fetching the public profile directory, fetching a profile by principal, fetching the signed-in user’s own profile for editing, and saving the signed-in user’s profile. Ensure queries invalidate/refresh appropriately after a successful save.",
+      "files": [
+        "frontend/src/hooks/useProfileQueries.ts",
+        "frontend/src/utils/actorError.ts",
+        "frontend/src/utils/profileImages.ts"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-34"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-new-profiles-section-to-the-frontend-including-1-a-public-profile-directory-page-that-shows-only-opted-in-profiles-and-2-an-individual-profile-page-that-can-be-visited-publicly-when-opted-in-include-clear-english-empty-states-when-no-profiles-are-listed-or-when-a-profile-is-not-available-to-the-viewer",
+      "featureTitle": "Add a new Profiles section to the frontend including: (1) a public profile directory page that shows only opted-in profiles, and (2) an individual profile page that can be visited publicly when opted-in. Include clear English empty states when no profiles are listed or when a profile is not available to the viewer.",
       "files": [
         "frontend/src/App.tsx",
-        "frontend/src/components/Layout.tsx",
-        "frontend/src/components/Nav.tsx",
-        "frontend/src/pages/AboutPage.tsx",
-        "frontend/src/pages/ArticleDetailPage.tsx",
-        "frontend/src/pages/ArticlesPage.tsx",
-        "frontend/src/pages/CommunityBoardPage.tsx",
-        "frontend/src/pages/ContactPage.tsx",
-        "frontend/src/pages/EventsPage.tsx",
-        "frontend/src/pages/GalleryPage.tsx",
-        "frontend/src/pages/HomePage.tsx"
+        "frontend/src/components/profiles/ProfileImageGrid.tsx",
+        "frontend/src/components/profiles/ProfileLinksList.tsx",
+        "frontend/src/pages/ProfilePage.tsx",
+        "frontend/src/pages/ProfilesDirectoryPage.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
         "shadcn-ui@1.0.0",
         "build-template-react@1.0.0",
         "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-1"
+        "REQ-35"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-implement-a-consistent-distinctive-visual-theme-for-plushie-haven-colors-typography-spacing-and-ui-styling-suitable-for-an-adult-lifestyle-community-avoid-a-blue-purple-dominant-palette-apply-the-theme-consistently-across-all-pages-and-components",
-      "featureTitle": "Implement a consistent, distinctive visual theme for Plushie Haven (colors, typography, spacing, and UI styling) suitable for an adult lifestyle community; avoid a blue/purple-dominant palette. Apply the theme consistently across all pages and components.",
+      "featureId": "feature-implement-authenticated-profile-editing-on-the-individual-profile-page-if-the-viewer-is-the-profile-owner-same-internet-identity-principal-show-an-edit-profile-ui-that-allows-updating-all-profile-fields-avatar-display-name-bio-links-plushie-collection-images-and-toggling-directory-opt-in-out-editing-must-require-login-unauthenticated-users-must-not-see-editing-controls",
+      "featureTitle": "Implement authenticated profile editing: on the individual profile page, if the viewer is the profile owner (same Internet Identity principal), show an Edit Profile UI that allows updating all profile fields (avatar, display name, bio, links, plushie collection images) and toggling directory opt-in/out. Editing must require login; unauthenticated users must not see editing controls.",
       "files": [
-        "frontend/src/components/Layout.tsx",
-        "frontend/src/index.css",
-        "frontend/tailwind.config.js"
+        "frontend/src/components/profiles/AvatarUploader.tsx",
+        "frontend/src/components/profiles/EditProfilePanel.tsx",
+        "frontend/src/components/profiles/PlushieImagesEditor.tsx",
+        "frontend/src/pages/ProfilePage.tsx",
+        "frontend/src/utils/imageAttachment.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
         "shadcn-ui@1.0.0",
         "build-template-react@1.0.0",
         "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-2"
+        "REQ-36"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-an-age-confirmation-gate-for-adult-audiences-on-first-visit-require-the-user-to-confirm-they-are-18-to-enter-plushie-haven-with-a-persistent-confirmed-state-stored-locally-in-the-browser",
-      "featureTitle": "Add an age confirmation gate for adult audiences: on first visit, require the user to confirm they are 18+ to enter Plushie Haven, with a persistent “confirmed” state stored locally in the browser.",
+      "featureId": "feature-add-navigation-access-to-the-new-profiles-section-in-the-existing-site-navigation-without-changing-unrelated-layout-structure-or-modifying-immutable-frontend-paths",
+      "featureTitle": "Add navigation access to the new Profiles section in the existing site navigation without changing unrelated layout structure or modifying immutable frontend paths.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/AgeGate.tsx"
+        "frontend/src/components/Nav.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
         "shadcn-ui@1.0.0",
         "build-template-react@1.0.0",
         "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-integrate-internet-identity-sign-in-on-the-frontend-and-require-authentication-for-creating-community-board-posts-unauthenticated-users-can-browse-posts-but-must-sign-in-to-post",
-      "featureTitle": "Integrate Internet Identity sign-in on the frontend and require authentication for creating Community Board posts; unauthenticated users can browse posts but must sign in to post.",
-      "files": [
-        "frontend/src/components/AuthControls.tsx",
-        "frontend/src/components/Layout.tsx",
-        "frontend/src/pages/CommunityBoardPage.tsx"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-5"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-seed-the-articles-guides-and-events-sections-with-curated-static-content-appropriate-for-adult-plushie-enthusiasts-e-g-care-tips-collecting-display-ideas-travel-events-etiquette-ensuring-content-remains-safe-and-non-explicit",
-      "featureTitle": "Seed the Articles/Guides and Events sections with curated static content appropriate for adult plushie enthusiasts (e.g., care tips, collecting, display ideas, travel/events etiquette), ensuring content remains safe and non-explicit.",
-      "files": [
-        "frontend/src/content/articles.ts",
-        "frontend/src/content/events.ts",
-        "frontend/src/pages/ArticleDetailPage.tsx",
-        "frontend/src/pages/ArticlesPage.tsx",
-        "frontend/src/pages/EventsPage.tsx"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-6"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-generate-and-include-required-static-brand-images-for-plushie-haven-store-them-in-frontend-public-assets-generated-and-use-them-in-the-ui-e-g-logo-in-header-hero-image-on-home-subtle-background-pattern",
-      "featureTitle": "Generate and include required static brand images for Plushie Haven, store them in frontend/public/assets/generated, and use them in the UI (e.g., logo in header, hero image on home, subtle background pattern).",
-      "files": [
-        "frontend/src/components/Layout.tsx",
-        "frontend/src/index.css",
-        "frontend/src/pages/HomePage.tsx"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-7"
+        "REQ-37"
       ],
       "confidence": "high"
     }

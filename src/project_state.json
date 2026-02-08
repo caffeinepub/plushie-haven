@@ -1,11 +1,22 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 3,
+  "projectStateVersion": 23,
   "summary": "Build a lifestyle website for adult plushie enthusiasts named \"Plushie Haven.\"",
-  "architectural_notes": [],
-  "known_issues": [],
+  "architectural_notes": [
+    "Visual theme direction updated: prioritize an ‘adorable’ aesthetic with a pink + baby blue palette (supersedes prior guidance to avoid blue/purple-dominant palettes).",
+    "Events direction updated: replace static/seeded events with user-submitted events (users can add events).",
+    "Theme update: use exact palette—backgrounds #FFFFFF or #FDFDFD; primary accents/baby blue #89CFF0 or #A2DFFE (prominent on buttons/borders/cards/highlights); tertiary accents/pink #FFB6C1 or #FFD1DC (used sparingly); text #4A90E2 or #333333; rounded corners + gentle shadows; avoid dark/edgy tones; apply site-wide consistently.",
+    "Header branding: include a cute pastel teddy bear with a bow in the header, matching the baby blue + pink palette.",
+    "UI polish: do not leave unexplained placeholder shapes (e.g., empty circle/square). Replace with intended branding/icons or remove from the layout.",
+    "Home page hero/title area: replace the small circular placeholder to the left of the large blue “Plushie Haven” text (above the tagline paragraph) with the teddy bear logo (do not leave it empty).",
+    "Community Board moderation direction: designate the currently authenticated Internet Identity principal as the admin (for now); admins can edit/delete any post, while regular users can delete only their own posts.",
+    "Profiles direction: build both individual profile pages and a public profile directory; profiles are publicly viewable but only editable when logged in; users are hidden from the directory by default unless they opt in (and can opt out). Profile fields include avatar, display name, bio, links, and plushie collection images (and future optional fields)."
+  ],
+  "known_issues": [
+    "Random empty circle and square placeholders appear in the UI; user requested to fill them with intended content or remove them.",
+    "Home page hero image next to the “Plushie Haven” title (alt text “A cozy collection of beloved plushies”) is not displaying for the user (no image shown)."
+  ],
   "isFixRequest": false,
-  "imageRequirements": "## Required Images\n- Cozy plush-themed logo mark with text “Plushie Haven”, warm neutral palette, clean adult lifestyle aesthetic (plushie-haven-logo.dim_512x512.png)\n- Homepage hero banner illustration/photo-collage style featuring plush textures, soft lighting, and cozy interior vibes, no people, no explicit elements (plushie-haven-hero.dim_1600x900.png)\n- Seamless subtle background pattern inspired by plush fabric texture, low-contrast, tileable (plushie-haven-pattern.dim_1024x1024.png)",
   "existing_features": [
     {
       "id": "feature-create-the-core-frontend-app-for-an-adult-plushie-lover-lifestyle-website-named-plushie-haven-including-a-responsive-layout-with-header-navigation-footer-and-the-following-pages-sections-with-english-user-facing-text-home-hero-intro-articles-guides-list-detail-gallery-image-grid-community-board-posts-list-create-post-events-upcoming-list-about-and-contact-non-email-form-ui-with-copy-to-clipboard-or-mailto-link",
@@ -54,6 +65,182 @@
         "REQ-7"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-update-the-site-wide-visual-theme-to-an-adorable-pink-baby-blue-palette-applied-consistently-across-all-pages-and-components-including-light-dark-mode-variables-while-maintaining-readable-contrast-for-text-and-ui-states-buttons-borders-muted-backgrounds-focus-rings",
+      "title": "Update the site-wide visual theme to an adorable pink + baby blue palette, applied consistently across all pages and components (including light/dark mode variables), while maintaining readable contrast for text and UI states (buttons, borders, muted backgrounds, focus rings).",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-the-current-seeded-events-section-with-a-user-submitted-events-feature-users-can-browse-all-events-and-authenticated-users-can-create-new-events-from-the-events-page-ui",
+      "title": "Replace the current seeded Events section with a user-submitted Events feature: users can browse all events, and authenticated users can create new events from the Events page UI.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-frontend-to-support-the-new-events-backend-data-flow-add-react-query-hooks-for-listing-and-creating-events-and-rebuild-the-events-page-ui-to-include-a-user-submitted-events-list-and-a-create-event-form-mirroring-the-community-board-auth-validation-patterns",
+      "title": "Update the frontend to support the new Events backend data flow: add React Query hooks for listing and creating events, and rebuild the Events page UI to include a user-submitted events list and a create-event form (mirroring the Community Board auth/validation patterns).",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-refresh-the-gallery-section-to-use-a-more-plushie-forward-scheme-update-gallery-items-to-use-dedicated-plushie-images-not-the-logo-hero-pattern-reused-repeatedly-and-update-the-gallery-presentation-to-match-the-new-adorable-aesthetic",
+      "title": "Refresh the Gallery section to use a more plushie-forward scheme: update gallery items to use dedicated plushie images (not the logo/hero/pattern reused repeatedly), and update the Gallery presentation to match the new adorable aesthetic.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-community-board-ui-to-allow-authenticated-users-to-attach-an-image-to-a-new-post-preview-it-before-posting-and-display-attached-images-in-the-posts-list",
+      "title": "Update the Community Board UI to allow authenticated users to attach an image to a new post, preview it before posting, and display attached images in the posts list.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-frontend-backend-integration-layer-react-query-hooks-and-generated-typed-backend-bindings-so-community-board-post-creation-can-send-an-optional-image-attachment-and-post-listing-can-consume-and-render-image-attachment-data",
+      "title": "Update the frontend backend-integration layer (React Query hooks and generated/typed backend bindings) so Community Board post creation can send an optional image attachment and post listing can consume and render image attachment data.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-header-brand-area-so-the-small-image-next-to-the-site-title-is-a-clearly-visible-cute-logo-mark-e-g-a-bear-matching-the-user-s-request-for-the-circular-placeholder-area-near-sign-in-plushie-haven-keep-the-existing-header-layout-and-link-to-home-behavior-but-adjust-styling-so-the-logo-reads-well-at-small-sizes-including-making-it-circular-if-appropriate",
+      "title": "Update the header brand area so the small image next to the site title is a clearly visible, cute logo mark (e.g., a bear), matching the user’s request for the circular placeholder area near “Sign In” / “Plushie Haven”. Keep the existing header layout and link-to-home behavior, but adjust styling so the logo reads well at small sizes (including making it circular if appropriate).",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-home-page-hero-area-around-the-plushie-haven-headline-and-the-tagline-description-includes-a-prominent-image-so-the-section-does-not-look-empty-use-a-plushie-themed-image-either-the-site-logo-artwork-or-a-plushie-image-and-ensure-it-renders-well-responsively-desktop-and-mobile",
+      "title": "Ensure the Home page hero area around the “Plushie Haven” headline and the tagline/description includes a prominent image so the section does not look empty. Use a plushie-themed image (either the site logo artwork or a plushie image) and ensure it renders well responsively (desktop and mobile).",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-an-additional-image-forward-section-to-the-home-page-frontend-src-pages-homepage-tsx-to-make-the-page-feel-more-visually-rich-beyond-the-existing-hero-image-the-section-must-display-multiple-plushie-themed-images-with-short-captions-be-fully-responsive-mobile-through-desktop-and-match-the-existing-adorable-site-aesthetic",
+      "title": "Add an additional image-forward section to the Home page (frontend/src/pages/HomePage.tsx) to make the page feel more visually rich beyond the existing hero image. The section must display multiple plushie-themed images with short captions, be fully responsive (mobile through desktop), and match the existing adorable site aesthetic.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-redesign-the-site-wide-theme-tokens-to-match-the-user-specified-exact-palette-primary-backgrounds-must-be-pure-white-ffffff-or-very-light-off-white-fdfdfd-baby-blue-89cff0-or-a2dffe-must-be-the-prominent-accent-for-headers-buttons-borders-card-backgrounds-and-highlights-pastel-pink-ffb6c1-or-ffd1dc-must-be-used-sparingly-for-warmth-e-g-links-small-icons-subtle-highlights-gradients-main-text-must-use-dark-baby-blue-4a90e2-or-soft-charcoal-333333-for-readability-apply-consistently-across-all-pages-and-components",
+      "title": "Redesign the site-wide theme tokens to match the user-specified exact palette: primary backgrounds must be pure white (#FFFFFF) or very light off-white (#FDFDFD); baby blue (#89CFF0 or #A2DFFE) must be the prominent accent for headers, buttons, borders, card backgrounds, and highlights; pastel pink (#FFB6C1 or #FFD1DC) must be used sparingly for warmth (e.g., links, small icons, subtle highlights/gradients); main text must use dark baby blue (#4A90E2) or soft charcoal (#333333) for readability. Apply consistently across all pages and components.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-global-component-styling-to-emphasize-a-cute-rounded-plushie-cozy-look-site-wide-soft-corners-rounded-shapes-and-gentle-shadows-with-no-harsh-outlines-ensure-this-styling-is-applied-consistently-to-interactive-controls-buttons-inputs-sheets-dialogs-cards-and-navigation-elements",
+      "title": "Update global component styling to emphasize a cute, rounded plushie-cozy look site-wide: soft corners (rounded shapes) and gentle shadows, with no harsh outlines. Ensure this styling is applied consistently to interactive controls (buttons, inputs, sheets/dialogs), cards, and navigation elements.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-cute-pastel-teddy-bear-with-a-bow-matching-the-baby-blue-pastel-pink-palette-to-the-header-brand-mark-and-use-it-in-the-existing-circular-logo-area-without-changing-the-header-layout-or-home-link-behavior",
+      "title": "Add a cute pastel teddy bear with a bow (matching the baby blue + pastel pink palette) to the header brand mark and use it in the existing circular logo area without changing the header layout or home-link behavior.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-identify-where-the-ui-renders-the-random-empty-circle-and-square-placeholder-shapes-and-remove-them-or-replace-them-with-meaningful-content-so-there-are-no-unexplained-empty-geometric-placeholders-visible-anywhere-in-the-layout",
+      "title": "Identify where the UI renders the “random empty circle and square” placeholder shapes, and remove them or replace them with meaningful content so there are no unexplained empty geometric placeholders visible anywhere in the layout.",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-home-page-hero-image-asset-referenced-by-frontend-src-pages-homepage-tsx-at-assets-generated-plushie-haven-hero-dim-1600x900-png-exists-in-frontend-public-assets-generated-and-is-served-correctly-in-the-deployed-build-so-the-hero-image-renders-on-the-home-page",
+      "title": "Ensure the Home page hero image asset referenced by `frontend/src/pages/HomePage.tsx` at `/assets/generated/plushie-haven-hero.dim_1600x900.png` exists in `frontend/public/assets/generated` and is served correctly in the deployed build so the hero image renders on the Home page.",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-resilient-fallback-for-the-home-page-hero-image-in-frontend-src-pages-homepage-tsx-so-that-if-the-hero-image-fails-to-load-e-g-missing-asset-or-transient-failure-the-ui-displays-a-visually-appropriate-fallback-e-g-the-site-logo-in-a-styled-container-instead-of-showing-no-image",
+      "title": "Add a resilient fallback for the Home page hero image in `frontend/src/pages/HomePage.tsx` so that if the hero image fails to load (e.g., missing asset or transient failure), the UI displays a visually appropriate fallback (e.g., the site logo in a styled container) instead of showing no image.",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-on-the-home-page-hero-section-replace-the-circular-image-shown-immediately-to-the-left-of-the-blue-plushie-haven-title-text-above-the-tagline-paragraph-with-the-same-teddy-bear-with-bow-logo-mark-used-in-the-header-use-the-existing-static-asset-path-assets-generated-plushie-haven-teddy-bow-mark-dim-512x512-png-keep-the-circle-styling-and-update-the-image-alt-text-to-describe-the-teddy-bear-logo-clearly",
+      "title": "On the Home page hero section, replace the circular image shown immediately to the left of the blue “Plushie Haven” title text (above the tagline paragraph) with the same teddy bear-with-bow logo mark used in the header. Use the existing static asset path `/assets/generated/plushie-haven-teddy-bow-mark.dim_512x512.png`, keep the circle styling, and update the image alt text to describe the teddy bear logo clearly.",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-frontend-backend-integration-typed-bindings-react-query-hooks-to-support-1-checking-admin-status-2-claiming-admin-one-time-3-deleting-posts-and-4-editing-posts-ensure-the-posts-list-refreshes-automatically-after-successful-edit-delete-operations",
+      "title": "Update the frontend-backend integration (typed bindings + React Query hooks) to support: (1) checking admin status, (2) claiming admin (one-time), (3) deleting posts, and (4) editing posts; ensure the posts list refreshes automatically after successful edit/delete operations.",
+      "reqIds": [
+        "REQ-29"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-community-board-ui-to-add-per-post-controls-show-a-delete-action-for-a-admins-on-all-posts-and-b-authenticated-non-admin-authors-on-their-own-posts-show-an-edit-action-for-admins-on-all-posts-provide-an-inline-or-modal-edit-experience-that-lets-an-admin-update-the-post-title-and-message-with-cancel-save-actions-and-appropriate-loading-disabled-states-add-a-confirmation-step-before-deletion",
+      "title": "Update the Community Board UI to add per-post controls: show a Delete action for (a) admins on all posts and (b) authenticated non-admin authors on their own posts; show an Edit action for admins on all posts. Provide an inline or modal edit experience that lets an admin update the post title and message, with cancel/save actions and appropriate loading/disabled states. Add a confirmation step before deletion.",
+      "reqIds": [
+        "REQ-30"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-generated-typed-frontend-backend-bindings-and-react-query-hooks-to-support-fetching-the-public-profile-directory-fetching-a-profile-by-principal-fetching-the-signed-in-user-s-own-profile-for-editing-and-saving-the-signed-in-user-s-profile-ensure-queries-invalidate-refresh-appropriately-after-a-successful-save",
+      "title": "Update the generated/typed frontend backend bindings and React Query hooks to support: fetching the public profile directory, fetching a profile by principal, fetching the signed-in user’s own profile for editing, and saving the signed-in user’s profile. Ensure queries invalidate/refresh appropriately after a successful save.",
+      "reqIds": [
+        "REQ-34"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-new-profiles-section-to-the-frontend-including-1-a-public-profile-directory-page-that-shows-only-opted-in-profiles-and-2-an-individual-profile-page-that-can-be-visited-publicly-when-opted-in-include-clear-english-empty-states-when-no-profiles-are-listed-or-when-a-profile-is-not-available-to-the-viewer",
+      "title": "Add a new Profiles section to the frontend including: (1) a public profile directory page that shows only opted-in profiles, and (2) an individual profile page that can be visited publicly when opted-in. Include clear English empty states when no profiles are listed or when a profile is not available to the viewer.",
+      "reqIds": [
+        "REQ-35"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-authenticated-profile-editing-on-the-individual-profile-page-if-the-viewer-is-the-profile-owner-same-internet-identity-principal-show-an-edit-profile-ui-that-allows-updating-all-profile-fields-avatar-display-name-bio-links-plushie-collection-images-and-toggling-directory-opt-in-out-editing-must-require-login-unauthenticated-users-must-not-see-editing-controls",
+      "title": "Implement authenticated profile editing: on the individual profile page, if the viewer is the profile owner (same Internet Identity principal), show an Edit Profile UI that allows updating all profile fields (avatar, display name, bio, links, plushie collection images) and toggling directory opt-in/out. Editing must require login; unauthenticated users must not see editing controls.",
+      "reqIds": [
+        "REQ-36"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-navigation-access-to-the-new-profiles-section-in-the-existing-site-navigation-without-changing-unrelated-layout-structure-or-modifying-immutable-frontend-paths",
+      "title": "Add navigation access to the new Profiles section in the existing site navigation without changing unrelated layout structure or modifying immutable frontend paths.",
+      "reqIds": [
+        "REQ-37"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -68,6 +255,142 @@
       "summary": "Implement backend support for the Community Board: authenticated users can create, list, and view posts. Each post stores: id, author principal, author display name (optional), title, body, createdAt timestamp. Provide canister methods for createPost and listPosts (and getPost by id if needed for the UI).",
       "reqIds": [
         "REQ-4"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Update the site’s visual theme to be more adorable, using a pink + baby blue color palette across the UI.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Change Events from a static upcoming list to a user-submitted events feature (users can add their own events; remove the pre-seeded Events section/content).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Update the Gallery section to use a more plushie-forward scheme (more plushie imagery/content and presentation aligned with the new adorable aesthetic).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Implement backend canister support for user-submitted Events, similar to Community Board posts: add an Event type and canister methods to create and list events (and a get-by-id method if needed for the UI).",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Add image upload support in the Community Board so users can attach/upload images to their posts (UI + storage/back-end as needed).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Extend the Community Board Post data model and canister API to support an optional single image attachment per post, including storing the image bytes and content type with the post so it can be displayed later.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Add/insert a visible logo graphic in the small circular placeholder area near the site title/sign-in in the header on the homepage (e.g., cute bear logo).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-15",
+      "summary": "Add a hero/feature image on the homepage near the \"Plushie Haven, a cozy collection of beloved plushies\" text to reduce empty space (use either a plushie image or the logo).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "Add additional plushie-themed images to the Home page (beyond the existing hero) to make the page feel more visually rich.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Redesign the site-wide color scheme to match the user-specified exact palette (white/off-white backgrounds, baby blue #89CFF0/#A2DFFE as prominent accents, pastel pink #FFB6C1/#FFD1DC used sparingly, main text #4A90E2 or #333333), with consistently cute/rounded UI styling and no dark/edgy tones.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Update the header brand/logo graphic to a cute pastel teddy bear with a bow that matches the baby blue + pink palette.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Remove or replace the random empty placeholder UI shapes (empty circle and square) by filling them with the intended icons/branding (e.g., teddy bear logo) or removing them entirely so no unexplained shapes remain in the layout.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Add Community Board post deletion and editing with admin controls: make the currently authenticated Internet Identity principal the admin (for now); admins can edit/delete any post; regular users can delete their own posts.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-21",
+      "summary": "Implement admin role assignment in the backend such that the currently authenticated Internet Identity principal can become the admin (for now) without requiring a hard-coded principal ID. Provide a canister method that allows claiming admin only when no admin has been set yet, and provide a canister method for the frontend to determine whether the current caller is an admin.",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-22",
+      "summary": "Add backend support for deleting Community Board posts with authorization rules: admins can delete any post; non-admin authenticated users can delete only their own posts; anonymous users cannot delete posts.",
+      "reqIds": [
+        "REQ-27"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-23",
+      "summary": "Add backend support for editing Community Board posts as an admin tool: admins can edit any post’s title/body (and optionally authorName), while non-admin users cannot edit posts unless explicitly allowed (do not allow regular-user editing unless needed by the UI). Editing must not change the post id, author principal, or createdAt timestamp.",
+      "reqIds": [
+        "REQ-28"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-24",
+      "summary": "Add user Profiles: individual user profile pages plus a public profile directory. Profiles include avatar, display name, bio, links, and plushie collection images (and future optional fields). Profiles are publicly viewable; editing requires login. Users are hidden from the public directory by default unless they opt in (and can opt out).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-25",
+      "summary": "Extend the backend user profile model to support a full profile with the following fields: avatar image (bytes + content type), display name, bio, links, plushie collection images (multiple images, each bytes + content type), and a public directory opt-in flag. Keep fields optional where appropriate to support future optional fields without breaking callers.",
+      "reqIds": [
+        "REQ-31"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-26",
+      "summary": "Update backend authorization rules for profiles to match: profiles are publicly viewable when the profile owner has opted into the public directory; otherwise, viewing a profile is restricted to the owner and admins. Editing a profile (saving) requires the caller to be authenticated.",
+      "reqIds": [
+        "REQ-32"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-27",
+      "summary": "Add backend canister methods to support a public profile directory and profile CRUD flows needed by the UI: (1) get the caller’s profile (for editing), (2) get a profile by principal with the access rules described, (3) save/update the caller’s profile, and (4) list directory profiles (only those opted in).",
+      "reqIds": [
+        "REQ-33"
       ],
       "status": "pending"
     }

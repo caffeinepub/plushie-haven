@@ -17,6 +17,8 @@ export default {
         extend: {
             fontFamily: {
                 sans: [
+                    'Quicksand',
+                    'Nunito',
                     'Inter',
                     'system-ui',
                     '-apple-system',
@@ -80,11 +82,14 @@ export default {
             },
             borderRadius: {
                 lg: 'var(--radius)',
-                md: 'calc(var(--radius) - 2px)',
-                sm: 'calc(var(--radius) - 4px)'
+                md: 'calc(var(--radius) - 4px)',
+                sm: 'calc(var(--radius) - 8px)'
             },
             boxShadow: {
-                xs: '0 1px 2px 0 rgba(0,0,0,0.05)'
+                xs: '0 1px 2px 0 rgba(137, 207, 240, 0.08)',
+                soft: '0 4px 16px rgba(137, 207, 240, 0.20)',
+                'soft-pink': '0 4px 12px rgba(255, 182, 193, 0.15)',
+                gentle: '0 2px 8px rgba(137, 207, 240, 0.12)'
             },
             keyframes: {
                 'accordion-down': {

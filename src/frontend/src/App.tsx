@@ -10,6 +10,7 @@ import CommunityBoardPage from './pages/CommunityBoardPage';
 import EventsPage from './pages/EventsPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
+import ProfilesDirectoryPage from './pages/ProfilesDirectoryPage';
 import { Toaster } from '@/components/ui/sonner';
 
 const rootRoute = createRootRoute({
@@ -64,6 +65,12 @@ const contactRoute = createRoute({
   component: ContactPage,
 });
 
+const profilesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/profiles',
+  component: ProfilesDirectoryPage,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   articlesRoute,
@@ -73,6 +80,7 @@ const routeTree = rootRoute.addChildren([
   eventsRoute,
   aboutRoute,
   contactRoute,
+  profilesRoute,
 ]);
 
 const router = createRouter({ routeTree });

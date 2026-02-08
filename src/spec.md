@@ -1,15 +1,15 @@
 # Specification
 
 ## Summary
-**Goal:** Build “Plushie Haven,” a responsive adult plushie lover lifestyle website with a cohesive cozy theme, seeded content, an 18+ entry gate, and an authenticated Community Board backed by a Motoko canister.
+**Goal:** Add user profiles with a public opt-in directory and individual profile pages, including authenticated editing for profile owners.
 
 **Planned changes:**
-- Create responsive site layout with header navigation and footer; add pages/sections: Home (hero + intro), Articles/Guides (list + detail), Gallery (image grid), Community Board (posts list + create post UI), Events (upcoming list), About, Contact (non-email form UI with copy-to-clipboard or mailto link).
-- Implement a consistent “cozy / plush / lifestyle” visual theme that is adult-oriented and not blue/purple-dominant.
-- Add an 18+ age confirmation gate shown on first visit, persisted locally; block access if declined.
-- Seed Articles/Guides (≥6) and Events (≥5) with safe, non-explicit adult-oriented content.
-- Integrate Internet Identity sign-in/out; allow browsing Community Board posts without auth, but require auth to create posts.
-- Implement a single Motoko actor backend with canister methods to create and list posts (and get by id if needed), persisting posts with author principal, optional display name, title, body, and createdAt.
-- Generate and include brand images under `frontend/public/assets/generated` and use them (logo in header, hero on home, subtle background pattern).
+- Extend the backend user profile model to include optional avatar, display name, bio, links, plushie collection images, and a directory opt-in flag.
+- Implement backend authorization so profiles are publicly viewable only when opted in; otherwise viewable only by the owner/admin; saving/updating requires authentication.
+- Add backend methods to fetch the caller’s profile, fetch a profile by principal (with access rules), save/update the caller’s profile, and list opted-in directory profiles.
+- Update typed frontend bindings and React Query hooks for directory listing, profile fetch (by principal and caller), and save; invalidate/refetch relevant queries after saves.
+- Add a Profiles section in the frontend with a public directory page and individual profile detail pages, including clear empty/not-available states in English.
+- Add an authenticated Edit Profile UI on the profile page for the owner to update avatar, text fields, links, plushie collection images, and directory opt-in/out (with previews and remove-before-save behavior for images).
+- Add a “Profiles” link to existing site navigation without changing unrelated layout or immutable frontend paths.
 
-**User-visible outcome:** Visitors see an 18+ gate before entering; once inside they can browse themed lifestyle pages, read seeded articles and events, view a gallery, and browse Community Board posts; signed-in users can create posts that persist and appear in the list.
+**User-visible outcome:** Visitors can browse a Profiles directory of users who opted in and view their profile pages; signed-in users can edit their own profile (including images) and choose whether to appear in the public directory.

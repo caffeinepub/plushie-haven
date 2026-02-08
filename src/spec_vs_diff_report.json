@@ -1,73 +1,103 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T00:15:49.368Z",
-  "summary": "Diff adds a Motoko backend actor with community post methods, and a TanStack Router-based frontend with layout/navigation, age gate, themed styling (warm palette + background pattern), seeded articles/events, gallery grid, community board with Internet Identity sign-in controls, and contact mailto/copy-to-clipboard UI. Some requirements cannot be fully verified due to truncated/omitted files, and a few explicit requirements appear unimplemented or unverifiable from the diff summary.",
+  "generatedAt": "2026-02-08T07:12:58.014Z",
+  "summary": "Diff adds backend profile types and CRUD methods plus a new /profiles directory page and some profile-related frontend hooks/components. However, several core requirements for optional profile fields, profile detail routing/viewing, editing UX, and directory listing data needed to link to individual profiles appear incomplete or mismatched.",
   "missing_requirements": [
     {
-      "id": "REQ-4",
-      "requirement": "Backend support for the Community Board must be for authenticated users (enforce authentication for createPost).",
-      "reason": "The backend createPost method accepts any caller and does not check/deny anonymous principals; authentication is only enforced in the frontend UI.",
+      "id": "REQ-31",
+      "requirement": "Backend UserProfile must include optional avatar, optional displayName, optional bio, links list, plushieCollectionImages list, and directoryOptIn boolean; keep fields optional where appropriate.",
+      "reason": "The backend UserProfile fields are mostly non-optional (displayName and bio are required Text), and field names differ from the requested API (plushieImages/publicDirectory vs plushieCollectionImages/directoryOptIn). This does not match the specified type shape/optionality.",
+      "evidence": [
+        "backend/main.mo",
+        "backend/migration.mo"
+      ]
+    },
+    {
+      "id": "REQ-33",
+      "requirement": "Directory listing method should support UI directory listing and profile detail navigation; listing contains only opted-in profiles and defaults empty for users without profiles or not opted in.",
+      "reason": "While listDirectoryProfiles filters by publicDirectory, it returns only [UserProfile] without including the profile owner's Principal, which the UI needs to link to an individual profile page by principal.",
       "evidence": [
         "backend/main.mo"
       ]
     },
     {
-      "id": "REQ-6",
-      "requirement": "Articles/Guides contains at least 6 items with titles, short summaries, and full detail text.",
-      "reason": "The articles content file is truncated in the diff summary and only shows a few entries; at least 6 items cannot be confirmed from the provided evidence.",
+      "id": "REQ-34",
+      "requirement": "React Query hooks must surface profile-call errors as readable English messages (reusing existing error normalization) and invalidate relevant queries after save.",
+      "reason": "useGetUserProfile swallows errors (console.error and returns null) rather than surfacing readable normalized errors; useSaveCallerUserProfile throws inside onError callback rather than returning/setting an error in the mutation result using the established pattern.",
       "evidence": [
-        "frontend/src/content/articles.ts (truncated)"
+        "frontend/src/hooks/useProfileQueries.ts",
+        "frontend/src/utils/actorError.ts"
       ]
     },
     {
-      "id": "REQ-7",
-      "requirement": "All required generated images exist under frontend/public/assets/generated and are referenced by the frontend.",
-      "reason": "Frontend code references the required generated image paths, but the diff summary does not show the actual image files added under frontend/public/assets/generated (omitted files are not enumerated).",
+      "id": "REQ-35",
+      "requirement": "Add an individual profile detail route that can be visited publicly when opted-in, and show an English message if profile is not available.",
+      "reason": "Routing only adds '/profiles' for the directory; no profile detail route is registered. The directory UI also has a disabled “View Profile” button and says “Profile viewing coming soon,” indicating the detail flow is not implemented.",
       "evidence": [
-        "frontend/src/components/Layout.tsx",
-        "frontend/src/index.css",
-        "frontend/src/pages/GalleryPage.tsx"
+        "frontend/src/App.tsx",
+        "frontend/src/pages/ProfilesDirectoryPage.tsx"
+      ]
+    },
+    {
+      "id": "REQ-35",
+      "requirement": "Directory page must show a link to the profile detail page for each opted-in profile.",
+      "reason": "The directory page renders a disabled button instead of an actual link/navigation to a profile detail route.",
+      "evidence": [
+        "frontend/src/pages/ProfilesDirectoryPage.tsx"
+      ]
+    },
+    {
+      "id": "REQ-36",
+      "requirement": "Authenticated profile editing on the individual profile page: only owner sees Edit UI; Save/Cancel; avatar upload with preview; multiple plushie images with previews and removal; toggle directory opt-in/out; requires login.",
+      "reason": "Although editing-related components are added, there is no evidence they are integrated into an individual profile page/route (and the profile detail route itself is not wired in the router). The directory page explicitly indicates profile viewing is not implemented yet.",
+      "evidence": [
+        "frontend/src/App.tsx",
+        "frontend/src/pages/ProfilesDirectoryPage.tsx",
+        "frontend/src/components/profiles/AvatarUploader.tsx",
+        "frontend/src/components/profiles/EditProfilePanel.tsx",
+        "frontend/src/components/profiles/PlushieImagesEditor.tsx"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Footer includes an external promotional link to caffeine.ai (“Built with … caffeine.ai”).",
-      "reason": "Not requested by the BuildRequest and introduces unrelated branding/external link.",
+      "description": "Introduced a backend migration module (migration.mo) and wired actor migration with a transformation from an old profile shape to a new one.",
+      "reason": "BuildRequest did not request any data migration system; it only requested extending the profile model and adding CRUD/directory methods.",
       "evidence": [
-        "frontend/src/components/Layout.tsx"
+        "backend/migration.mo",
+        "backend/main.mo"
+      ]
+    },
+    {
+      "description": "Directory page includes UI text and behavior indicating profile viewing is not implemented (“Profile viewing coming soon”) and disables navigation.",
+      "reason": "BuildRequest requires profile detail pages to be available and navigable now; a “coming soon” placeholder is not requested.",
+      "evidence": [
+        "frontend/src/pages/ProfilesDirectoryPage.tsx"
       ]
     }
   ],
-  "confidence": 0.62,
+  "confidence": 0.78,
   "changed_files": [
-    "all_files_summary.json",
     "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/index.css",
-    "frontend/index.html",
     "frontend/src/App.tsx",
-    "frontend/src/components/AgeGate.tsx",
-    "frontend/src/components/AuthControls.tsx",
-    "frontend/src/components/Layout.tsx",
     "frontend/src/components/Nav.tsx",
-    "frontend/src/content/articles.ts",
-    "frontend/src/content/events.ts",
-    "frontend/src/hooks/useActor.ts",
-    "frontend/src/hooks/useInternetIdentity.ts",
+    "frontend/src/components/community/PostActions.tsx",
+    "frontend/src/components/profiles/AvatarUploader.tsx",
+    "frontend/src/components/profiles/EditProfilePanel.tsx",
+    "frontend/src/components/profiles/PlushieImagesEditor.tsx",
+    "frontend/src/components/profiles/ProfileImageGrid.tsx",
+    "frontend/src/components/profiles/ProfileLinksList.tsx",
+    "frontend/src/hooks/useProfileQueries.ts",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/index.css",
-    "frontend/src/main.tsx",
-    "frontend/src/pages/AboutPage.tsx",
-    "frontend/src/pages/ArticleDetailPage.tsx",
-    "frontend/src/pages/ArticlesPage.tsx",
     "frontend/src/pages/CommunityBoardPage.tsx",
-    "frontend/src/pages/ContactPage.tsx",
-    "frontend/src/pages/EventsPage.tsx",
-    "frontend/src/pages/GalleryPage.tsx",
-    "frontend/src/pages/HomePage.tsx",
-    "frontend/tailwind.config.js",
+    "frontend/src/pages/ProfilePage.tsx",
+    "frontend/src/pages/ProfilesDirectoryPage.tsx",
+    "frontend/src/utils/actorError.ts",
+    "frontend/src/utils/imageAttachment.ts",
+    "frontend/src/utils/profileImages.ts",
     "project_state.json"
   ]
 }

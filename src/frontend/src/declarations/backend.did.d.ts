@@ -10,19 +10,101 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
-export interface Post {
+export interface Event {
+  'id' : bigint,
+  'startTime' : Time,
+  'title' : string,
+  'endTime' : Time,
+  'createdAt' : Time,
+  'authorName' : [] | [string],
+  'description' : string,
+  'author' : Principal,
+  'location' : string,
+}
+export type ExternalBlob = Uint8Array;
+export interface ImageAttachment {
+  'contentType' : string,
+  'bytes' : Uint8Array,
+}
+export interface LegacyPost {
   'id' : bigint,
   'title' : string,
   'body' : string,
   'createdAt' : Time,
   'authorName' : [] | [string],
   'author' : Principal,
+  'image' : [] | [ImageAttachment],
 }
+export interface Link { 'url' : string, 'displayName' : string }
 export type Time = bigint;
+export interface UserProfile {
+  'bio' : string,
+  'displayName' : string,
+  'plushieImages' : Array<ExternalBlob>,
+  'links' : Array<Link>,
+  'publicDirectory' : boolean,
+  'avatar' : [] | [ExternalBlob],
+}
+export interface UserProfileEdit {
+  'bio' : string,
+  'displayName' : string,
+  'plushieImages' : Array<ExternalBlob>,
+  'links' : Array<Link>,
+  'publicDirectory' : boolean,
+  'avatar' : [] | [ExternalBlob],
+}
+export type UserRole = { 'admin' : null } |
+  { 'user' : null } |
+  { 'guest' : null };
+export interface _CaffeineStorageCreateCertificateResult {
+  'method' : string,
+  'blob_hash' : string,
+}
+export interface _CaffeineStorageRefillInformation {
+  'proposed_top_up_amount' : [] | [bigint],
+}
+export interface _CaffeineStorageRefillResult {
+  'success' : [] | [boolean],
+  'topped_up_amount' : [] | [bigint],
+}
 export interface _SERVICE {
-  'createPost' : ActorMethod<[[] | [string], string, string], bigint>,
-  'getPost' : ActorMethod<[bigint], Post>,
-  'listPosts' : ActorMethod<[], Array<Post>>,
+  '_caffeineStorageBlobIsLive' : ActorMethod<[Uint8Array], boolean>,
+  '_caffeineStorageBlobsToDelete' : ActorMethod<[], Array<Uint8Array>>,
+  '_caffeineStorageConfirmBlobDeletion' : ActorMethod<
+    [Array<Uint8Array>],
+    undefined
+  >,
+  '_caffeineStorageCreateCertificate' : ActorMethod<
+    [string],
+    _CaffeineStorageCreateCertificateResult
+  >,
+  '_caffeineStorageRefillCashier' : ActorMethod<
+    [[] | [_CaffeineStorageRefillInformation]],
+    _CaffeineStorageRefillResult
+  >,
+  '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
+  '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'createEvent' : ActorMethod<
+    [[] | [string], string, string, string, Time, Time],
+    bigint
+  >,
+  'createPost' : ActorMethod<
+    [[] | [string], string, string, [] | [Uint8Array], [] | [string]],
+    bigint
+  >,
+  'deletePost' : ActorMethod<[bigint], undefined>,
+  'editPost' : ActorMethod<[bigint, string, string, [] | [string]], undefined>,
+  'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
+  'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getEvent' : ActorMethod<[bigint], Event>,
+  'getPost' : ActorMethod<[bigint], LegacyPost>,
+  'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
+  'isCallerAdmin' : ActorMethod<[], boolean>,
+  'listDirectoryProfiles' : ActorMethod<[], Array<UserProfile>>,
+  'listEvents' : ActorMethod<[], Array<Event>>,
+  'listPosts' : ActorMethod<[], Array<LegacyPost>>,
+  'saveCallerUserProfile' : ActorMethod<[UserProfileEdit], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

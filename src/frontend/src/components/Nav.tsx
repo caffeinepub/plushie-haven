@@ -10,6 +10,7 @@ const navLinks = [
   { href: '/gallery', label: 'Gallery' },
   { href: '/community', label: 'Community' },
   { href: '/events', label: 'Events' },
+  { href: '/profiles', label: 'Profiles' },
 ];
 
 export default function Nav() {
@@ -28,7 +29,7 @@ export default function Nav() {
               <Button
                 variant={isActive ? 'secondary' : 'ghost'}
                 size="sm"
-                className="font-medium"
+                className="font-medium rounded-full shadow-xs hover:shadow-soft transition-all"
               >
                 {link.label}
               </Button>
@@ -40,12 +41,12 @@ export default function Nav() {
       {/* Mobile Navigation */}
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild className="md:hidden">
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" className="rounded-full">
             <Menu className="h-5 w-5" />
             <span className="sr-only">Toggle menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-64">
+        <SheetContent side="left" className="w-64 bg-white border-primary/30">
           <nav className="flex flex-col gap-2 pt-6">
             {navLinks.map((link) => {
               const isActive = currentPath === link.href || (link.href !== '/' && currentPath.startsWith(link.href));
@@ -53,7 +54,7 @@ export default function Nav() {
                 <Link key={link.href} to={link.href} onClick={() => setOpen(false)}>
                   <Button
                     variant={isActive ? 'secondary' : 'ghost'}
-                    className="w-full justify-start font-medium"
+                    className="w-full justify-start font-medium rounded-full shadow-xs hover:shadow-soft transition-all"
                   >
                     {link.label}
                   </Button>

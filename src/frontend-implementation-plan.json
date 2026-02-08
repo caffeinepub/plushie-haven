@@ -1,226 +1,127 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Plushie Haven — Frontend",
+  "title": "User profiles: directory, public profile pages, and authenticated editing",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Build the responsive Plushie Haven frontend with header/footer navigation and required pages (Home, Articles list/detail, Gallery, Community Board, Events, About, Contact).",
+      "id": "REQ-34",
+      "summary": "Add typed frontend bindings and React Query hooks for profile directory, profile viewing, and authenticated save with cache invalidation and readable errors",
       "acceptanceCriteria": [
-        "The site title/branding reads “Plushie Haven” throughout the UI (header, page title, and landing hero).",
-        "Navigation works across all listed pages/sections on mobile and desktop.",
-        "Articles/Guides page supports viewing an article list and an individual article detail view.",
-        "Gallery page displays an image grid with basic captions/alt text.",
-        "Community Board page displays a list of posts and a create-post form UI.",
-        "Events page displays a list of upcoming events (can be seeded content).",
-        "About and Contact pages render and are accessible from navigation."
+        "React Query hooks exist for: list directory profiles, get profile by principal, get caller profile, and save caller profile.",
+        "After saving a profile, the relevant cached queries (caller profile and that principal’s profile and directory listing when applicable) are invalidated/refetched so the UI updates without a manual reload.",
+        "Errors from profile calls are surfaced as readable English messages (reusing the existing error normalization pattern where applicable)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/App.tsx",
-          "operation": "create",
-          "description": "Create the app shell wiring: wrap all site content in the AgeGate component, render the Layout (header/footer), and register routes for Home, Articles (list), Article detail, Gallery, Community Board, Events, About, and Contact. Use shadcn-ui primitives (e.g., navigation buttons, cards) where appropriate—Verify the component's usage instructions before implementing."
+          "path": "frontend/src/backend.d.ts",
+          "operation": "modify",
+          "description": "Update/align the typed frontend backend bindings for the new/updated profile capabilities required by the UI (directory listing, get by principal, get caller profile, save caller profile). Ensure the directory listing result includes enough information to link to an individual profile (e.g., principal or an equivalent identifier)."
         },
         {
-          "path": "frontend/src/components/Layout.tsx",
+          "path": "frontend/src/hooks/useProfileQueries.ts",
           "operation": "create",
-          "description": "Create a responsive Layout component with a header (logo + nav links + sign-in/out controls area), main content container, and footer. Use shadcn-ui components (e.g., Button, Sheet/Dropdown for mobile nav) to ensure accessibility and consistent styling—Verify the component's usage instructions before implementing."
+          "description": "Create React Query hooks for profiles: directory listing, profile-by-principal, caller profile (for editing), and save caller profile. Use the existing actor dependency pattern via useActor, invalidate/refetch relevant cached queries after save, and normalize errors into readable English using normalizeActorError. Verify the component's usage instructions before implementing."
         },
+        {
+          "path": "frontend/src/utils/profileImages.ts",
+          "operation": "create",
+          "description": "Add shared helpers for profile image handling on the frontend: convert validated File -> Uint8Array -> ExternalBlob (for avatar and plushie images) and build safe preview URLs for local files. Use the blob-storage ExternalBlob capabilities to produce direct URLs for saved images and support upload progress if needed. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/utils/actorError.ts",
+          "operation": "modify",
+          "description": "Extend error normalization (without changing the existing pattern) to cover common profile authorization/visibility failures (e.g., private profile not available) with clear English messages."
+        }
+      ]
+    },
+    {
+      "id": "REQ-35",
+      "summary": "Add a Profiles section with a public directory page and individual profile pages with clear empty/unavailable states",
+      "acceptanceCriteria": [
+        "A Profiles directory route exists and renders a list/grid of opted-in profiles with at least avatar (if present), display name (fallback to a safe label if absent), and a link to the profile detail page.",
+        "A Profile detail route exists that renders the selected user’s profile data (avatar, display name, bio, links, plushie collection images).",
+        "If the directory is empty, the page shows an English empty state (e.g., “No profiles yet” with a short explanation).",
+        "If a profile is not viewable due to opt-out/private status, the UI shows an English message indicating it is not available."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/ProfilesDirectoryPage.tsx",
+          "operation": "create",
+          "description": "Create the public Profiles directory page that fetches opted-in profiles via the new React Query hook and renders a grid/list using existing shadcn-ui components (e.g., Card, Button) for consistent styling. Include an English empty state when no profiles are listed. Use blob-storage ExternalBlob.getDirectURL to display avatar images when present. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/ProfilePage.tsx",
+          "operation": "create",
+          "description": "Create the Profile detail page that loads a profile by principal and renders avatar, display name (with safe fallback), bio, links, and plushie collection images. Show a clear English message when the profile is not available to the viewer (e.g., private/opted out). Use blob-storage ExternalBlob.getDirectURL to render stored images. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/profiles/ProfileLinksList.tsx",
+          "operation": "create",
+          "description": "Add a small presentational component to render a profile’s links list with safe URL handling and readable labels, composed from existing UI components. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/profiles/ProfileImageGrid.tsx",
+          "operation": "create",
+          "description": "Add a presentational component to render plushie collection images in a responsive grid using existing UI components and blob-storage ExternalBlob direct URLs. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wire the new Profiles routes into TanStack Router: add a directory route (e.g., /profiles) and a profile detail route (e.g., /profiles/$principal) without altering unrelated route structure."
+        }
+      ]
+    },
+    {
+      "id": "REQ-36",
+      "summary": "Implement authenticated profile editing on the profile page for the profile owner only, including image uploads/previews and directory opt-in toggle",
+      "acceptanceCriteria": [
+        "When not signed in, no profile editing UI is shown.",
+        "When signed in and viewing your own profile, an Edit Profile form is available with Save/Cancel behavior and appropriate loading/disabled states while saving.",
+        "The form supports toggling directory opt-in/out and saving persists the change and updates the directory behavior accordingly.",
+        "Avatar upload supports common web image types (PNG/JPEG/WebP) and shows a preview before saving.",
+        "Plushie collection images support adding multiple images, showing previews, and removing selected images before saving."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/profiles/EditProfilePanel.tsx",
+          "operation": "create",
+          "description": "Create an owner-only Edit Profile panel used on the Profile page. Compose existing shadcn-ui form controls (Input, Textarea, Button, Label, Alert, Card) and implement Save/Cancel with loading/disabled states. Use the authorization (Internet Identity) state to hide all editing controls when unauthenticated or not the owner. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/profiles/AvatarUploader.tsx",
+          "operation": "create",
+          "description": "Create an avatar upload control supporting PNG/JPEG/WebP validation and local preview before saving. Reuse existing imageAttachment validation utilities where appropriate, and convert files to blob-storage ExternalBlob for saving. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/profiles/PlushieImagesEditor.tsx",
+          "operation": "create",
+          "description": "Create a multi-image editor for plushie collection images: add multiple, preview, remove before saving. Convert selected files to blob-storage ExternalBlob instances for saving, and keep a local preview list for unsaved changes. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/ProfilePage.tsx",
+          "operation": "modify",
+          "description": "Integrate owner detection (compare route principal to Internet Identity principal) and wire in Edit Profile UI only when viewing your own profile while authenticated. Use the new profile hooks to load caller profile for editing, save updates, and refresh displayed data after save."
+        },
+        {
+          "path": "frontend/src/utils/imageAttachment.ts",
+          "operation": "modify",
+          "description": "Extend existing image validation utilities (without changing existing callers) to support multi-file selection workflows and consistent validation messages for avatar/plushie uploads (PNG/JPEG/WebP), while continuing to centralize accepted types and size checks."
+        }
+      ]
+    },
+    {
+      "id": "REQ-37",
+      "summary": "Add navigation access to the Profiles section while preserving existing layout and avoiding immutable frontend paths",
+      "acceptanceCriteria": [
+        "The primary navigation includes a “Profiles” link that routes to the Profiles directory page.",
+        "Navigation styling remains consistent with the existing cozy pastel theme and component patterns.",
+        "No changes are made to files under the listed immutable frontend paths."
+      ],
+      "file_operations": [
         {
           "path": "frontend/src/components/Nav.tsx",
-          "operation": "create",
-          "description": "Implement desktop + mobile navigation UI shared by Layout, linking to all required sections. Use shadcn-ui components for mobile menu and interactive elements—Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/HomePage.tsx",
-          "operation": "create",
-          "description": "Create the Home page with hero + intro content in English, including branding text “Plushie Haven” and a hero visual area (hero image wired under REQ-7). Use shadcn-ui components for callouts/cards—Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/ArticlesPage.tsx",
-          "operation": "create",
-          "description": "Create Articles/Guides list page that renders seeded static article cards with title and summary, linking to article detail routes. Use shadcn-ui components (Card, Button) for consistent list styling—Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/ArticleDetailPage.tsx",
-          "operation": "create",
-          "description": "Create Article detail page that reads a route parameter (e.g., slug/id) and renders full article content with safe, non-explicit copy. Use shadcn-ui typography-friendly layouts (Card/Separator) as needed—Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/GalleryPage.tsx",
-          "operation": "create",
-          "description": "Create Gallery page with a responsive image grid and basic captions/alt text (using generated brand images plus additional static placeholders if needed). Use shadcn-ui Card for image tiles—Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/CommunityBoardPage.tsx",
-          "operation": "create",
-          "description": "Create Community Board page: show posts list and create-post form UI. Integrate listing/creating posts via the backend actor (via useActor) and enforce sign-in gating for posting (REQ-5). Use shadcn-ui components for form inputs and feedback states—Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/EventsPage.tsx",
-          "operation": "create",
-          "description": "Create Events page rendering a list of upcoming events from seeded static data (date + location + description). Use shadcn-ui Card/Badge for readable event items—Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/AboutPage.tsx",
-          "operation": "create",
-          "description": "Create About page with adult-oriented, non-explicit lifestyle community copy, focusing on collecting, care, display, and community guidelines."
-        },
-        {
-          "path": "frontend/src/pages/ContactPage.tsx",
-          "operation": "create",
-          "description": "Create Contact page with a non-email form UI (name/message fields) plus a copy-to-clipboard contact address and/or a mailto link. Use shadcn-ui Input/Textarea/Button components—Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Apply a cohesive cozy/plush adult lifestyle visual theme (not blue/purple-dominant) across the entire site.",
-      "acceptanceCriteria": [
-        "All pages share a cohesive design system (color palette, type scale, buttons/inputs, cards).",
-        "Theme is not primarily blue/purple.",
-        "Design feels “cozy / plush / lifestyle” while remaining clearly adult-oriented (not childlike)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/index.css",
-          "operation": "create",
-          "description": "Create global styles and CSS variables for the theme (warm neutrals, deep cocoa/charcoal accents, soft sand/cream backgrounds), define typography scale, and set base element styles compatible with shadcn-ui tokens. Include background styling hooks for the subtle pattern asset (wired under REQ-7)."
-        },
-        {
-          "path": "frontend/tailwind.config.js",
           "operation": "modify",
-          "description": "Adjust Tailwind theme extensions as needed to support the Plushie Haven palette/typography and ensure consistent spacing and component styling (while keeping the palette warm and not blue/purple-dominant)."
-        },
-        {
-          "path": "frontend/src/components/Layout.tsx",
-          "operation": "modify",
-          "description": "Apply consistent layout styling (container widths, section spacing, header/footer treatments) that reflects the cozy adult lifestyle theme. Use shadcn-ui components for consistent surfaces and interactive states—Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Add an 18+ age confirmation gate with local persistence that blocks content until confirmed and blocks access if declined.",
-      "acceptanceCriteria": [
-        "Users see an 18+ confirmation screen before accessing site content until they confirm.",
-        "After confirming, the user is not prompted again on refresh/revisit (unless they clear site data).",
-        "If the user declines, they cannot access the main site content."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/AgeGate.tsx",
-          "operation": "create",
-          "description": "Implement an AgeGate component that checks localStorage for an \"18+ confirmed\" flag; if absent, show a full-screen confirmation UI with Confirm (store flag) and Decline (block access) actions. Use shadcn-ui Dialog/Card/Button for accessible gating UI—Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Wrap the site layout and routing with the AgeGate so all content is inaccessible until confirmed, and ensure the decline path does not render main navigation/content."
-        }
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "summary": "Integrate Internet Identity sign-in/out on the frontend and require authentication to create Community Board posts while allowing browsing for unauthenticated users.",
-      "acceptanceCriteria": [
-        "Users can sign in/out with Internet Identity.",
-        "Community Board post creation is disabled or prompts sign-in when the user is not authenticated.",
-        "Authenticated users can successfully create a post and see it appear in the list."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/AuthControls.tsx",
-          "operation": "create",
-          "description": "Create a small AuthControls component that uses useInternetIdentity to show sign-in/out actions and basic identity status (e.g., \"Signed in\" label). Use shadcn-ui Button/Dropdown for the control UI—Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/Layout.tsx",
-          "operation": "modify",
-          "description": "Wire AuthControls into the header so sign-in/out is available site-wide without adding new routes. Use shadcn-ui layout primitives as needed—Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/CommunityBoardPage.tsx",
-          "operation": "modify",
-          "description": "Use useActor to load posts (listPosts) for all users. For createPost, require an authenticated identity; when unauthenticated, disable the submit button and/or show an inline prompt to sign in. After successful creation, refresh the list so the new post appears."
-        }
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "summary": "Seed Articles/Guides and Events with curated static content suitable for adult plushie enthusiasts (non-explicit).",
-      "acceptanceCriteria": [
-        "Articles/Guides contains at least 6 items with titles, short summaries, and full detail text.",
-        "Events contains at least 5 upcoming items with date and location fields (can be fictional).",
-        "Copy is adult-oriented but non-explicit and suitable for a general audience."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/content/articles.ts",
-          "operation": "create",
-          "description": "Add curated static Articles/Guides content (>=6) with identifiers (slug/id), titles, summaries, and full detail text focused on care, collecting, display, etiquette, and lifestyle routines; ensure safe, non-explicit tone."
-        },
-        {
-          "path": "frontend/src/content/events.ts",
-          "operation": "create",
-          "description": "Add curated static Events content (>=5) with date and location fields plus a short description; keep fictional events plausible and non-explicit."
-        },
-        {
-          "path": "frontend/src/pages/ArticlesPage.tsx",
-          "operation": "modify",
-          "description": "Wire Articles/Guides list UI to render items from frontend/src/content/articles.ts with navigation to detail view."
-        },
-        {
-          "path": "frontend/src/pages/ArticleDetailPage.tsx",
-          "operation": "modify",
-          "description": "Wire Article detail UI to render the correct article from frontend/src/content/articles.ts based on the route parameter, including a not-found fallback state."
-        },
-        {
-          "path": "frontend/src/pages/EventsPage.tsx",
-          "operation": "modify",
-          "description": "Wire Events UI to render items from frontend/src/content/events.ts and present date/location clearly."
-        }
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "summary": "Add required generated brand images under frontend/public/assets/generated and use them in the header, home hero, and subtle background pattern.",
-      "acceptanceCriteria": [
-        "All required generated images exist under frontend/public/assets/generated and are referenced by the frontend.",
-        "Header displays the generated logo image.",
-        "Home page displays the generated hero/banner image.",
-        "A subtle generated pattern/texture is used in the site background or section backgrounds without harming readability."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/public/assets/generated/plushie-haven-logo.dim_512x512.png",
-          "operation": "create",
-          "description": "Add the generated Plushie Haven logo image asset at this exact path/filename so it can be referenced by the header UI."
-        },
-        {
-          "path": "frontend/public/assets/generated/plushie-haven-hero.dim_1600x900.png",
-          "operation": "create",
-          "description": "Add the generated home hero banner image asset at this exact path/filename so it can be referenced by the Home hero section."
-        },
-        {
-          "path": "frontend/public/assets/generated/plushie-haven-pattern.dim_1024x1024.png",
-          "operation": "create",
-          "description": "Add the generated seamless background pattern asset at this exact path/filename so it can be used in global/section backgrounds."
-        },
-        {
-          "path": "frontend/src/components/Layout.tsx",
-          "operation": "modify",
-          "description": "Reference and render the generated logo image from frontend/public/assets/generated/plushie-haven-logo.dim_512x512.png in the header branding area, ensuring accessible alt text."
-        },
-        {
-          "path": "frontend/src/pages/HomePage.tsx",
-          "operation": "modify",
-          "description": "Reference and render the generated hero image from frontend/public/assets/generated/plushie-haven-hero.dim_1600x900.png in the Home hero section with appropriate alt text and responsive behavior."
-        },
-        {
-          "path": "frontend/src/index.css",
-          "operation": "modify",
-          "description": "Apply the subtle generated pattern from frontend/public/assets/generated/plushie-haven-pattern.dim_1024x1024.png as a low-contrast background (global or section-level) while preserving readability (e.g., pairing with solid/opaque content surfaces)."
+          "description": "Add a new “Profiles” entry to the existing navigation links that routes to the Profiles directory page, keeping styling and structure consistent with current Nav patterns and without changing unrelated layout behavior."
         }
       ]
     }
