@@ -1,0 +1,23 @@
+{
+  "frontend/src/App.tsx": "Main application component that sets up routing with TanStack Router, wraps the app with ThemeProvider and AgeGate, and defines all routes for the Plushie Haven website.",
+  "frontend/src/components/AgeGate.tsx": "Age verification component that displays an 18+ confirmation dialog on first visit, stores confirmation in localStorage, and blocks access if declined.",
+  "frontend/src/components/Layout.tsx": "Main layout component with sticky header containing logo, navigation, and auth controls, plus a footer with attribution and links.",
+  "frontend/src/components/Nav.tsx": "Responsive navigation component with desktop horizontal menu and mobile sheet menu, highlighting active routes.",
+  "frontend/src/components/AuthControls.tsx": "Authentication UI component using Internet Identity, displaying sign-in button when unauthenticated and user dropdown menu when signed in.",
+  "frontend/src/pages/HomePage.tsx": "Landing page with hero section featuring the main banner image, feature cards highlighting site sections, and call-to-action for community engagement.",
+  "frontend/src/pages/ArticlesPage.tsx": "Articles listing page displaying all articles from static content with category badges, read time, and type-safe navigation to detail pages using params prop.",
+  "frontend/src/pages/ArticleDetailPage.tsx": "Individual article view page that displays full article content with proper formatting, category badge, and back navigation.",
+  "frontend/src/pages/GalleryPage.tsx": "Gallery page displaying a responsive grid of plushie images with titles and descriptions using the generated assets.",
+  "frontend/src/pages/CommunityBoardPage.tsx": "Community board with post creation form (requiring authentication) and posts list, integrating with backend via React Query hooks.",
+  "frontend/src/pages/EventsPage.tsx": "Events listing page displaying upcoming plushie-related events with dates, locations, and type badges from static content.",
+  "frontend/src/pages/AboutPage.tsx": "About page explaining Plushie Haven's mission, community values, offerings, and guidelines for adult plushie enthusiasts.",
+  "frontend/src/pages/ContactPage.tsx": "Contact page with email form that opens mailto link and copy-to-clipboard functionality for the contact email address.",
+  "frontend/src/hooks/useQueries.ts": "React Query hooks for backend integration, including useListPosts for fetching posts and useCreatePost mutation with automatic cache invalidation.",
+  "frontend/src/content/articles.ts": "Static content file containing 6 curated articles about plushie care, display, collecting, travel, mental health benefits, and community building.",
+  "frontend/src/content/events.ts": "Static content file containing 7 upcoming plushie-related events including meetups, conventions, and workshops with dates and locations.",
+  "frontend/src/index.css": "Global styles with warm, cozy OKLCH color system (avoiding blue/purple), subtle background pattern integration, and typography settings.",
+  "frontend/tailwind.config.js": "Tailwind configuration extending the theme with warm color palette, Inter font family, and custom design tokens matching the cozy plushie aesthetic.",
+  "frontend/public/assets/generated/plushie-haven-logo.dim_512x512.png": "Generated logo image featuring warm, cozy branding for Plushie Haven with earth-tone color palette.",
+  "frontend/public/assets/generated/plushie-haven-hero.dim_1600x900.png": "Generated hero banner image showing a cozy plushie collection in warm, inviting interior setting with sophisticated adult aesthetic.",
+  "frontend/public/assets/generated/plushie-haven-pattern.dim_1024x1024.png": "Generated seamless background pattern with subtle plush fabric texture in warm neutral tones for use as page background."
+}

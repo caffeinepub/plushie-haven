@@ -1,0 +1,171 @@
+{
+  "kind": "build_request",
+  "title": "Plushie Haven — adult plushie lover lifestyle website",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "Create the core frontend app for an adult plushie lover lifestyle website named “Plushie Haven”, including a responsive layout with header navigation, footer, and the following pages/sections with English user-facing text: Home (hero + intro), Articles/Guides (list + detail), Gallery (image grid), Community Board (posts list + create post), Events (upcoming list), About, and Contact (non-email form UI with copy-to-clipboard or mailto link).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Make an adult plushie lover lifestyle website, call it Plushie Haven"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The site title/branding reads “Plushie Haven” throughout the UI (header, page title, and landing hero).",
+        "Navigation works across all listed pages/sections on mobile and desktop.",
+        "Articles/Guides page supports viewing an article list and an individual article detail view.",
+        "Gallery page displays an image grid with basic captions/alt text.",
+        "Community Board page displays a list of posts and a create-post form UI.",
+        "Events page displays a list of upcoming events (can be seeded content).",
+        "About and Contact pages render and are accessible from navigation."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Implement a consistent, distinctive visual theme for Plushie Haven (colors, typography, spacing, and UI styling) suitable for an adult lifestyle community; avoid a blue/purple-dominant palette. Apply the theme consistently across all pages and components.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Make an adult plushie lover lifestyle website, call it Plushie Haven"
+        ]
+      },
+      "acceptanceCriteria": [
+        "All pages share a cohesive design system (color palette, type scale, buttons/inputs, cards).",
+        "Theme is not primarily blue/purple.",
+        "Design feels “cozy / plush / lifestyle” while remaining clearly adult-oriented (not childlike)."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Add an age confirmation gate for adult audiences: on first visit, require the user to confirm they are 18+ to enter Plushie Haven, with a persistent “confirmed” state stored locally in the browser.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Make an adult plushie lover lifestyle website, call it Plushie Haven"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Users see an 18+ confirmation screen before accessing site content until they confirm.",
+        "After confirming, the user is not prompted again on refresh/revisit (unless they clear site data).",
+        "If the user declines, they cannot access the main site content."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Implement backend support for the Community Board: authenticated users can create, list, and view posts. Each post stores: id, author principal, author display name (optional), title, body, createdAt timestamp. Provide canister methods for createPost and listPosts (and getPost by id if needed for the UI).",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Make an adult plushie lover lifestyle website, call it Plushie Haven"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend exposes canister methods to create a post and list posts.",
+        "Posts persist across page reloads.",
+        "Each post includes author principal and createdAt data."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Integrate Internet Identity sign-in on the frontend and require authentication for creating Community Board posts; unauthenticated users can browse posts but must sign in to post.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Make an adult plushie lover lifestyle website, call it Plushie Haven"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Users can sign in/out with Internet Identity.",
+        "Community Board post creation is disabled or prompts sign-in when the user is not authenticated.",
+        "Authenticated users can successfully create a post and see it appear in the list."
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Seed the Articles/Guides and Events sections with curated static content appropriate for adult plushie enthusiasts (e.g., care tips, collecting, display ideas, travel/events etiquette), ensuring content remains safe and non-explicit.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Make an adult plushie lover lifestyle website, call it Plushie Haven"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Articles/Guides contains at least 6 items with titles, short summaries, and full detail text.",
+        "Events contains at least 5 upcoming items with date and location fields (can be fictional).",
+        "Copy is adult-oriented but non-explicit and suitable for a general audience."
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "text": "Generate and include required static brand images for Plushie Haven, store them in frontend/public/assets/generated, and use them in the UI (e.g., logo in header, hero image on home, subtle background pattern).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Make an adult plushie lover lifestyle website, call it Plushie Haven"
+        ]
+      },
+      "acceptanceCriteria": [
+        "All required generated images exist under frontend/public/assets/generated and are referenced by the frontend.",
+        "Header displays the generated logo image.",
+        "Home page displays the generated hero/banner image.",
+        "A subtle generated pattern/texture is used in the site background or section backgrounds without harming readability."
+      ]
+    }
+  ],
+  "constraints": [
+    "Backend must remain a single Motoko actor (all logic in backend/main.mo).",
+    "Do not modify files under frontend/src/components/ui (compose them instead).",
+    "Do not modify immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui."
+  ],
+  "nonGoals": [
+    "Real-time chat, WebSockets, or live messaging.",
+    "Third-party authentication providers other than Internet Identity.",
+    "External databases or third-party backend services.",
+    "Explicit adult content or pornography; the site should be adult-oriented but non-explicit."
+  ],
+  "imageRequirements": {
+    "required": [
+      "Cozy plush-themed logo mark with text “Plushie Haven”, warm neutral palette, clean adult lifestyle aesthetic (plushie-haven-logo.dim_512x512.png)",
+      "Homepage hero banner illustration/photo-collage style featuring plush textures, soft lighting, and cozy interior vibes, no people, no explicit elements (plushie-haven-hero.dim_1600x900.png)",
+      "Seamless subtle background pattern inspired by plush fabric texture, low-contrast, tileable (plushie-haven-pattern.dim_1024x1024.png)"
+    ],
+    "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [
+      "Build an adult plushie lover lifestyle website called “Plushie Haven” with content and community features."
+    ],
+    "goalsToRemove": [],
+    "preferencesToAdd": [
+      "Use English for all user-facing text."
+    ],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
+  }
+}

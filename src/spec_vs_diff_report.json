@@ -1,0 +1,73 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-08T00:15:49.368Z",
+  "summary": "Diff adds a Motoko backend actor with community post methods, and a TanStack Router-based frontend with layout/navigation, age gate, themed styling (warm palette + background pattern), seeded articles/events, gallery grid, community board with Internet Identity sign-in controls, and contact mailto/copy-to-clipboard UI. Some requirements cannot be fully verified due to truncated/omitted files, and a few explicit requirements appear unimplemented or unverifiable from the diff summary.",
+  "missing_requirements": [
+    {
+      "id": "REQ-4",
+      "requirement": "Backend support for the Community Board must be for authenticated users (enforce authentication for createPost).",
+      "reason": "The backend createPost method accepts any caller and does not check/deny anonymous principals; authentication is only enforced in the frontend UI.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "requirement": "Articles/Guides contains at least 6 items with titles, short summaries, and full detail text.",
+      "reason": "The articles content file is truncated in the diff summary and only shows a few entries; at least 6 items cannot be confirmed from the provided evidence.",
+      "evidence": [
+        "frontend/src/content/articles.ts (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "requirement": "All required generated images exist under frontend/public/assets/generated and are referenced by the frontend.",
+      "reason": "Frontend code references the required generated image paths, but the diff summary does not show the actual image files added under frontend/public/assets/generated (omitted files are not enumerated).",
+      "evidence": [
+        "frontend/src/components/Layout.tsx",
+        "frontend/src/index.css",
+        "frontend/src/pages/GalleryPage.tsx"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Footer includes an external promotional link to caffeine.ai (“Built with … caffeine.ai”).",
+      "reason": "Not requested by the BuildRequest and introduces unrelated branding/external link.",
+      "evidence": [
+        "frontend/src/components/Layout.tsx"
+      ]
+    }
+  ],
+  "confidence": 0.62,
+  "changed_files": [
+    "all_files_summary.json",
+    "backend/main.mo",
+    "frontend-file-summaries.txt",
+    "frontend/index.css",
+    "frontend/index.html",
+    "frontend/src/App.tsx",
+    "frontend/src/components/AgeGate.tsx",
+    "frontend/src/components/AuthControls.tsx",
+    "frontend/src/components/Layout.tsx",
+    "frontend/src/components/Nav.tsx",
+    "frontend/src/content/articles.ts",
+    "frontend/src/content/events.ts",
+    "frontend/src/hooks/useActor.ts",
+    "frontend/src/hooks/useInternetIdentity.ts",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/index.css",
+    "frontend/src/main.tsx",
+    "frontend/src/pages/AboutPage.tsx",
+    "frontend/src/pages/ArticleDetailPage.tsx",
+    "frontend/src/pages/ArticlesPage.tsx",
+    "frontend/src/pages/CommunityBoardPage.tsx",
+    "frontend/src/pages/ContactPage.tsx",
+    "frontend/src/pages/EventsPage.tsx",
+    "frontend/src/pages/GalleryPage.tsx",
+    "frontend/src/pages/HomePage.tsx",
+    "frontend/tailwind.config.js",
+    "project_state.json"
+  ]
+}

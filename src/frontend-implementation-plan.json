@@ -1,0 +1,228 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Plushie Haven — Frontend",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "summary": "Build the responsive Plushie Haven frontend with header/footer navigation and required pages (Home, Articles list/detail, Gallery, Community Board, Events, About, Contact).",
+      "acceptanceCriteria": [
+        "The site title/branding reads “Plushie Haven” throughout the UI (header, page title, and landing hero).",
+        "Navigation works across all listed pages/sections on mobile and desktop.",
+        "Articles/Guides page supports viewing an article list and an individual article detail view.",
+        "Gallery page displays an image grid with basic captions/alt text.",
+        "Community Board page displays a list of posts and a create-post form UI.",
+        "Events page displays a list of upcoming events (can be seeded content).",
+        "About and Contact pages render and are accessible from navigation."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "create",
+          "description": "Create the app shell wiring: wrap all site content in the AgeGate component, render the Layout (header/footer), and register routes for Home, Articles (list), Article detail, Gallery, Community Board, Events, About, and Contact. Use shadcn-ui primitives (e.g., navigation buttons, cards) where appropriate—Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/Layout.tsx",
+          "operation": "create",
+          "description": "Create a responsive Layout component with a header (logo + nav links + sign-in/out controls area), main content container, and footer. Use shadcn-ui components (e.g., Button, Sheet/Dropdown for mobile nav) to ensure accessibility and consistent styling—Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/Nav.tsx",
+          "operation": "create",
+          "description": "Implement desktop + mobile navigation UI shared by Layout, linking to all required sections. Use shadcn-ui components for mobile menu and interactive elements—Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/HomePage.tsx",
+          "operation": "create",
+          "description": "Create the Home page with hero + intro content in English, including branding text “Plushie Haven” and a hero visual area (hero image wired under REQ-7). Use shadcn-ui components for callouts/cards—Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/ArticlesPage.tsx",
+          "operation": "create",
+          "description": "Create Articles/Guides list page that renders seeded static article cards with title and summary, linking to article detail routes. Use shadcn-ui components (Card, Button) for consistent list styling—Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/ArticleDetailPage.tsx",
+          "operation": "create",
+          "description": "Create Article detail page that reads a route parameter (e.g., slug/id) and renders full article content with safe, non-explicit copy. Use shadcn-ui typography-friendly layouts (Card/Separator) as needed—Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/GalleryPage.tsx",
+          "operation": "create",
+          "description": "Create Gallery page with a responsive image grid and basic captions/alt text (using generated brand images plus additional static placeholders if needed). Use shadcn-ui Card for image tiles—Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/CommunityBoardPage.tsx",
+          "operation": "create",
+          "description": "Create Community Board page: show posts list and create-post form UI. Integrate listing/creating posts via the backend actor (via useActor) and enforce sign-in gating for posting (REQ-5). Use shadcn-ui components for form inputs and feedback states—Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/EventsPage.tsx",
+          "operation": "create",
+          "description": "Create Events page rendering a list of upcoming events from seeded static data (date + location + description). Use shadcn-ui Card/Badge for readable event items—Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/AboutPage.tsx",
+          "operation": "create",
+          "description": "Create About page with adult-oriented, non-explicit lifestyle community copy, focusing on collecting, care, display, and community guidelines."
+        },
+        {
+          "path": "frontend/src/pages/ContactPage.tsx",
+          "operation": "create",
+          "description": "Create Contact page with a non-email form UI (name/message fields) plus a copy-to-clipboard contact address and/or a mailto link. Use shadcn-ui Input/Textarea/Button components—Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Apply a cohesive cozy/plush adult lifestyle visual theme (not blue/purple-dominant) across the entire site.",
+      "acceptanceCriteria": [
+        "All pages share a cohesive design system (color palette, type scale, buttons/inputs, cards).",
+        "Theme is not primarily blue/purple.",
+        "Design feels “cozy / plush / lifestyle” while remaining clearly adult-oriented (not childlike)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/index.css",
+          "operation": "create",
+          "description": "Create global styles and CSS variables for the theme (warm neutrals, deep cocoa/charcoal accents, soft sand/cream backgrounds), define typography scale, and set base element styles compatible with shadcn-ui tokens. Include background styling hooks for the subtle pattern asset (wired under REQ-7)."
+        },
+        {
+          "path": "frontend/tailwind.config.js",
+          "operation": "modify",
+          "description": "Adjust Tailwind theme extensions as needed to support the Plushie Haven palette/typography and ensure consistent spacing and component styling (while keeping the palette warm and not blue/purple-dominant)."
+        },
+        {
+          "path": "frontend/src/components/Layout.tsx",
+          "operation": "modify",
+          "description": "Apply consistent layout styling (container widths, section spacing, header/footer treatments) that reflects the cozy adult lifestyle theme. Use shadcn-ui components for consistent surfaces and interactive states—Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Add an 18+ age confirmation gate with local persistence that blocks content until confirmed and blocks access if declined.",
+      "acceptanceCriteria": [
+        "Users see an 18+ confirmation screen before accessing site content until they confirm.",
+        "After confirming, the user is not prompted again on refresh/revisit (unless they clear site data).",
+        "If the user declines, they cannot access the main site content."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/AgeGate.tsx",
+          "operation": "create",
+          "description": "Implement an AgeGate component that checks localStorage for an \"18+ confirmed\" flag; if absent, show a full-screen confirmation UI with Confirm (store flag) and Decline (block access) actions. Use shadcn-ui Dialog/Card/Button for accessible gating UI—Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wrap the site layout and routing with the AgeGate so all content is inaccessible until confirmed, and ensure the decline path does not render main navigation/content."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Integrate Internet Identity sign-in/out on the frontend and require authentication to create Community Board posts while allowing browsing for unauthenticated users.",
+      "acceptanceCriteria": [
+        "Users can sign in/out with Internet Identity.",
+        "Community Board post creation is disabled or prompts sign-in when the user is not authenticated.",
+        "Authenticated users can successfully create a post and see it appear in the list."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/AuthControls.tsx",
+          "operation": "create",
+          "description": "Create a small AuthControls component that uses useInternetIdentity to show sign-in/out actions and basic identity status (e.g., \"Signed in\" label). Use shadcn-ui Button/Dropdown for the control UI—Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/Layout.tsx",
+          "operation": "modify",
+          "description": "Wire AuthControls into the header so sign-in/out is available site-wide without adding new routes. Use shadcn-ui layout primitives as needed—Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/CommunityBoardPage.tsx",
+          "operation": "modify",
+          "description": "Use useActor to load posts (listPosts) for all users. For createPost, require an authenticated identity; when unauthenticated, disable the submit button and/or show an inline prompt to sign in. After successful creation, refresh the list so the new post appears."
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Seed Articles/Guides and Events with curated static content suitable for adult plushie enthusiasts (non-explicit).",
+      "acceptanceCriteria": [
+        "Articles/Guides contains at least 6 items with titles, short summaries, and full detail text.",
+        "Events contains at least 5 upcoming items with date and location fields (can be fictional).",
+        "Copy is adult-oriented but non-explicit and suitable for a general audience."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/content/articles.ts",
+          "operation": "create",
+          "description": "Add curated static Articles/Guides content (>=6) with identifiers (slug/id), titles, summaries, and full detail text focused on care, collecting, display, etiquette, and lifestyle routines; ensure safe, non-explicit tone."
+        },
+        {
+          "path": "frontend/src/content/events.ts",
+          "operation": "create",
+          "description": "Add curated static Events content (>=5) with date and location fields plus a short description; keep fictional events plausible and non-explicit."
+        },
+        {
+          "path": "frontend/src/pages/ArticlesPage.tsx",
+          "operation": "modify",
+          "description": "Wire Articles/Guides list UI to render items from frontend/src/content/articles.ts with navigation to detail view."
+        },
+        {
+          "path": "frontend/src/pages/ArticleDetailPage.tsx",
+          "operation": "modify",
+          "description": "Wire Article detail UI to render the correct article from frontend/src/content/articles.ts based on the route parameter, including a not-found fallback state."
+        },
+        {
+          "path": "frontend/src/pages/EventsPage.tsx",
+          "operation": "modify",
+          "description": "Wire Events UI to render items from frontend/src/content/events.ts and present date/location clearly."
+        }
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "summary": "Add required generated brand images under frontend/public/assets/generated and use them in the header, home hero, and subtle background pattern.",
+      "acceptanceCriteria": [
+        "All required generated images exist under frontend/public/assets/generated and are referenced by the frontend.",
+        "Header displays the generated logo image.",
+        "Home page displays the generated hero/banner image.",
+        "A subtle generated pattern/texture is used in the site background or section backgrounds without harming readability."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/public/assets/generated/plushie-haven-logo.dim_512x512.png",
+          "operation": "create",
+          "description": "Add the generated Plushie Haven logo image asset at this exact path/filename so it can be referenced by the header UI."
+        },
+        {
+          "path": "frontend/public/assets/generated/plushie-haven-hero.dim_1600x900.png",
+          "operation": "create",
+          "description": "Add the generated home hero banner image asset at this exact path/filename so it can be referenced by the Home hero section."
+        },
+        {
+          "path": "frontend/public/assets/generated/plushie-haven-pattern.dim_1024x1024.png",
+          "operation": "create",
+          "description": "Add the generated seamless background pattern asset at this exact path/filename so it can be used in global/section backgrounds."
+        },
+        {
+          "path": "frontend/src/components/Layout.tsx",
+          "operation": "modify",
+          "description": "Reference and render the generated logo image from frontend/public/assets/generated/plushie-haven-logo.dim_512x512.png in the header branding area, ensuring accessible alt text."
+        },
+        {
+          "path": "frontend/src/pages/HomePage.tsx",
+          "operation": "modify",
+          "description": "Reference and render the generated hero image from frontend/public/assets/generated/plushie-haven-hero.dim_1600x900.png in the Home hero section with appropriate alt text and responsive behavior."
+        },
+        {
+          "path": "frontend/src/index.css",
+          "operation": "modify",
+          "description": "Apply the subtle generated pattern from frontend/public/assets/generated/plushie-haven-pattern.dim_1024x1024.png as a low-contrast background (global or section-level) while preserving readability (e.g., pairing with solid/opaque content surfaces)."
+        }
+      ]
+    }
+  ]
+}
