@@ -2,10 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-remove-the-coloring-page-route-from-the-app-router-so-coloring-is-no-longer-a-valid-page-including-removing-the-coloringpage-import-the-coloringroute-definition-and-the-coloringroute-entry-in-the-routetree-in-frontend-src-app-tsx",
-      "featureTitle": "Remove the Coloring page route from the app router so `/coloring` is no longer a valid page, including removing the `ColoringPage` import, the `coloringRoute` definition, and the `coloringRoute` entry in the `routeTree` in `frontend/src/App.tsx`.",
+      "featureId": "feature-update-the-frontend-admin-claim-flow-in-frontend-src-components-authcontrols-tsx-to-use-the-backend-s-one-time-admin-claim-method-and-not-call-a-non-existent-or-mismatched-role-assignment-api-after-a-successful-claim-refresh-the-cached-admin-status-and-show-clear-english-toasts-for-success-and-failure-states",
+      "featureTitle": "Update the frontend admin-claim flow in `frontend/src/components/AuthControls.tsx` to use the backend’s one-time admin claim method (and not call a non-existent or mismatched role-assignment API). After a successful claim, refresh the cached admin status and show clear English toasts for success and failure states.",
       "files": [
-        "frontend/src/App.tsx"
+        "frontend/src/components/AuthControls.tsx",
+        "frontend/src/utils/actorError.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -17,54 +18,13 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-74"
+        "REQ-91"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-remove-the-coloring-link-from-the-site-navigation-so-users-cannot-navigate-to-coloring-from-either-desktop-or-mobile-menus-by-deleting-the-coloring-entry-from-navlinks-in-frontend-src-components-nav-tsx",
-      "featureTitle": "Remove the Coloring link from the site navigation so users cannot navigate to `/coloring` from either desktop or mobile menus by deleting the `/coloring` entry from `navLinks` in `frontend/src/components/Nav.tsx`.",
-      "files": [
-        "frontend/src/components/Nav.tsx"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0",
-        "blob-storage@4.0.0"
-      ],
-      "testIds": [
-        "REQ-75"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-delete-the-coloring-page-implementation-file-frontend-src-pages-coloringpage-tsx-and-ensure-no-remaining-frontend-code-imports-or-references-it",
-      "featureTitle": "Delete the Coloring page implementation file `frontend/src/pages/ColoringPage.tsx` and ensure no remaining frontend code imports or references it.",
-      "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/pages/ColoringPage.tsx"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0",
-        "blob-storage@4.0.0"
-      ],
-      "testIds": [
-        "REQ-76"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-remove-coloring-related-static-assets-from-the-frontend-project-delete-the-uploaded-coloring-png-and-any-associated-coloring-pdf-assets-so-no-coloring-assets-remain-in-the-shipped-frontend-static-files",
-      "featureTitle": "Remove Coloring-related static assets from the frontend project (delete the uploaded Coloring PNG and any associated Coloring PDF/assets) so no Coloring assets remain in the shipped frontend static files.",
+      "featureId": "feature-update-the-generated-frontend-backend-bindings-types-so-the-frontend-can-call-the-backend-admin-methods-required-by-the-existing-react-query-hooks-useiscalleradmin-and-the-updated-admin-claim-ui",
+      "featureTitle": "Update the generated frontend backend bindings/types so the frontend can call the backend admin methods required by the existing React Query hooks (`useIsCallerAdmin`) and the updated admin-claim UI.",
       "files": [],
       "components": [
         "core-infrastructure@1.0.2",
@@ -76,7 +36,7 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-77"
+        "REQ-92"
       ],
       "confidence": "high"
     }

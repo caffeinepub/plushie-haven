@@ -1,92 +1,57 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-08T11:01:44.232Z",
+  "generatedAt": "2026-02-09T09:15:38.914Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 5,
-    "implemented": 4,
+    "total": 3,
+    "implemented": 2,
     "items": [
       {
-        "id": "REQ-74",
-        "summary": "Remove the Coloring page route from the app router so `/coloring` is no longer a valid page, including removing the `ColoringPage` import, the `coloringRoute` definition, and the `coloringRoute` entry in the `routeTree` in `frontend/src/App.tsx`.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/App.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/App.tsx"
-        ]
-      },
-      {
-        "id": "REQ-75",
-        "summary": "Remove the Coloring link from the site navigation so users cannot navigate to `/coloring` from either desktop or mobile menus by deleting the `/coloring` entry from `navLinks` in `frontend/src/components/Nav.tsx`.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/Nav.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/Nav.tsx"
-        ]
-      },
-      {
-        "id": "REQ-76",
-        "summary": "Delete the Coloring page implementation file `frontend/src/pages/ColoringPage.tsx` and ensure no remaining frontend code imports or references it.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/ColoringPage.tsx",
-          "frontend/src/App.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/ColoringPage.tsx",
-          "frontend/src/App.tsx"
-        ]
-      },
-      {
-        "id": "REQ-77",
-        "summary": "Remove Coloring-related static assets from the frontend project (delete the uploaded Coloring PNG and any associated Coloring PDF/assets) so no Coloring assets remain in the shipped frontend static files.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/public/assets/coloring/icoloring-9sd9.png",
-          "frontend/public/assets/coloring/plushie-haven-coloring-page-1.pdf",
-          "frontend/public/assets/coloring-book.pdf",
-          "frontend/public/assets/icoloring-9sd9.png"
-        ],
-        "matchedFiles": [
-          "frontend/public/assets/coloring/icoloring-9sd9.png",
-          "frontend/public/assets/coloring/plushie-haven-coloring-page-1.pdf",
-          "frontend/public/assets/coloring-book.pdf",
-          "frontend/public/assets/icoloring-9sd9.png"
-        ]
-      },
-      {
-        "id": "REQ-78",
-        "summary": "Remove any remaining Coloring-related user-facing text, links, or references anywhere else in the frontend so there are no entry points or mentions of a Coloring feature in the UI.",
-        "status": "missing",
-        "plannedFiles": [
-          "frontend/src/components/Layout.tsx",
-          "frontend/src/pages/HomePage.tsx",
-          "frontend/src/content/articles.ts"
-        ],
+        "id": "REQ-90",
+        "summary": "Add backend canister support for admin status checking and one-time admin claiming so the currently authenticated Internet Identity principal can become an admin (only if no admin has been set yet). Expose a query to check whether the caller is an admin, and a shared method to claim admin for the caller with clear error behavior when admin is already claimed.",
+        "status": "unknown",
+        "plannedFiles": [],
         "matchedFiles": []
+      },
+      {
+        "id": "REQ-91",
+        "summary": "Update the frontend admin-claim flow in `frontend/src/components/AuthControls.tsx` to use the backend’s one-time admin claim method (and not call a non-existent or mismatched role-assignment API). After a successful claim, refresh the cached admin status and show clear English toasts for success and failure states.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/AuthControls.tsx",
+          "frontend/src/utils/actorError.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/AuthControls.tsx",
+          "frontend/src/utils/actorError.ts"
+        ]
+      },
+      {
+        "id": "REQ-92",
+        "summary": "Update the generated frontend backend bindings/types so the frontend can call the backend admin methods required by the existing React Query hooks (`useIsCallerAdmin`) and the updated admin-claim UI.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/backend.d.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/backend.d.ts"
+        ]
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/public/assets/coloring-book.pdf",
-    "frontend/public/assets/coloring/icoloring-9sd9.png",
-    "frontend/public/assets/coloring/plushie-haven-coloring-page-1.pdf",
-    "frontend/public/assets/icoloring-9sd9.png",
-    "frontend/src/App.tsx",
-    "frontend/src/components/Nav.tsx",
-    "frontend/src/pages/ColoringPage.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/components/AuthControls.tsx",
+    "frontend/src/utils/actorError.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

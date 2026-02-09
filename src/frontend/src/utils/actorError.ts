@@ -6,6 +6,24 @@ export function normalizeActorError(error: unknown): string {
   if (error instanceof Error) {
     const message = error.message;
     
+    // Handle actor readiness/initialization errors
+    if (
+      message.includes('Actor not initialized') ||
+      message.includes('Actor not available') ||
+      message.includes('Still connecting to the server')
+    ) {
+      return 'Still connecting to the server. Please try again in a moment.';
+    }
+
+    // Handle admin claim errors
+    if (message.includes('Admin has already been claimed')) {
+      return 'Admin access has already been claimed on this canister.';
+    }
+    
+    if (message.includes('already claimed') || message.includes('Admin already exists')) {
+      return 'Admin access has already been claimed on this canister.';
+    }
+
     // Handle authorization errors
     if (message.includes('Unauthorized')) {
       if (message.includes('Only admins')) {

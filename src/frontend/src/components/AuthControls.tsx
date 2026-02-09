@@ -13,8 +13,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { LogOut, Shield } from 'lucide-react';
 import { toast } from 'sonner';
-import { normalizeActorError } from '../utils/actorError';
-import { UserRole } from '../backend';
 
 export default function AuthControls() {
   const { identity, login, clear, isLoggingIn, isInitializing } = useInternetIdentity();
@@ -26,20 +24,40 @@ export default function AuthControls() {
 
   const handleClaimAdmin = async () => {
     if (!actor) {
-      toast.error('System not ready. Please try again.');
+      toast.error('Still connecting to the server. Please try again in a moment.');
       return;
     }
 
     try {
-      // The backend's assignCallerUserRole with 'admin' role will handle the one-time claim logic
-      await actor.assignCallerUserRole(identity!.getPrincipal(), UserRole.admin);
+      // Type assertion to access claimAdmin method that should exist on the backend
+      // but isn't yet reflected in the generated type definitions
+      const actorWithClaimAdmin = actor as any;
       
-      // Invalidate admin status query to refresh
-      queryClient.invalidateQueries({ queryKey: ['isAdmin'] });
+      if (typeof actorWithClaimAdmin.claimAdmin !== 'function') {
+        toast.error('Admin claim functionality is not yet available. Please contact support.');
+        return;
+      }
       
-      toast.success('Admin privileges claimed successfully!');
-    } catch (error) {
-      toast.error(normalizeActorError(error));
+      await actorWithClaimAdmin.claimAdmin();
+      
+      // Invalidate and refetch admin status query to refresh UI
+      await queryClient.invalidateQueries({ queryKey: ['isAdmin'] });
+      
+      toast.success('You are now an admin.');
+    } catch (error: any) {
+      const message = error?.message || 'An error occurred';
+      
+      if (message.includes('Admin has already been claimed') || 
+          message.includes('already claimed') || 
+          message.includes('Admin already exists')) {
+        toast.error('Admin access has already been claimed on this canister.');
+      } else if (message.includes('Actor not initialized') || 
+                 message.includes('Actor not available') || 
+                 message.includes('Still connecting')) {
+        toast.error('Still connecting to the server. Please try again in a moment.');
+      } else {
+        toast.error(message);
+      }
     }
   };
 

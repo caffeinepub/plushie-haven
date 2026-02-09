@@ -1,6 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import type { LegacyPost, Event, Comment } from '../backend';
+import type { LegacyPost, Event, Comment, backendInterface } from '../backend';
+
+/**
+ * Helper to ensure actor is available before mutation.
+ * Throws a user-friendly error if actor is not ready.
+ */
+function requireActor(actor: backendInterface | null): backendInterface {
+  if (!actor) {
+    throw new Error('Still connecting to the server. Please try again in a moment.');
+  }
+  return actor;
+}
 
 export function useListPosts() {
   const { actor, isFetching } = useActor();
@@ -33,8 +44,8 @@ export function useCreatePost() {
       imageBytes?: Uint8Array | null;
       imageContentType?: string | null;
     }) => {
-      if (!actor) throw new Error('Actor not initialized');
-      return actor.createPost(
+      const validActor = requireActor(actor);
+      return validActor.createPost(
         authorName,
         title,
         body,
@@ -54,8 +65,8 @@ export function useDeletePost() {
 
   return useMutation({
     mutationFn: async (postId: bigint) => {
-      if (!actor) throw new Error('Actor not initialized');
-      return actor.deletePost(postId);
+      const validActor = requireActor(actor);
+      return validActor.deletePost(postId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
@@ -79,8 +90,8 @@ export function useEditPost() {
       body: string;
       authorName: string | null;
     }) => {
-      if (!actor) throw new Error('Actor not initialized');
-      return actor.editPost(id, title, body, authorName);
+      const validActor = requireActor(actor);
+      return validActor.editPost(id, title, body, authorName);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
@@ -134,8 +145,8 @@ export function useCreateEvent() {
       startTime: bigint;
       endTime: bigint;
     }) => {
-      if (!actor) throw new Error('Actor not initialized');
-      return actor.createEvent(authorName, title, description, location, startTime, endTime);
+      const validActor = requireActor(actor);
+      return validActor.createEvent(authorName, title, description, location, startTime, endTime);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
@@ -167,8 +178,8 @@ export function useLikePost() {
 
   return useMutation({
     mutationFn: async (postId: bigint) => {
-      if (!actor) throw new Error('Actor not initialized');
-      return actor.likePost(postId);
+      const validActor = requireActor(actor);
+      return validActor.likePost(postId);
     },
     onSuccess: (_, postId) => {
       queryClient.invalidateQueries({ queryKey: ['postLike', postId.toString()] });
@@ -182,8 +193,8 @@ export function useUnlikePost() {
 
   return useMutation({
     mutationFn: async (postId: bigint) => {
-      if (!actor) throw new Error('Actor not initialized');
-      return actor.unlikePost(postId);
+      const validActor = requireActor(actor);
+      return validActor.unlikePost(postId);
     },
     onSuccess: (_, postId) => {
       queryClient.invalidateQueries({ queryKey: ['postLike', postId.toString()] });
@@ -233,8 +244,8 @@ export function useCreateComment() {
       authorName: string | null;
       content: string;
     }) => {
-      if (!actor) throw new Error('Actor not initialized');
-      return actor.createComment(postId, authorName, content);
+      const validActor = requireActor(actor);
+      return validActor.createComment(postId, authorName, content);
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['comments', variables.postId.toString()] });

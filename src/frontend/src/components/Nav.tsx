@@ -10,6 +10,7 @@ const navLinks = [
   { href: '/gallery', label: 'Gallery' },
   { href: '/community', label: 'Community' },
   { href: '/events', label: 'Events' },
+  { href: '/brands', label: 'Brands' },
   { href: '/profiles', label: 'Profiles' },
 ];
 

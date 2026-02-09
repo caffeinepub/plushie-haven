@@ -1,7 +1,5 @@
-import { Link } from '@tanstack/react-router';
 import { useListDirectoryProfiles } from '../hooks/useProfileQueries';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Users } from 'lucide-react';
 import LoadingState from '../components/LoadingState';
@@ -60,11 +58,6 @@ export default function ProfilesDirectoryPage() {
                 .toUpperCase()
                 .slice(0, 2);
 
-              // Extract principal from profile (we need to get it from the directory listing)
-              // Since the backend doesn't return principal in UserProfile, we'll use index as a workaround
-              // In a real scenario, the backend should include the principal in directory results
-              const principalString = `profile-${index}`;
-
               return (
                 <Card key={index} className="hover:shadow-gentle transition-shadow">
                   <CardHeader className="text-center">
@@ -82,12 +75,6 @@ export default function ProfilesDirectoryPage() {
                         {profile.bio}
                       </p>
                     )}
-                    <Button variant="outline" size="sm" className="rounded-full" disabled>
-                      View Profile
-                    </Button>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Profile viewing temporarily unavailable
-                    </p>
                   </CardContent>
                 </Card>
               );

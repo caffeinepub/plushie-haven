@@ -1,125 +1,71 @@
 {
   "kind": "build_request",
-  "title": "Remove the Coloring page feature completely",
+  "title": "Enable claiming admin so the signed-in user can delete other users’ posts",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-74",
-      "text": "Remove the Coloring page route from the app router so `/coloring` is no longer a valid page, including removing the `ColoringPage` import, the `coloringRoute` definition, and the `coloringRoute` entry in the `routeTree` in `frontend/src/App.tsx`.",
-      "target": "frontend",
+      "id": "REQ-90",
+      "text": "Add backend canister support for admin status checking and one-time admin claiming so the currently authenticated Internet Identity principal can become an admin (only if no admin has been set yet). Expose a query to check whether the caller is an admin, and a shared method to claim admin for the caller with clear error behavior when admin is already claimed.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-4",
-          "msg-7",
-          "msg-10"
+          "msg-4"
         ],
         "quotes": [
-          "remove the coloring page completely",
-          "remove everything",
-          "yes"
+          "Make me an admin so I can delete other people's posts"
         ]
       },
       "acceptanceCriteria": [
-        "`frontend/src/App.tsx` no longer imports `./pages/ColoringPage`.",
-        "`frontend/src/App.tsx` no longer defines a route with `path: '/coloring'`.",
-        "The app builds successfully with no unused-import or missing-module errors related to `ColoringPage`."
+        "Backend exposes a query method `isCallerAdmin : async Bool` that returns true only when the caller is an admin.",
+        "Backend exposes a shared method `claimAdmin : async ()` that sets the caller as admin only if no admin exists yet; otherwise it traps/returns an error that can be shown to the user (e.g., \"Admin has already been claimed.\").",
+        "Existing authorization rules for `deletePost` continue to allow admins to delete any post and non-admin users to delete only their own posts."
       ]
     },
     {
-      "id": "REQ-75",
-      "text": "Remove the Coloring link from the site navigation so users cannot navigate to `/coloring` from either desktop or mobile menus by deleting the `/coloring` entry from `navLinks` in `frontend/src/components/Nav.tsx`.",
+      "id": "REQ-91",
+      "text": "Update the frontend admin-claim flow in `frontend/src/components/AuthControls.tsx` to use the backend’s one-time admin claim method (and not call a non-existent or mismatched role-assignment API). After a successful claim, refresh the cached admin status and show clear English toasts for success and failure states.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4",
-          "msg-7",
-          "msg-10"
+          "msg-4"
         ],
         "quotes": [
-          "remove the coloring page completely",
-          "remove everything",
-          "yes"
+          "Make me an admin so I can delete other people's posts"
         ]
       },
       "acceptanceCriteria": [
-        "`frontend/src/components/Nav.tsx` has no nav link with `href: '/coloring'` and no label `Coloring`.",
-        "Desktop navigation no longer displays a “Coloring” button.",
-        "Mobile navigation sheet no longer displays a “Coloring” button."
+        "Clicking the \"Claim Admin\" menu item successfully calls the backend admin-claim method for the signed-in user.",
+        "On success, the UI shows a success toast in English (e.g., \"You are now an admin.\") and invalidates/refetches the `['isAdmin']` query so admin-only controls appear without a page reload.",
+        "If admin was already claimed (or the user is not eligible), the UI shows a clear English error toast (e.g., \"Admin access has already been claimed on this canister.\") rather than a technical error.",
+        "If the actor is not ready, the UI shows an English message (existing or updated) indicating the system is still connecting."
       ]
     },
     {
-      "id": "REQ-76",
-      "text": "Delete the Coloring page implementation file `frontend/src/pages/ColoringPage.tsx` and ensure no remaining frontend code imports or references it.",
+      "id": "REQ-92",
+      "text": "Update the generated frontend backend bindings/types so the frontend can call the backend admin methods required by the existing React Query hooks (`useIsCallerAdmin`) and the updated admin-claim UI.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4",
-          "msg-7",
-          "msg-10"
+          "msg-4"
         ],
         "quotes": [
-          "remove the coloring page completely",
-          "remove everything",
-          "yes"
+          "Make me an admin so I can delete other people's posts"
         ]
       },
       "acceptanceCriteria": [
-        "`frontend/src/pages/ColoringPage.tsx` is removed from the codebase.",
-        "No TypeScript compile errors occur due to references to `ColoringPage`.",
-        "A project-wide search shows no remaining imports of `./pages/ColoringPage` and no remaining references to `ColoringPage`."
-      ]
-    },
-    {
-      "id": "REQ-77",
-      "text": "Remove Coloring-related static assets from the frontend project (delete the uploaded Coloring PNG and any associated Coloring PDF/assets) so no Coloring assets remain in the shipped frontend static files.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-7",
-          "msg-10"
-        ],
-        "quotes": [
-          "remove everything",
-          "yes"
-        ]
-      },
-      "acceptanceCriteria": [
-        "`/assets/coloring/icoloring-9sd9.png` is removed from the frontend static assets.",
-        "Any Coloring-related PDF/static assets previously added for Coloring are removed from the frontend static assets.",
-        "A project-wide search shows no remaining references to `/assets/coloring/` or `icoloring-9sd9.png`."
-      ]
-    },
-    {
-      "id": "REQ-78",
-      "text": "Remove any remaining Coloring-related user-facing text, links, or references anywhere else in the frontend so there are no entry points or mentions of a Coloring feature in the UI.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-4",
-          "msg-7",
-          "msg-10"
-        ],
-        "quotes": [
-          "remove the coloring page completely",
-          "remove everything",
-          "yes"
-        ]
-      },
-      "acceptanceCriteria": [
-        "A project-wide search for \"Coloring\" and \"/coloring\" finds no remaining user-facing labels/links/routes related to the removed feature.",
-        "No page displays headings, helper text, or calls-to-action related to Coloring after the change."
+        "Type-check/build succeeds with the frontend calling `actor.isCallerAdmin()` from `frontend/src/hooks/useQueries.ts`.",
+        "Type-check/build succeeds with the frontend calling the backend admin-claim method from `frontend/src/components/AuthControls.tsx`."
       ]
     }
   ],
   "constraints": [
-    "Do not modify any files under `frontend/src/components/ui` (read-only shadcn components).",
-    "Do not modify immutable frontend hook entrypoints listed in SYSTEM_CONTEXT (`frontend/src/hooks/useInternetIdentity.ts(x)`, `frontend/src/hooks/useActor.ts`, `frontend/src/main.tsx`).",
-    "No backend changes are required for removing the Coloring page; keep the single-actor Motoko backend unchanged."
+    "Respect the Internet Computer single-actor backend architecture: implement all Motoko changes in `backend/main.mo`.",
+    "Do not edit files under `frontend/src/components/ui`, `frontend/src/hooks/useInternetIdentity.ts`, `frontend/src/hooks/useInternetIdentity.tsx`, `frontend/src/hooks/useActor.ts`, or `frontend/src/main.tsx` (immutable paths).",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Do not replace the removed Coloring page with a different page or new feature.",
-    "Do not add redirects, analytics, or tracking for `/coloring` unless explicitly requested.",
-    "Do not change unrelated navigation structure, theming, or layout beyond removing Coloring entries."
+    "Implementing multi-admin support (more than one admin) beyond the existing one-time claim behavior.",
+    "Adding a new admin management UI (e.g., admin dashboard) beyond making admin claim + post deletion work reliably."
   ],
   "imageRequirements": {
     "required": [],

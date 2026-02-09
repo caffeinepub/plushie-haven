@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 51,
+  "projectStateVersion": 59,
   "summary": "Build a lifestyle website for adult plushie enthusiasts named \"Plushie Haven.\"",
   "architectural_notes": [
     "Visual theme direction updated: prioritize an ‘adorable’ aesthetic with a pink + baby blue palette (supersedes prior guidance to avoid blue/purple-dominant palettes).",
@@ -10,13 +10,15 @@
     "UI polish: do not leave unexplained placeholder shapes (e.g., empty circle/square). Replace with intended branding/icons or remove from the layout.",
     "Home page hero/title area: replace the small circular placeholder to the left of the large blue “Plushie Haven” text (above the tagline paragraph) with the teddy bear logo (do not leave it empty).",
     "Community Board moderation direction: designate the currently authenticated Internet Identity principal as the admin (for now); admins can edit/delete any post, while regular users can delete only their own posts.",
-    "Profiles direction: build both individual profile pages and a public profile directory; profiles are publicly viewable but only editable when logged in; users are hidden from the directory by default unless they opt in (and can opt out). Profile fields include avatar, display name, bio, links, and plushie collection images (and future optional fields).",
-    "Header account display: when signed in, show the user’s Profile display name in the header (replacing the person icon); when signed out, show the existing Sign In UI.",
-    "Coloring section decision updated: remove the entire Coloring page/section from the site (remove the /coloring route and its UI)."
+    "Coloring section decision updated: remove the entire Coloring page/section from the site (remove the /coloring route and its UI).",
+    "Profiles direction updated: remove the Profiles section/pages from the site (remove profile directory + individual profile pages and any related navigation entry points).",
+    "Admin request: user wants their currently authenticated Internet Identity principal to be made admin so they can delete other users’ Community Board posts (use the existing claim-admin flow; no hard-coded principal)."
   ],
   "known_issues": [
     "Random empty circle and square placeholders appear in the UI; user requested to fill them with intended content or remove them.",
-    "Home page hero image next to the “Plushie Haven” title (alt text “A cozy collection of beloved plushies”) is not displaying for the user (no image shown)."
+    "Home page hero image next to the “Plushie Haven” title (alt text “A cozy collection of beloved plushies”) is not displaying for the user (no image shown).",
+    "Deployment unsuccessful when attempting to add the new Plushie Brands page/content (deployment error during build/release).",
+    "Community Board error reported by user: \"Actor not initialized\" when trying to use a community function (prevents users from using the Community Board)."
   ],
   "isFixRequest": false,
   "existing_features": [
@@ -491,6 +493,102 @@
         "REQ-77"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-create-a-new-dedicated-plushie-brands-page-in-the-frontend-that-displays-a-curated-list-of-well-known-plushie-brands-including-at-minimum-squishmallows-jellycat-steiff-gund-sanrio-san-x-rilakkuma-ty-beanie-babies-aurora-world-build-a-bear-kaloo-douglas-cuddle-toys-trudi-bellzi-the-page-must-use-clear-english-headings-and-helper-text-match-the-existing-plushie-haven-pastel-cozy-styling-and-include-an-empty-state-friendly-structure-e-g-explanatory-intro-text-even-though-the-list-is-static",
+      "title": "Create a new dedicated Plushie Brands page in the frontend that displays a curated list of well-known plushie brands (including at minimum: Squishmallows, Jellycat, Steiff, GUND, Sanrio, San-X (Rilakkuma), TY (Beanie Babies), Aurora World, Build-A-Bear, Kaloo, Douglas Cuddle Toys, Trudi, Bellzi). The page must use clear English headings and helper text, match the existing Plushie Haven pastel/cozy styling, and include an empty-state-friendly structure (e.g., explanatory intro text even though the list is static).",
+      "reqIds": [
+        "REQ-79"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-new-route-for-the-plushie-brands-page-e-g-brands-to-the-app-router-in-frontend-src-app-tsx-so-it-is-directly-visitable",
+      "title": "Add a new route for the Plushie Brands page (e.g., `/brands`) to the app router in `frontend/src/App.tsx` so it is directly visitable.",
+      "reqIds": [
+        "REQ-80"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-navigation-access-to-the-new-plushie-brands-page-from-both-desktop-and-mobile-menus-by-updating-frontend-src-components-nav-tsx-to-include-a-new-link-labeled-brands-that-points-to-brands",
+      "title": "Add navigation access to the new Plushie Brands page from both desktop and mobile menus by updating `frontend/src/components/Nav.tsx` to include a new link labeled \"Brands\" that points to `/brands`.",
+      "reqIds": [
+        "REQ-81"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-failed-deployment-build-associated-with-adding-the-plushie-brands-page-by-ensuring-the-codebase-type-checks-and-builds-cleanly-after-introducing-the-new-page-route-navigation-changes",
+      "title": "Fix the failed deployment/build associated with adding the Plushie Brands page by ensuring the codebase type-checks and builds cleanly after introducing the new page/route/navigation changes.",
+      "reqIds": [
+        "REQ-82"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-the-individual-profile-detail-page-from-the-frontend-router-by-deleting-the-profiles-principal-route-in-frontend-src-app-tsx-including-removing-the-profilepage-import-the-profiledetailroute-definition-and-the-profiledetailroute-entry-in-routetree-ensure-the-app-still-builds-and-all-remaining-routes-work-normally",
+      "title": "Remove the individual Profile detail page from the frontend router by deleting the `/profiles/$principal` route in `frontend/src/App.tsx`, including removing the `ProfilePage` import, the `profileDetailRoute` definition, and the `profileDetailRoute` entry in `routeTree`. Ensure the app still builds and all remaining routes work normally.",
+      "reqIds": [
+        "REQ-83"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-delete-the-profile-page-implementation-file-frontend-src-pages-profilepage-tsx-and-ensure-there-are-no-remaining-frontend-imports-or-references-to-it",
+      "title": "Delete the Profile page implementation file `frontend/src/pages/ProfilePage.tsx` and ensure there are no remaining frontend imports or references to it.",
+      "reqIds": [
+        "REQ-84"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-profiles-directory-page-does-not-contain-any-active-navigation-to-the-removed-profile-detail-page-and-clean-up-any-now-unused-imports-in-frontend-src-pages-profilesdirectorypage-tsx-keep-all-user-facing-text-in-clear-english",
+      "title": "Ensure the Profiles directory page does not contain any active navigation to the removed Profile detail page, and clean up any now-unused imports in `frontend/src/pages/ProfilesDirectoryPage.tsx` (keep all user-facing text in clear English).",
+      "reqIds": [
+        "REQ-85"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-prevent-community-board-mutations-from-running-before-the-actor-is-ready-and-replace-the-technical-error-actor-not-initialized-with-clear-english-user-facing-messaging-update-the-react-query-mutation-hooks-in-frontend-src-hooks-usequeries-ts-create-edit-delete-post-create-comment-like-unlike-post-create-event-etc-so-they-either-a-wait-until-the-actor-is-available-or-b-throw-a-user-friendly-error-such-as-still-connecting-to-the-server-please-try-again-in-a-moment-instead-of-actor-not-initialized",
+      "title": "Prevent Community Board mutations from running before the actor is ready, and replace the technical error “Actor not initialized” with clear English user-facing messaging. Update the React Query mutation hooks in `frontend/src/hooks/useQueries.ts` (create/edit/delete post, create comment, like/unlike post, create event, etc.) so they either (a) wait until the actor is available, or (b) throw a user-friendly error such as “Still connecting to the server. Please try again in a moment.” instead of “Actor not initialized”.",
+      "reqIds": [
+        "REQ-87"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-community-board-ui-to-reflect-actor-identity-readiness-so-users-cannot-attempt-community-board-actions-while-the-app-is-still-connecting-in-frontend-src-pages-communityboardpage-tsx-disable-the-create-post-submit-button-and-any-other-action-controls-that-require-an-actor-while-the-actor-is-initializing-and-show-a-clear-inline-loading-state-message-english-indicating-the-app-is-connecting",
+      "title": "Update Community Board UI to reflect actor/identity readiness so users cannot attempt Community Board actions while the app is still connecting. In `frontend/src/pages/CommunityBoardPage.tsx`, disable the Create Post submit button (and any other action controls that require an actor) while the actor is initializing, and show a clear inline loading state/message (English) indicating the app is connecting.",
+      "reqIds": [
+        "REQ-88"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-improve-error-normalization-so-any-remaining-actor-readiness-errors-become-user-friendly-update-frontend-src-utils-actorerror-ts-to-map-actor-readiness-initialization-errors-including-the-previous-actor-not-initialized-case-to-clear-english-guidance-e-g-still-connecting-please-try-again-in-a-moment",
+      "title": "Improve error normalization so any remaining actor-readiness errors become user-friendly. Update `frontend/src/utils/actorError.ts` to map actor-readiness/initialization errors (including the previous “Actor not initialized” case) to clear English guidance (e.g., “Still connecting… please try again in a moment.”).",
+      "reqIds": [
+        "REQ-89"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-frontend-admin-claim-flow-in-frontend-src-components-authcontrols-tsx-to-use-the-backend-s-one-time-admin-claim-method-and-not-call-a-non-existent-or-mismatched-role-assignment-api-after-a-successful-claim-refresh-the-cached-admin-status-and-show-clear-english-toasts-for-success-and-failure-states",
+      "title": "Update the frontend admin-claim flow in `frontend/src/components/AuthControls.tsx` to use the backend’s one-time admin claim method (and not call a non-existent or mismatched role-assignment API). After a successful claim, refresh the cached admin status and show clear English toasts for success and failure states.",
+      "reqIds": [
+        "REQ-91"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-generated-frontend-backend-bindings-types-so-the-frontend-can-call-the-backend-admin-methods-required-by-the-existing-react-query-hooks-useiscalleradmin-and-the-updated-admin-claim-ui",
+      "title": "Update the generated frontend backend bindings/types so the frontend can call the backend admin methods required by the existing React Query hooks (`useIsCallerAdmin`) and the updated admin-claim UI.",
+      "reqIds": [
+        "REQ-92"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -615,42 +713,6 @@
       "status": "pending"
     },
     {
-      "id": "AR-24",
-      "summary": "Add user Profiles: individual user profile pages plus a public profile directory. Profiles include avatar, display name, bio, links, and plushie collection images (and future optional fields). Profiles are publicly viewable; editing requires login. Users are hidden from the public directory by default unless they opt in (and can opt out).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-25",
-      "summary": "Extend the backend user profile model to support a full profile with the following fields: avatar image (bytes + content type), display name, bio, links, plushie collection images (multiple images, each bytes + content type), and a public directory opt-in flag. Keep fields optional where appropriate to support future optional fields without breaking callers.",
-      "reqIds": [
-        "REQ-31"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-26",
-      "summary": "Update backend authorization rules for profiles to match: profiles are publicly viewable when the profile owner has opted into the public directory; otherwise, viewing a profile is restricted to the owner and admins. Editing a profile (saving) requires the caller to be authenticated.",
-      "reqIds": [
-        "REQ-32"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-27",
-      "summary": "Add backend canister methods to support a public profile directory and profile CRUD flows needed by the UI: (1) get the caller’s profile (for editing), (2) get a profile by principal with the access rules described, (3) save/update the caller’s profile, and (4) list directory profiles (only those opted in).",
-      "reqIds": [
-        "REQ-33"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-28",
-      "summary": "Replace the header’s person/user icon with the signed-in user’s chosen username (Profile display name). When logged out, keep showing “Sign In” (or equivalent).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
       "id": "AR-29",
       "summary": "Expand the Community Board to support comments on posts (including text and optional image attachments), with comment counts shown on the posts list and within a post detail view.",
       "reqIds": [],
@@ -660,20 +722,6 @@
       "id": "AR-30",
       "summary": "Add likes and emoji reactions to Community Board posts (one like per user plus reactions), showing counts on the posts list and within a post detail view.",
       "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-31",
-      "summary": "Add follow functionality as a community feature (users can follow other user profiles), with follow counts and an optional “Following” feed/filter experience.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-32",
-      "summary": "Extend the Motoko backend (single main actor in `backend/main.mo`) to support following between user principals (profile follows), including storing follow relationships and exposing canister methods to: (1) follow a target user principal, (2) unfollow a target user principal, (3) check whether the caller follows a target user principal, and (4) fetch follow counts for a target user principal (followers count and following count). Enforce that only authenticated users can follow/unfollow and that users cannot follow themselves.",
-      "reqIds": [
-        "REQ-40"
-      ],
       "status": "pending"
     },
     {
@@ -711,6 +759,28 @@
       "summary": "Remove any remaining Coloring-related user-facing text, links, or references anywhere else in the frontend so there are no entry points or mentions of a Coloring feature in the UI.",
       "reqIds": [
         "REQ-78"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-42",
+      "summary": "Add a new dedicated \"Plushie Brands\" page to the site and display a list of well-known plushie brands (e.g., Squishmallows, Jellycat, Steiff, GUND, Sanrio, San-X/Rilakkuma, TY, Aurora World, Build-A-Bear, Kaloo, etc.).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-43",
+      "summary": "Make backend actor initialization resilient so Community Board actions do not fail when access-control initialization fails or is still loading. Update `frontend/src/hooks/useActor.ts` so that if `actor._initializeAccessControlWithSecret(adminToken)` throws/rejects (e.g., missing/invalid secret), the hook still returns a usable actor instance (anonymous or authenticated) rather than leaving `actor` as `null` and breaking Community Board features.",
+      "reqIds": [
+        "REQ-86"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-44",
+      "summary": "Add backend canister support for admin status checking and one-time admin claiming so the currently authenticated Internet Identity principal can become an admin (only if no admin has been set yet). Expose a query to check whether the caller is an admin, and a shared method to claim admin for the caller with clear error behavior when admin is already claimed.",
+      "reqIds": [
+        "REQ-90"
       ],
       "status": "pending"
     }

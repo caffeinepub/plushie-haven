@@ -1,114 +1,42 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Remove Coloring page feature completely (frontend-only)",
+  "title": "Frontend: One-time admin claim UI + updated backend bindings",
   "requirements": [
     {
-      "id": "REQ-74",
-      "summary": "Remove the /coloring route from the TanStack Router configuration.",
+      "id": "REQ-91",
+      "summary": "Update AuthControls admin-claim UI to call the backend one-time claim method, refresh cached admin status, and show clear English toasts for success/failure including actor-not-ready.",
       "acceptanceCriteria": [
-        "`frontend/src/App.tsx` no longer imports `./pages/ColoringPage`.",
-        "`frontend/src/App.tsx` no longer defines a route with `path: '/coloring'`.",
-        "The app builds successfully with no unused-import or missing-module errors related to `ColoringPage`."
+        "Clicking the \"Claim Admin\" menu item successfully calls the backend admin-claim method for the signed-in user.",
+        "On success, the UI shows a success toast in English (e.g., \"You are now an admin.\") and invalidates/refetches the ['isAdmin'] query so admin-only controls appear without a page reload.",
+        "If admin was already claimed (or the user is not eligible), the UI shows a clear English error toast (e.g., \"Admin access has already been claimed on this canister.\") rather than a technical error.",
+        "If the actor is not ready, the UI shows an English message (existing or updated) indicating the system is still connecting."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/components/AuthControls.tsx",
           "operation": "modify",
-          "description": "Remove the `ColoringPage` import, remove the `coloringRoute` definition, and remove the `coloringRoute` entry from `routeTree` so `/coloring` is no longer registered."
+          "description": "Replace the current role-assignment call with the backend one-time admin claim call (actor.claimAdmin()). On success, show an English success toast and invalidate/refetch the React Query ['isAdmin'] query. If actor is not available, show an English 'still connecting' message instead of proceeding. Ensure all user-facing strings remain English."
+        },
+        {
+          "path": "frontend/src/utils/actorError.ts",
+          "operation": "modify",
+          "description": "Add/adjust error normalization so admin-claim failures (e.g., admin already claimed / not eligible) map to clear, non-technical English messages suitable for toasts, while preserving the existing 'still connecting' handling for actor readiness errors."
         }
       ]
     },
     {
-      "id": "REQ-75",
-      "summary": "Remove the Coloring navigation link from both desktop and mobile menus.",
+      "id": "REQ-92",
+      "summary": "Update generated frontend backend bindings/types so the frontend can type-check when calling isCallerAdmin() and the new claimAdmin() method.",
       "acceptanceCriteria": [
-        "`frontend/src/components/Nav.tsx` has no nav link with `href: '/coloring'` and no label `Coloring`.",
-        "Desktop navigation no longer displays a “Coloring” button.",
-        "Mobile navigation sheet no longer displays a “Coloring” button."
+        "Type-check/build succeeds with the frontend calling actor.isCallerAdmin() from frontend/src/hooks/useQueries.ts.",
+        "Type-check/build succeeds with the frontend calling the backend admin-claim method from frontend/src/components/AuthControls.tsx."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/Nav.tsx",
+          "path": "frontend/src/backend.d.ts",
           "operation": "modify",
-          "description": "Delete the `/coloring` entry from the `navLinks` array so neither desktop nor mobile navigation renders a Coloring link."
-        }
-      ]
-    },
-    {
-      "id": "REQ-76",
-      "summary": "Delete the Coloring page implementation and ensure it is no longer referenced.",
-      "acceptanceCriteria": [
-        "`frontend/src/pages/ColoringPage.tsx` is removed from the codebase.",
-        "No TypeScript compile errors occur due to references to `ColoringPage`.",
-        "A project-wide search shows no remaining imports of `./pages/ColoringPage` and no remaining references to `ColoringPage`."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/ColoringPage.tsx",
-          "operation": "delete",
-          "description": "Remove the Coloring page component file from the project."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Ensure all imports/references to `ColoringPage` are removed so deleting the file does not break the build."
-        }
-      ]
-    },
-    {
-      "id": "REQ-77",
-      "summary": "Remove Coloring-related static assets (PNG/PDF and associated files) from shipped frontend assets.",
-      "acceptanceCriteria": [
-        "`/assets/coloring/icoloring-9sd9.png` is removed from the frontend static assets.",
-        "Any Coloring-related PDF/static assets previously added for Coloring are removed from the frontend static assets.",
-        "A project-wide search shows no remaining references to `/assets/coloring/` or `icoloring-9sd9.png`."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/public/assets/coloring/icoloring-9sd9.png",
-          "operation": "delete",
-          "description": "Delete the Coloring preview PNG referenced by the removed Coloring feature."
-        },
-        {
-          "path": "frontend/public/assets/coloring/plushie-haven-coloring-page-1.pdf",
-          "operation": "delete",
-          "description": "Delete the Coloring-related PDF asset from the frontend static assets."
-        },
-        {
-          "path": "frontend/public/assets/coloring-book.pdf",
-          "operation": "delete",
-          "description": "Delete the Coloring-related PDF asset from the frontend static assets."
-        },
-        {
-          "path": "frontend/public/assets/icoloring-9sd9.png",
-          "operation": "delete",
-          "description": "Delete any duplicate/alternate location copy of the Coloring PNG from the frontend static assets, if present in this path."
-        }
-      ]
-    },
-    {
-      "id": "REQ-78",
-      "summary": "Remove any remaining user-facing Coloring references across the frontend UI and content.",
-      "acceptanceCriteria": [
-        "A project-wide search for \"Coloring\" and \"/coloring\" finds no remaining user-facing labels/links/routes related to the removed feature.",
-        "No page displays headings, helper text, or calls-to-action related to Coloring after the change."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/Layout.tsx",
-          "operation": "modify",
-          "description": "Audit header/footer links and remove any remaining user-facing references to \"Coloring\" or \"/coloring\" if present (none expected based on current structure)."
-        },
-        {
-          "path": "frontend/src/pages/HomePage.tsx",
-          "operation": "modify",
-          "description": "Audit homepage CTAs/feature cards and remove any remaining user-facing references to \"Coloring\" or \"/coloring\" if present."
-        },
-        {
-          "path": "frontend/src/content/articles.ts",
-          "operation": "modify",
-          "description": "Audit article metadata/content and remove any remaining user-facing references to \"Coloring\" or \"/coloring\" if present."
+          "description": "Update the backend interface type definitions to include the admin-claim method signature (claimAdmin(): Promise<void>) and ensure isCallerAdmin(): Promise<boolean> remains correctly typed, so AuthControls.tsx and useQueries.ts compile without type errors."
         }
       ]
     }

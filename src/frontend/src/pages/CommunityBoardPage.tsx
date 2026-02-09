@@ -1,13 +1,14 @@
 import { useState, useRef } from 'react';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useListPosts, useCreatePost, useDeletePost, useEditPost, useIsCallerAdmin } from '../hooks/useQueries';
+import { useActor } from '../hooks/useActor';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { User, Clock, X } from 'lucide-react';
+import { User, Clock, X, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { PostImageAttachment } from '../components/community/PostImageAttachment';
 import { PostActions } from '../components/community/PostActions';
@@ -28,7 +29,9 @@ import {
 
 export default function CommunityBoardPage() {
   const { identity } = useInternetIdentity();
+  const { actor, isFetching: actorFetching } = useActor();
   const isAuthenticated = identity && !identity.getPrincipal().isAnonymous();
+  const isConnecting = actorFetching && !actor;
 
   const { data: posts, isLoading } = useListPosts();
   const { data: isAdmin = false } = useIsCallerAdmin();
@@ -183,6 +186,13 @@ export default function CommunityBoardPage() {
                 <Alert>
                   <AlertDescription>Please sign in to create posts and join the conversation.</AlertDescription>
                 </Alert>
+              ) : isConnecting ? (
+                <Alert>
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <AlertDescription>Connecting to the server...</AlertDescription>
+                  </div>
+                </Alert>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
@@ -193,6 +203,7 @@ export default function CommunityBoardPage() {
                       value={authorName}
                       onChange={(e) => setAuthorName(e.target.value)}
                       maxLength={50}
+                      disabled={isConnecting}
                     />
                   </div>
 
@@ -207,6 +218,7 @@ export default function CommunityBoardPage() {
                       onChange={(e) => setTitle(e.target.value)}
                       required
                       maxLength={100}
+                      disabled={isConnecting}
                     />
                   </div>
 
@@ -222,6 +234,7 @@ export default function CommunityBoardPage() {
                       required
                       rows={6}
                       maxLength={1000}
+                      disabled={isConnecting}
                     />
                   </div>
 
@@ -235,6 +248,7 @@ export default function CommunityBoardPage() {
                         accept={ACCEPTED_IMAGE_TYPES.join(',')}
                         onChange={handleImageSelect}
                         className="cursor-pointer"
+                        disabled={isConnecting}
                       />
                       <p className="text-xs text-muted-foreground">
                         Max size: {formatFileSize(MAX_IMAGE_SIZE_BYTES)}. Formats: PNG, JPEG, WebP
@@ -254,6 +268,7 @@ export default function CommunityBoardPage() {
                           size="icon"
                           className="absolute right-2 top-2"
                           onClick={handleRemoveImage}
+                          disabled={isConnecting}
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -261,7 +276,11 @@ export default function CommunityBoardPage() {
                     )}
                   </div>
 
-                  <Button type="submit" className="w-full" disabled={createPostMutation.isPending}>
+                  <Button 
+                    type="submit" 
+                    className="w-full" 
+                    disabled={createPostMutation.isPending || isConnecting}
+                  >
                     {createPostMutation.isPending ? 'Posting...' : 'Create Post'}
                   </Button>
                 </form>
@@ -274,59 +293,63 @@ export default function CommunityBoardPage() {
         <div className="space-y-6 lg:col-span-2">
           {isLoading ? (
             <LoadingState message="Loading posts..." />
-          ) : posts && posts.length > 0 ? (
+          ) : !posts || posts.length === 0 ? (
+            <Card className="border-2 shadow-soft">
+              <CardContent className="py-12 text-center">
+                <p className="text-muted-foreground">
+                  No posts yet. Be the first to share something with the community!
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
             posts
               .slice()
-              .reverse()
+              .sort((a, b) => Number(b.createdAt - a.createdAt))
               .map((post) => {
-                const canDelete = isAuthenticated ? (isAdmin || isPostAuthor(post)) : false;
-                const canEdit = isAuthenticated ? isAdmin : false;
+                const canEdit = isPostAuthor(post) || isAdmin;
+                const canDelete = isPostAuthor(post) || isAdmin;
 
                 return (
-                  <Card key={post.id.toString()} className="border-2 shadow-soft transition-shadow hover:shadow-lg">
+                  <Card key={post.id.toString()} className="border-2 shadow-soft">
                     <CardHeader>
-                      <div className="space-y-2">
-                        <div className="flex items-start justify-between gap-4">
-                          <CardTitle className="text-2xl">{post.title}</CardTitle>
-                          <PostActions
-                            post={post}
-                            canEdit={canEdit}
-                            canDelete={canDelete}
-                            onEdit={handleEditPost}
-                            onDelete={handleDeletePost}
-                            isEditPending={editPostMutation.isPending}
-                            isDeletePending={deletePostMutation.isPending}
-                          />
-                        </div>
-                        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <User className="h-3.5 w-3.5" />
-                            <span>{post.authorName || 'Anonymous'}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3.5 w-3.5" />
-                            <span>{formatDate(post.createdAt)}</span>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <CardTitle className="mb-2">{post.title}</CardTitle>
+                          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <User className="h-4 w-4" />
+                              <span>{post.authorName || 'Anonymous'}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-4 w-4" />
+                              <span>{formatDate(post.createdAt)}</span>
+                            </div>
                           </div>
                         </div>
+                        <PostActions
+                          post={post}
+                          canEdit={canEdit}
+                          canDelete={canDelete}
+                          onEdit={handleEditPost}
+                          onDelete={handleDeletePost}
+                          isEditPending={editPostMutation.isPending}
+                          isDeletePending={deletePostMutation.isPending}
+                        />
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <p className="whitespace-pre-wrap text-base leading-relaxed">{post.body}</p>
-                      <PostImageAttachment image={post.image} />
-                      <div className="flex items-center gap-2 pt-2">
+                      <p className="whitespace-pre-wrap text-foreground">{post.body}</p>
+                      {post.image && <PostImageAttachment image={post.image} />}
+                      
+                      <div className="flex items-center gap-4 border-t pt-4">
                         <PostLikeButton postId={post.id} />
                       </div>
+
                       <PostComments postId={post.id} />
                     </CardContent>
                   </Card>
                 );
               })
-          ) : (
-            <Card className="border-2 shadow-soft">
-              <CardContent className="py-12 text-center">
-                <p className="text-muted-foreground">No posts yet. Be the first to share!</p>
-              </CardContent>
-            </Card>
           )}
         </div>
       </div>

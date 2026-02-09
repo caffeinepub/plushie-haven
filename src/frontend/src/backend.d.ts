@@ -76,7 +76,7 @@ export enum UserRole {
     guest = "guest"
 }
 export interface backendInterface {
-    assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    claimAdmin(): Promise<void>;
     createComment(postId: bigint, authorName: string | null, content: string): Promise<Comment>;
     createEvent(authorName: string | null, title: string, description: string, location: string, startTime: Time, endTime: Time): Promise<bigint>;
     createPost(authorName: string | null, title: string, body: string, imageBytes: Uint8Array | null, imageContentType: string | null): Promise<bigint>;
@@ -85,7 +85,6 @@ export interface backendInterface {
     editPost(id: bigint, newTitle: string, newBody: string, newAuthorName: string | null): Promise<void>;
     follow(target: Principal): Promise<void>;
     getCallerUserProfile(): Promise<UserProfile | null>;
-    getCallerUserRole(): Promise<UserRole>;
     getCommentCounts(postIds: Array<bigint>): Promise<Array<[bigint, bigint]>>;
     getComments(postId: bigint): Promise<Array<Comment>>;
     getEvent(id: bigint): Promise<Event>;
