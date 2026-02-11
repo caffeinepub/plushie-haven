@@ -11,7 +11,8 @@ const navLinks = [
   { href: '/community', label: 'Community' },
   { href: '/events', label: 'Events' },
   { href: '/brands', label: 'Brands' },
-  { href: '/profiles', label: 'Profiles' },
+  { href: '/pacifier-brands', label: 'Pacifier Brands' },
+  { href: '/support', label: 'Support' },
 ];
 
 export default function Nav() {

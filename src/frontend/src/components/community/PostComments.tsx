@@ -1,32 +1,38 @@
 import { useState } from 'react';
-import { MessageSquare, User, Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { useInternetIdentity } from '../../hooks/useInternetIdentity';
+import { useListComments, useCreateComment } from '../../hooks/useQueries';
+import { useGetCallerUserProfile } from '../../hooks/useProfileQueries';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Card, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { useInternetIdentity } from '../../hooks/useInternetIdentity';
-import { useListComments, useCreateComment, useGetCommentCount } from '../../hooks/useQueries';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { MessageCircle, Loader2, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { normalizeActorError } from '../../utils/actorError';
-import LoadingState from '../LoadingState';
+import { normalizeActorError, isStoppedCanisterError } from '../../utils/actorError';
+import { LinkifiedText } from './LinkifiedText';
 
 interface PostCommentsProps {
   postId: bigint;
+  initialCount?: number;
 }
 
-export function PostComments({ postId }: PostCommentsProps) {
+export function PostComments({ postId, initialCount = 0 }: PostCommentsProps) {
   const { identity } = useInternetIdentity();
   const isAuthenticated = identity && !identity.getPrincipal().isAnonymous();
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [commentText, setCommentText] = useState('');
 
-  const { data: commentCount, isLoading: countLoading } = useGetCommentCount(postId);
-  const { data: comments, isLoading: commentsLoading } = useListComments(postId);
+  const { data: comments, isLoading, error: commentsError } = useListComments(postId);
+  const { data: userProfile } = useGetCallerUserProfile();
   const createCommentMutation = useCreateComment();
 
-  const handleSubmitComment = async (e: React.FormEvent) => {
+  const commentCount = comments?.length ?? initialCount;
+
+  // Check if backend is unavailable due to stopped canister
+  const isBackendUnavailable = !!(commentsError && isStoppedCanisterError(commentsError));
+  const backendUnavailableMessage = isBackendUnavailable ? normalizeActorError(commentsError) : null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!isAuthenticated) {
@@ -34,21 +40,22 @@ export function PostComments({ postId }: PostCommentsProps) {
       return;
     }
 
-    const trimmedContent = commentText.trim();
-    if (!trimmedContent) {
+    if (!commentText.trim()) {
       toast.error('Comment cannot be empty');
       return;
     }
 
     try {
+      const authorName = userProfile?.displayName || null;
+
       await createCommentMutation.mutateAsync({
         postId,
-        authorName: null,
-        content: trimmedContent,
+        authorName,
+        content: commentText.trim(),
       });
 
       setCommentText('');
-      toast.success('Comment posted successfully!');
+      toast.success('Comment added!');
     } catch (error) {
       toast.error(normalizeActorError(error));
     }
@@ -57,7 +64,6 @@ export function PostComments({ postId }: PostCommentsProps) {
   const formatDate = (timestamp: bigint) => {
     const date = new Date(Number(timestamp) / 1_000_000);
     return date.toLocaleDateString('en-US', {
-      year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
@@ -65,94 +71,86 @@ export function PostComments({ postId }: PostCommentsProps) {
     });
   };
 
-  const displayCount = commentCount ?? 0;
-
   return (
-    <div className="space-y-3">
-      <Separator />
-      
-      {/* Comments Toggle Button */}
+    <div className="w-full">
       <Button
         variant="ghost"
         size="sm"
         onClick={() => setIsExpanded(!isExpanded)}
-        disabled={countLoading}
-        className="gap-2 text-muted-foreground hover:text-foreground"
+        className="gap-2"
       >
-        <MessageSquare className="h-4 w-4" />
-        <span>Comments ({displayCount})</span>
-        {isExpanded ? (
-          <ChevronUp className="h-4 w-4" />
-        ) : (
-          <ChevronDown className="h-4 w-4" />
-        )}
+        <MessageCircle className="h-4 w-4" />
+        <span>{commentCount} {commentCount === 1 ? 'Comment' : 'Comments'}</span>
       </Button>
 
-      {/* Expanded Comments Section */}
       {isExpanded && (
-        <div className="space-y-4 rounded-lg border-2 bg-muted/30 p-4">
-          {/* Comment Input Form */}
-          {isAuthenticated ? (
-            <form onSubmit={handleSubmitComment} className="space-y-3">
+        <div className="mt-4 space-y-4 border-t pt-4">
+          {/* Backend Unavailable Alert */}
+          {isBackendUnavailable && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Unable to Load Comments</AlertTitle>
+              <AlertDescription>{backendUnavailableMessage}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Comment Form */}
+          {isAuthenticated && !isBackendUnavailable && (
+            <form onSubmit={handleSubmit} className="space-y-2">
               <Textarea
                 placeholder="Write a comment..."
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 rows={3}
                 maxLength={500}
-                disabled={createCommentMutation.isPending}
-                className="resize-none"
               />
-              <div className="flex justify-end">
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={createCommentMutation.isPending || !commentText.trim()}
-                >
-                  {createCommentMutation.isPending ? 'Posting...' : 'Post Comment'}
-                </Button>
-              </div>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={createCommentMutation.isPending || !commentText.trim()}
+              >
+                {createCommentMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Posting...
+                  </>
+                ) : (
+                  'Post Comment'
+                )}
+              </Button>
             </form>
-          ) : (
+          )}
+
+          {!isAuthenticated && (
             <Alert>
-              <AlertDescription>
-                Please sign in to leave a comment.
-              </AlertDescription>
+              <AlertDescription>Please sign in to comment.</AlertDescription>
             </Alert>
           )}
 
           {/* Comments List */}
-          <div className="space-y-3">
-            {commentsLoading ? (
-              <LoadingState message="Loading comments..." />
-            ) : comments && comments.length > 0 ? (
-              comments.map((comment, index) => (
-                <Card key={index} className="border shadow-sm">
-                  <CardContent className="p-4">
-                    <div className="mb-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <User className="h-3.5 w-3.5" />
-                        <span>{comment.authorName || 'Anonymous'}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3.5 w-3.5" />
-                        <span>{formatDate(comment.createdAt)}</span>
-                      </div>
-                    </div>
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                      {comment.content}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              <div className="py-8 text-center">
-                <p className="text-sm text-muted-foreground">
-                  No comments yet. Be the first to comment!
-                </p>
-              </div>
-            )}
-          </div>
+          {isLoading && !isBackendUnavailable ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : !isBackendUnavailable && comments && comments.length > 0 ? (
+            <div className="space-y-3">
+              {comments.map((comment, index) => (
+                <div key={index} className="rounded-lg border bg-muted/30 p-3">
+                  <div className="mb-1 flex items-center justify-between text-sm">
+                    <span className="font-medium">{comment.authorName || 'Anonymous'}</span>
+                    <span className="text-muted-foreground">{formatDate(comment.createdAt)}</span>
+                  </div>
+                  <div className="text-sm">
+                    <LinkifiedText text={comment.content} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : !isBackendUnavailable && (
+            <p className="py-4 text-center text-sm text-muted-foreground">
+              No comments yet. Be the first to comment!
+            </p>
+          )}
         </div>
       )}
     </div>

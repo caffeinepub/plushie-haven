@@ -1,55 +1,43 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-09T09:15:38.910Z",
-  "summary": "Frontend AuthControls was updated to attempt an admin-claim call and invalidate the isAdmin query, but it relies on an `any` cast instead of updated generated bindings. The backend diff snippet does not provide evidence that `isCallerAdmin` and `claimAdmin` were added/implemented, nor that `deletePost` authorization was preserved/updated. Additional unrequested changes include a new actor error normalization utility and UI behavior changes (profile display name in auth controls).",
+  "generatedAt": "2026-02-11T09:25:37.072Z",
+  "summary": "Implemented safe, allowlisted video embedding by extending token-based URL parsing to emit video tokens for YouTube/Vimeo and rendering them via a responsive iframe component inside LinkifiedText. Non-video URLs remain standard external links. CommunityBoardPage usage is asserted via a summary file, but actual code changes for CommunityBoardPage/PostComments rendering are not fully visible in the provided diff summary (PostComments is truncated).",
   "missing_requirements": [
     {
-      "id": "REQ-90",
-      "requirement": "Backend exposes `isCallerAdmin : async Bool` and a one-time `claimAdmin : async ()` (with clear error when already claimed), and `deletePost` authorization continues to allow admins to delete any post while non-admins can delete only their own posts.",
-      "reason": "The provided `backend/main.mo` diff is truncated and does not show any implementation or exposure of `isCallerAdmin` or `claimAdmin`, nor any evidence regarding `deletePost` authorization behavior.",
+      "id": "REQ-2",
+      "requirement": "Apply video-embed rendering consistently anywhere the app currently uses LinkifiedText to render user-generated text (including CommunityBoardPage post title/body and PostComments comment content).",
+      "reason": "LinkifiedText now supports video tokens, and PostComments imports LinkifiedText, but the diff for PostComments is truncated and no concrete diff for CommunityBoardPage is shown—so consistent application to post titles/bodies and comment content cannot be fully verified from the provided diff summary alone.",
       "evidence": [
-        "backend/main.mo (truncated; no shown `isCallerAdmin`, `claimAdmin`, or `deletePost` logic)"
-      ]
-    },
-    {
-      "id": "REQ-92",
-      "requirement": "Update generated frontend backend bindings/types so the frontend can call `actor.isCallerAdmin()` from `frontend/src/hooks/useQueries.ts` and call the backend admin-claim method from `frontend/src/components/AuthControls.tsx` with a successful type-check/build.",
-      "reason": "AuthControls uses a type assertion (`actor as any`) specifically because `claimAdmin` is not reflected in generated type definitions; no diff evidence shows generated bindings/types were updated.",
-      "evidence": [
-        "frontend/src/components/AuthControls.tsx (uses `const actorWithClaimAdmin = actor as any;` and checks for `claimAdmin` existence)"
+        "frontend/src/components/community/PostComments.tsx (truncated)",
+        "frontend-file-summaries.txt (claims CommunityBoardPage now renders via LinkifiedText, but no actual code diff shown)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added a new frontend utility to normalize backend/actor errors into user-friendly English messages.",
-      "reason": "The BuildRequest did not ask for a new shared error-normalization utility; it only required specific toasts/messages in the admin-claim flow.",
+      "description": "Added/updated project tracking metadata (project_state.json new_feature_requests entries) unrelated to the UI video-embed requirements.",
+      "reason": "The BuildRequest does not request adding or modifying project_state.json or introducing AR-* tracking entries.",
       "evidence": [
-        "frontend/src/utils/actorError.ts"
+        "project_state.json"
       ]
     },
     {
-      "description": "Changed AuthControls to display the user's profile displayName (with short principal fallback) as the dropdown trigger label.",
-      "reason": "The BuildRequest only specified updating the admin-claim flow and toasts/query invalidation; it did not request changing the signed-in display label behavior.",
+      "description": "Updated frontend-file-summaries.txt with broad app feature descriptions beyond the requested video-embed change.",
+      "reason": "The BuildRequest only asks for video embeds in LinkifiedText usage; modifying a repository-wide summary file (and including unrelated feature claims) is not requested.",
       "evidence": [
-        "frontend/src/components/AuthControls.tsx (displayName derived from `useGetCallerUserProfile()` and shown in the button)"
-      ]
-    },
-    {
-      "description": "Added a UI fallback message: \"Admin claim functionality is not yet available. Please contact support.\" when `claimAdmin` is missing on the actor.",
-      "reason": "The BuildRequest did not request adding a new support-oriented fallback for missing methods; it asked to use the backend claim method and show clear success/failure toasts, including already-claimed handling.",
-      "evidence": [
-        "frontend/src/components/AuthControls.tsx (checks `typeof actorWithClaimAdmin.claimAdmin !== 'function'` and shows toast)"
+        "frontend-file-summaries.txt (truncated)"
       ]
     }
   ],
-  "confidence": 0.66,
+  "confidence": 0.62,
   "changed_files": [
-    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/AuthControls.tsx",
-    "frontend/src/utils/actorError.ts",
+    "frontend/src/components/community/LinkifiedText.tsx",
+    "frontend/src/components/community/PostComments.tsx",
+    "frontend/src/components/community/VideoEmbed.tsx",
+    "frontend/src/utils/linkifyText.ts",
+    "frontend/src/utils/videoEmbeds.ts",
     "project_state.json"
   ]
 }

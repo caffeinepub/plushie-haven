@@ -1,71 +1,54 @@
 {
   "kind": "build_request",
-  "title": "Enable claiming admin so the signed-in user can delete other users’ posts",
+  "title": "Add video embeds for supported video links",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-90",
-      "text": "Add backend canister support for admin status checking and one-time admin claiming so the currently authenticated Internet Identity principal can become an admin (only if no admin has been set yet). Expose a query to check whether the caller is an admin, and a shared method to claim admin for the caller with clear error behavior when admin is already claimed.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "Make me an admin so I can delete other people's posts"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Backend exposes a query method `isCallerAdmin : async Bool` that returns true only when the caller is an admin.",
-        "Backend exposes a shared method `claimAdmin : async ()` that sets the caller as admin only if no admin exists yet; otherwise it traps/returns an error that can be shown to the user (e.g., \"Admin has already been claimed.\").",
-        "Existing authorization rules for `deletePost` continue to allow admins to delete any post and non-admin users to delete only their own posts."
-      ]
-    },
-    {
-      "id": "REQ-91",
-      "text": "Update the frontend admin-claim flow in `frontend/src/components/AuthControls.tsx` to use the backend’s one-time admin claim method (and not call a non-existent or mismatched role-assignment API). After a successful claim, refresh the cached admin status and show clear English toasts for success and failure states.",
+      "id": "REQ-1",
+      "text": "Extend the existing URL parsing/rendering used by Community Board posts and comments to auto-embed videos for supported video URLs (at minimum YouTube and Vimeo) while keeping all other URLs rendered as normal clickable external links.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "Make me an admin so I can delete other people's posts"
+          "add video embeds"
         ]
       },
       "acceptanceCriteria": [
-        "Clicking the \"Claim Admin\" menu item successfully calls the backend admin-claim method for the signed-in user.",
-        "On success, the UI shows a success toast in English (e.g., \"You are now an admin.\") and invalidates/refetches the `['isAdmin']` query so admin-only controls appear without a page reload.",
-        "If admin was already claimed (or the user is not eligible), the UI shows a clear English error toast (e.g., \"Admin access has already been claimed on this canister.\") rather than a technical error.",
-        "If the actor is not ready, the UI shows an English message (existing or updated) indicating the system is still connecting."
+        "When a user includes a YouTube or Vimeo URL in post titles, post bodies, or comment content, the UI renders an embedded video player for that URL.",
+        "Non-video URLs continue to render as clickable links (open in a new tab) exactly as they do today.",
+        "Embeds are implemented using a strict allowlist of video providers (e.g., YouTube/Vimeo) and do not allow arbitrary iframe embedding.",
+        "Embedded players are responsive (maintain aspect ratio and fit the container on mobile/desktop)."
       ]
     },
     {
-      "id": "REQ-92",
-      "text": "Update the generated frontend backend bindings/types so the frontend can call the backend admin methods required by the existing React Query hooks (`useIsCallerAdmin`) and the updated admin-claim UI.",
+      "id": "REQ-2",
+      "text": "Apply video-embed rendering consistently anywhere the app currently uses LinkifiedText to render user-generated text (including CommunityBoardPage post title/body and PostComments comment content).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "Make me an admin so I can delete other people's posts"
+          "add video embeds"
         ]
       },
       "acceptanceCriteria": [
-        "Type-check/build succeeds with the frontend calling `actor.isCallerAdmin()` from `frontend/src/hooks/useQueries.ts`.",
-        "Type-check/build succeeds with the frontend calling the backend admin-claim method from `frontend/src/components/AuthControls.tsx`."
+        "CommunityBoardPage renders video embeds in post titles and post bodies where applicable.",
+        "PostComments renders video embeds in comment content where applicable.",
+        "No changes are required to backend data structures or APIs to support video embedding (embeds are derived from existing text content)."
       ]
     }
   ],
   "constraints": [
-    "Respect the Internet Computer single-actor backend architecture: implement all Motoko changes in `backend/main.mo`.",
-    "Do not edit files under `frontend/src/components/ui`, `frontend/src/hooks/useInternetIdentity.ts`, `frontend/src/hooks/useInternetIdentity.tsx`, `frontend/src/hooks/useActor.ts`, or `frontend/src/main.tsx` (immutable paths).",
-    "Use English for any user-facing text."
+    "Do not modify files in frontend immutablePaths (e.g., frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui/*).",
+    "Do not use dangerouslySetInnerHTML for embedding; use safe, token-based rendering and a provider allowlist."
   ],
   "nonGoals": [
-    "Implementing multi-admin support (more than one admin) beyond the existing one-time claim behavior.",
-    "Adding a new admin management UI (e.g., admin dashboard) beyond making admin claim + post deletion work reliably."
+    "Uploading/hosting video files in the app or storing video blobs on the backend.",
+    "Embedding videos from arbitrary/untrusted domains.",
+    "Adding real-time video features (live streaming, chat, etc.)."
   ],
   "imageRequirements": {
     "required": [],

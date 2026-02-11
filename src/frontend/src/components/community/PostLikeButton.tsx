@@ -1,9 +1,9 @@
-import { Heart } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useInternetIdentity } from '../../hooks/useInternetIdentity';
 import { useGetPostLikeSummary, useLikePost, useUnlikePost } from '../../hooks/useQueries';
+import { Button } from '@/components/ui/button';
+import { Heart, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { normalizeActorError } from '../../utils/actorError';
+import { normalizeActorError, isStoppedCanisterError } from '../../utils/actorError';
 
 interface PostLikeButtonProps {
   postId: bigint;
@@ -13,13 +13,12 @@ export function PostLikeButton({ postId }: PostLikeButtonProps) {
   const { identity } = useInternetIdentity();
   const isAuthenticated = identity && !identity.getPrincipal().isAnonymous();
 
-  const { data: likeSummary, isLoading } = useGetPostLikeSummary(postId);
-  const likePostMutation = useLikePost();
-  const unlikePostMutation = useUnlikePost();
+  const { data: likeSummary, isLoading, error: likeSummaryError } = useGetPostLikeSummary(postId);
+  const likeMutation = useLikePost();
+  const unlikeMutation = useUnlikePost();
 
-  const likeCount = likeSummary?.likeCount ? Number(likeSummary.likeCount) : 0;
-  const isLiked = likeSummary?.callerLiked || false;
-  const isPending = likePostMutation.isPending || unlikePostMutation.isPending;
+  // Check if backend is unavailable due to stopped canister
+  const isBackendUnavailable = !!(likeSummaryError && isStoppedCanisterError(likeSummaryError));
 
   const handleToggleLike = async () => {
     if (!isAuthenticated) {
@@ -27,27 +26,41 @@ export function PostLikeButton({ postId }: PostLikeButtonProps) {
       return;
     }
 
+    // Prevent action if backend is unavailable
+    if (isBackendUnavailable) {
+      toast.error(normalizeActorError(likeSummaryError));
+      return;
+    }
+
     try {
-      if (isLiked) {
-        await unlikePostMutation.mutateAsync(postId);
+      if (likeSummary?.callerLiked) {
+        await unlikeMutation.mutateAsync(postId);
       } else {
-        await likePostMutation.mutateAsync(postId);
+        await likeMutation.mutateAsync(postId);
       }
     } catch (error) {
       toast.error(normalizeActorError(error));
     }
   };
 
+  const isPending = likeMutation.isPending || unlikeMutation.isPending;
+  const isLiked = likeSummary?.callerLiked || false;
+  const likeCount = likeSummary?.likeCount ? Number(likeSummary.likeCount) : 0;
+
   return (
     <Button
-      variant={isLiked ? 'default' : 'outline'}
+      variant="ghost"
       size="sm"
       onClick={handleToggleLike}
-      disabled={isPending || isLoading}
+      disabled={isPending || isLoading || isBackendUnavailable}
       className="gap-2"
     >
-      <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
-      <span>{likeCount}</span>
+      {isPending ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <Heart className={`h-4 w-4 ${isLiked ? 'fill-pink-500 text-pink-500' : ''}`} />
+      )}
+      {likeCount} {likeCount === 1 ? 'Like' : 'Likes'}
     </Button>
   );
 }

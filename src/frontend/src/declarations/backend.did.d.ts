@@ -43,7 +43,42 @@ export interface LegacyPost {
   'author' : Principal,
   'image' : [] | [ImageAttachment],
 }
+export interface LegacyPostWithCounts {
+  'likeCount' : bigint,
+  'post' : LegacyPost,
+  'commentCount' : bigint,
+}
 export interface Link { 'url' : string, 'displayName' : string }
+export interface Poll {
+  'question' : string,
+  'createdAt' : Time,
+  'createdBy' : Principal,
+  'isActive' : boolean,
+  'options' : Array<PollOption>,
+  'pollId' : bigint,
+}
+export interface PollOption { 'optionId' : bigint, 'text' : string }
+export interface PollWithResults {
+  'question' : string,
+  'createdAt' : Time,
+  'createdBy' : Principal,
+  'results' : Array<[bigint, bigint]>,
+  'isActive' : boolean,
+  'options' : Array<PollOption>,
+  'pollId' : bigint,
+}
+export interface SupporterProfile {
+  'displayName' : string,
+  'addedAt' : Time,
+  'validUntil' : [] | [Time],
+}
+export interface SupporterRequest {
+  'displayName' : string,
+  'submittedAt' : Time,
+  'numberOfCoffees' : [] | [bigint],
+  'message' : string,
+  'validUntil' : [] | [Time],
+}
 export type Time = bigint;
 export interface UserProfile {
   'bio' : string,
@@ -92,12 +127,14 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'approveSupporter' : ActorMethod<[Principal, [] | [Time]], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'createComment' : ActorMethod<[bigint, [] | [string], string], Comment>,
   'createEvent' : ActorMethod<
     [[] | [string], string, string, string, Time, Time],
     bigint
   >,
+  'createPoll' : ActorMethod<[string, Array<PollOption>], bigint>,
   'createPost' : ActorMethod<
     [[] | [string], string, string, [] | [Uint8Array], [] | [string]],
     bigint
@@ -112,9 +149,17 @@ export interface _SERVICE {
   'getComments' : ActorMethod<[bigint], Array<Comment>>,
   'getEvent' : ActorMethod<[bigint], Event>,
   'getFollowCounts' : ActorMethod<[Principal], FollowCounts>,
+  'getPoll' : ActorMethod<[bigint], Poll>,
+  'getPollResults' : ActorMethod<[bigint], PollWithResults>,
   'getPost' : ActorMethod<[bigint], LegacyPost>,
   'getPostLikeCount' : ActorMethod<[bigint], bigint>,
+  'getPostsWithCounts' : ActorMethod<[], Array<LegacyPostWithCounts>>,
   'getProfileLikeCount' : ActorMethod<[Principal], bigint>,
+  'getSupporterRequests' : ActorMethod<
+    [],
+    Array<[Principal, SupporterRequest]>
+  >,
+  'getSupporters' : ActorMethod<[], Array<[Principal, SupporterProfile]>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'isPostLikedByCaller' : ActorMethod<[bigint], boolean>,
@@ -123,11 +168,18 @@ export interface _SERVICE {
   'likeProfile' : ActorMethod<[Principal], undefined>,
   'listDirectoryProfiles' : ActorMethod<[], Array<UserProfile>>,
   'listEvents' : ActorMethod<[], Array<Event>>,
+  'listPolls' : ActorMethod<[], Array<Poll>>,
   'listPosts' : ActorMethod<[], Array<LegacyPost>>,
+  'revokeSupporter' : ActorMethod<[Principal], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfileEdit], undefined>,
+  'submitSupporterRequest' : ActorMethod<
+    [string, string, [] | [bigint], [] | [Time]],
+    undefined
+  >,
   'unfollow' : ActorMethod<[Principal], undefined>,
   'unlikePost' : ActorMethod<[bigint], undefined>,
   'unlikeProfile' : ActorMethod<[Principal], undefined>,
+  'vote' : ActorMethod<[bigint, bigint], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

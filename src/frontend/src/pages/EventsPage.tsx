@@ -6,16 +6,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Calendar, MapPin, User, Clock } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Calendar, MapPin, User, Clock, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { normalizeActorError, isStoppedCanisterError } from '../utils/actorError';
 import LoadingState from '../components/LoadingState';
 
 export default function EventsPage() {
   const { identity } = useInternetIdentity();
   const isAuthenticated = identity && !identity.getPrincipal().isAnonymous();
 
-  const { data: events, isLoading } = useListEvents();
+  const { data: events, isLoading, error: eventsError } = useListEvents();
   const createEventMutation = useCreateEvent();
 
   const [title, setTitle] = useState('');
@@ -26,6 +27,10 @@ export default function EventsPage() {
   const [endDate, setEndDate] = useState('');
   const [endTime, setEndTime] = useState('');
   const [authorName, setAuthorName] = useState('');
+
+  // Check if backend is unavailable due to stopped canister
+  const isBackendUnavailable = eventsError && isStoppedCanisterError(eventsError);
+  const backendUnavailableMessage = isBackendUnavailable ? normalizeActorError(eventsError) : null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +73,7 @@ export default function EventsPage() {
       setAuthorName('');
       toast.success('Event created successfully!');
     } catch (error) {
-      toast.error('Failed to create event. Please try again.');
+      toast.error(normalizeActorError(error));
     }
   };
 
@@ -83,220 +88,208 @@ export default function EventsPage() {
     });
   };
 
-  const formatEventTime = (start: bigint, end: bigint) => {
-    const startDate = new Date(Number(start) / 1_000_000);
-    const endDate = new Date(Number(end) / 1_000_000);
-    
-    const dateStr = startDate.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-    
-    const startTimeStr = startDate.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-    
-    const endTimeStr = endDate.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-    
-    return `${dateStr} • ${startTimeStr} - ${endTimeStr}`;
-  };
-
   return (
-    <div className="container py-12">
-      <div className="mb-12">
-        <h1 className="mb-4 text-4xl font-bold tracking-tight">Events</h1>
-        <p className="text-lg text-muted-foreground">
-          Discover plushie meetups, conventions, and community gatherings. Create your own events!
+    <div className="container mx-auto max-w-4xl space-y-8 px-4 py-8">
+      <div>
+        <h1 className="mb-2 text-4xl font-bold tracking-tight">Events</h1>
+        <p className="text-muted-foreground">
+          Discover and create plushie-related events in your area.
         </p>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-3">
-        {/* Create Event Form */}
-        <div className="lg:col-span-1">
-          <Card className="sticky top-20 border-2 shadow-soft">
-            <CardHeader>
-              <CardTitle>Create an Event</CardTitle>
-              <CardDescription>Share your plushie gathering with the community</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {!isAuthenticated ? (
-                <Alert>
-                  <AlertDescription>Please sign in to create events and organize gatherings.</AlertDescription>
-                </Alert>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="authorName">Organizer Name (Optional)</Label>
-                    <Input
-                      id="authorName"
-                      placeholder="Anonymous"
-                      value={authorName}
-                      onChange={(e) => setAuthorName(e.target.value)}
-                      maxLength={50}
-                    />
-                  </div>
+      {/* Backend Unavailable Alert */}
+      {isBackendUnavailable && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Service Unavailable</AlertTitle>
+          <AlertDescription>{backendUnavailableMessage}</AlertDescription>
+        </Alert>
+      )}
 
-                  <div className="space-y-2">
-                    <Label htmlFor="title">
-                      Event Title <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="title"
-                      placeholder="Plushie Meetup"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      required
-                      maxLength={100}
-                    />
-                  </div>
+      {/* Create Event Form */}
+      <Card className="border-2 shadow-soft">
+        <CardHeader>
+          <CardTitle>Create an Event</CardTitle>
+          <CardDescription>Share an upcoming plushie event with the community</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {!isAuthenticated ? (
+            <Alert>
+              <AlertDescription>Please sign in to create events.</AlertDescription>
+            </Alert>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="event-title">
+                  Event Title <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="event-title"
+                  placeholder="e.g., Monthly Plushie Meetup"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                  maxLength={100}
+                />
+              </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="description">
-                      Description <span className="text-destructive">*</span>
-                    </Label>
-                    <Textarea
-                      id="description"
-                      placeholder="Tell us about your event..."
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      required
-                      rows={4}
-                      maxLength={500}
-                    />
-                  </div>
+              <div className="space-y-2">
+                <Label htmlFor="event-description">
+                  Description <span className="text-destructive">*</span>
+                </Label>
+                <Textarea
+                  id="event-description"
+                  placeholder="Describe your event..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  required
+                  maxLength={1000}
+                  rows={4}
+                />
+              </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="location">
-                      Location <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="location"
-                      placeholder="City, State or Venue"
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                      required
-                      maxLength={100}
-                    />
-                  </div>
+              <div className="space-y-2">
+                <Label htmlFor="event-location">
+                  Location <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="event-location"
+                  placeholder="e.g., Central Park, New York"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  required
+                  maxLength={200}
+                />
+              </div>
 
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="startDate">
-                        Start Date <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id="startDate"
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="startTime">
-                        Start Time <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id="startTime"
-                        type="time"
-                        value={startTime}
-                        onChange={(e) => setStartTime(e.target.value)}
-                        required
-                      />
-                    </div>
-                  </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="start-date">
+                    Start Date <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="start-date"
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    required
+                  />
+                </div>
 
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="endDate">
-                        End Date <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id="endDate"
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="endTime">
-                        End Time <span className="text-destructive">*</span>
-                      </Label>
-                      <Input
-                        id="endTime"
-                        type="time"
-                        value={endTime}
-                        onChange={(e) => setEndTime(e.target.value)}
-                        required
-                      />
-                    </div>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="start-time">
+                    Start Time <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="start-time"
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
 
-                  <Button type="submit" className="w-full" disabled={createEventMutation.isPending}>
-                    {createEventMutation.isPending ? 'Creating...' : 'Create Event'}
-                  </Button>
-                </form>
-              )}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="end-date">
+                    End Date <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="end-date"
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="end-time">
+                    End Time <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="end-time"
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="organizer-name">Organizer Name (optional)</Label>
+                <Input
+                  id="organizer-name"
+                  placeholder="Your name or organization"
+                  value={authorName}
+                  onChange={(e) => setAuthorName(e.target.value)}
+                  maxLength={100}
+                />
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={createEventMutation.isPending}
+              >
+                {createEventMutation.isPending ? 'Creating Event...' : 'Create Event'}
+              </Button>
+            </form>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Events List */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold">Upcoming Events</h2>
+        {isLoading ? (
+          <LoadingState message="Loading events..." />
+        ) : isBackendUnavailable ? (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Unable to Load Events</AlertTitle>
+            <AlertDescription>{backendUnavailableMessage}</AlertDescription>
+          </Alert>
+        ) : !events || events.length === 0 ? (
+          <Card className="border-2 shadow-soft">
+            <CardContent className="py-12 text-center">
+              <p className="text-muted-foreground">No events yet. Be the first to create one!</p>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Events List */}
-        <div className="space-y-6 lg:col-span-2">
-          {isLoading ? (
-            <LoadingState message="Loading events..." />
-          ) : events && events.length > 0 ? (
-            events
-              .slice()
-              .reverse()
-              .map((event) => (
-                <Card key={event.id.toString()} className="border-2 shadow-soft transition-shadow hover:shadow-lg">
-                  <CardHeader>
-                    <div className="space-y-3">
-                      <CardTitle className="text-2xl">{event.title}</CardTitle>
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="h-4 w-4" />
-                          <span>{formatEventTime(event.startTime, event.endTime)}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <MapPin className="h-4 w-4" />
-                          <span>{event.location}</span>
-                        </div>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <User className="h-3.5 w-3.5" />
-                          <span>Organized by {event.authorName || 'Anonymous'}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3.5 w-3.5" />
-                          <span>Posted {formatDate(event.createdAt)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="whitespace-pre-wrap text-foreground">{event.description}</p>
-                  </CardContent>
-                </Card>
-              ))
-          ) : (
-            <Card className="border-2 shadow-soft">
-              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                <Calendar className="mb-4 h-12 w-12 text-muted-foreground" />
-                <h3 className="mb-2 text-lg font-semibold">No events yet</h3>
-                <p className="text-muted-foreground">Be the first to organize a plushie gathering!</p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+        ) : (
+          events
+            .sort((a, b) => Number(a.startTime - b.startTime))
+            .map((event) => (
+              <Card key={event.id.toString()} className="border-2 shadow-soft">
+                <CardHeader>
+                  <CardTitle className="text-xl">{event.title}</CardTitle>
+                  <CardDescription className="flex flex-col gap-2 text-sm">
+                    <span className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Organized by {event.authorName || 'Anonymous'}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      {formatDate(event.startTime)}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      Until {formatDate(event.endTime)}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4" />
+                      {event.location}
+                    </span>
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="whitespace-pre-wrap text-foreground">{event.description}</p>
+                </CardContent>
+              </Card>
+            ))
+        )}
       </div>
     </div>
   );

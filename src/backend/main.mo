@@ -1,13 +1,14 @@
 import Time "mo:core/Time";
 import Map "mo:core/Map";
+import Nat "mo:core/Nat";
+import List "mo:core/List";
 import Array "mo:core/Array";
 import Runtime "mo:core/Runtime";
 import Principal "mo:core/Principal";
-import List "mo:core/List";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
-import MixinStorage "blob-storage/Mixin";
 import Storage "blob-storage/Storage";
+import MixinStorage "blob-storage/Mixin";
 
 actor {
   // Authorization
@@ -16,6 +17,81 @@ actor {
 
   // Storage
   include MixinStorage();
+
+  // Supporter/coffees system
+  public type SupporterRequest = {
+    submittedAt : Time.Time;
+    displayName : Text;
+    message : Text;
+    numberOfCoffees : ?Nat;
+    validUntil : ?Time.Time;
+  };
+
+  public type SupporterProfile = {
+    addedAt : Time.Time;
+    displayName : Text;
+    validUntil : ?Time.Time;
+  };
+
+  let supporterRequests = Map.empty<Principal, SupporterRequest>();
+  let supporters = Map.empty<Principal, SupporterProfile>();
+
+  public shared ({ caller }) func submitSupporterRequest(displayName : Text, message : Text, numberOfCoffees : ?Nat, validUntil : ?Time.Time) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can submit supporter requests");
+    };
+
+    let request : SupporterRequest = {
+      submittedAt = Time.now();
+      displayName;
+      message;
+      numberOfCoffees;
+      validUntil;
+    };
+    supporterRequests.add(caller, request);
+  };
+
+  public shared ({ caller }) func approveSupporter(supporter : Principal, validUntil : ?Time.Time) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can approve supporters");
+    };
+
+    let request = switch (supporterRequests.get(supporter)) {
+      case (null) { Runtime.trap("Supporter request not found!") };
+      case (?request) { request };
+    };
+
+    let profile : SupporterProfile = {
+      addedAt = Time.now();
+      displayName = request.displayName;
+      validUntil;
+    };
+
+    supporters.add(supporter, profile);
+    supporterRequests.remove(supporter);
+  };
+
+  public shared ({ caller }) func revokeSupporter(supporter : Principal) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can revoke supporter status");
+    };
+
+    supporters.remove(supporter);
+  };
+
+  public query ({ caller }) func getSupporterRequests() : async [(Principal, SupporterRequest)] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can view supporter requests");
+    };
+    supporterRequests.toArray();
+  };
+
+  public query ({ caller }) func getSupporters() : async [(Principal, SupporterProfile)] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can view the supporter list");
+    };
+    supporters.toArray();
+  };
 
   // User Profile Types
   public type Link = {
@@ -80,6 +156,7 @@ actor {
   };
 
   public query ({ caller }) func listDirectoryProfiles() : async [UserProfile] {
+    // No authorization needed - public directory is meant to be publicly accessible
     userProfiles.values().toArray().filter(func(profile) { profile.publicDirectory });
   };
 
@@ -152,10 +229,12 @@ actor {
   };
 
   public query ({ caller }) func listPosts() : async [LegacyPost] {
+    // No authorization needed - posts are publicly viewable
     posts.values().toArray();
   };
 
   public query ({ caller }) func getPost(id : Nat) : async LegacyPost {
+    // No authorization needed - posts are publicly viewable
     switch (posts.get(id)) {
       case (null) { Runtime.trap("Post not found") };
       case (?post) { post };
@@ -211,6 +290,7 @@ actor {
   };
 
   // Events
+
   public shared ({ caller }) func createEvent(authorName : ?Text, title : Text, description : Text, location : Text, startTime : Time.Time, endTime : Time.Time) : async Nat {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authenticated users can create events");
@@ -240,10 +320,12 @@ actor {
   };
 
   public query ({ caller }) func listEvents() : async [Event] {
+    // No authorization needed - events are publicly viewable
     events.values().toArray();
   };
 
   public query ({ caller }) func getEvent(id : Nat) : async Event {
+    // No authorization needed - events are publicly viewable
     switch (events.get(id)) {
       case (null) { Runtime.trap("Event not found") };
       case (?event) { event };
@@ -332,6 +414,7 @@ actor {
   };
 
   public query ({ caller }) func doesCallerFollow(target : Principal) : async Bool {
+    // No authorization needed - checking follow status is public information
     switch (followData.get(caller)) {
       case (null) { false };
       case (?info) {
@@ -341,6 +424,7 @@ actor {
   };
 
   public query ({ caller }) func getFollowCounts(user : Principal) : async FollowCounts {
+    // No authorization needed - follow counts are public information
     let info = switch (followData.get(user)) {
       case (null) {
         {
@@ -403,6 +487,7 @@ actor {
   };
 
   public query ({ caller }) func isPostLikedByCaller(postId : Nat) : async Bool {
+    // No authorization needed - checking like status is public information
     switch (postLikes.get(postId)) {
       case (null) { false };
       case (?likes) {
@@ -412,6 +497,7 @@ actor {
   };
 
   public query ({ caller }) func getPostLikeCount(postId : Nat) : async Nat {
+    // No authorization needed - like counts are public information
     switch (postLikes.get(postId)) {
       case (null) { 0 };
       case (?likes) { likes.size() };
@@ -451,6 +537,7 @@ actor {
   };
 
   public query ({ caller }) func isProfileLikedByCaller(profile : Principal) : async Bool {
+    // No authorization needed - checking like status is public information
     switch (profileLikes.get(profile)) {
       case (null) { false };
       case (?likes) {
@@ -460,6 +547,7 @@ actor {
   };
 
   public query ({ caller }) func getProfileLikeCount(profile : Principal) : async Nat {
+    // No authorization needed - like counts are public information
     switch (profileLikes.get(profile)) {
       case (null) { 0 };
       case (?likes) { likes.size() };
@@ -508,6 +596,7 @@ actor {
   };
 
   public query ({ caller }) func getComments(postId : Nat) : async [Comment] {
+    // No authorization needed - comments are publicly viewable
     switch (comments.get(postId)) {
       case (null) { [] };
       case (?postComments) { postComments.toArray() };
@@ -515,6 +604,7 @@ actor {
   };
 
   public query ({ caller }) func getCommentCounts(postIds : [Nat]) : async [(Nat, Nat)] {
+    // No authorization needed - comment counts are public information
     // Return array of (postId, commentCount)
     postIds.map(func(id) {
       let count = switch (comments.get(id)) {
@@ -523,5 +613,151 @@ actor {
       };
       (id, count);
     });
+  };
+
+  // EXTENDING BACKEND TO BETTER SUPPORT NEW FRONTEND
+
+  public type LegacyPostWithCounts = {
+    post : LegacyPost;
+    likeCount : Nat;
+    commentCount : Nat;
+  };
+
+  public query ({ caller }) func getPostsWithCounts() : async [LegacyPostWithCounts] {
+    // No authorization needed - posts and their counts are publicly viewable
+    let postsArray = posts.values().toArray();
+    postsArray.map(func(post) {
+      {
+        post;
+        likeCount = switch (postLikes.get(post.id)) {
+          case (null) { 0 };
+          case (?likes) { likes.size() };
+        };
+        commentCount = switch (comments.get(post.id)) {
+          case (null) { 0 };
+          case (?postComments) { postComments.size() };
+        };
+      };
+    });
+  };
+
+  // === POLLING SYSTEM ===
+
+  public type PollOption = {
+    optionId : Nat;
+    text : Text;
+  };
+
+  public type Poll = {
+    pollId : Nat;
+    question : Text;
+    options : [PollOption];
+    createdBy : Principal;
+    createdAt : Time.Time;
+    isActive : Bool;
+  };
+
+  public type PollWithResults = {
+    pollId : Nat;
+    question : Text;
+    options : [PollOption];
+    createdBy : Principal;
+    createdAt : Time.Time;
+    isActive : Bool;
+    results : [(Nat, Nat)];
+  };
+
+  let polls = Map.empty<Nat, Poll>();
+  var nextPollId = 0;
+  let votes = Map.empty<Nat, List.List<(Principal, Nat)>>();
+
+  public shared ({ caller }) func createPoll(question : Text, options : [PollOption]) : async Nat {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can create polls");
+    };
+
+    let poll : Poll = {
+      pollId = nextPollId;
+      question;
+      options;
+      createdBy = caller;
+      createdAt = Time.now();
+      isActive = true;
+    };
+
+    polls.add(nextPollId, poll);
+
+    let pollId = nextPollId;
+    nextPollId += 1;
+    pollId;
+  };
+
+  public shared ({ caller }) func vote(pollId : Nat, optionId : Nat) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can vote");
+    };
+
+    let poll = switch (polls.get(pollId)) {
+      case (null) { Runtime.trap("Poll does not exist!") };
+      case (?poll) { poll };
+    };
+
+    if (not poll.isActive) {
+      Runtime.trap("Voting for this poll has ended");
+    };
+
+    let pollVotes = switch (votes.get(pollId)) {
+      case (null) { List.empty<(Principal, Nat)>() };
+      case (?list) { list };
+    };
+
+    let hasVoted = pollVotes.any(func((user, _)) { user == caller });
+
+    if (hasVoted) {
+      Runtime.trap("You have already voted in this poll!");
+    };
+
+    let isValidOption = poll.options.any(func(option) { option.optionId == optionId });
+
+    if (not isValidOption) {
+      Runtime.trap("Invalid voting option!");
+    };
+
+    pollVotes.add((caller, optionId));
+    votes.add(pollId, pollVotes);
+  };
+
+  public query ({ caller }) func getPoll(id : Nat) : async Poll {
+    switch (polls.get(id)) {
+      case (null) { Runtime.trap("Poll not found") };
+      case (?poll) { poll };
+    };
+  };
+
+  public query ({ caller }) func listPolls() : async [Poll] {
+    // No authorization needed - polls are publicly viewable
+    polls.values().toArray();
+  };
+
+  public query ({ caller }) func getPollResults(id : Nat) : async PollWithResults {
+    let poll = switch (polls.get(id)) {
+      case (null) { Runtime.trap("Poll not found") };
+      case (?poll) { poll };
+    };
+
+    let voteCounts = poll.options.map(func(option) {
+      let count = switch (votes.get(id)) {
+        case (null) { 0 };
+        case (?pollVotes) {
+          pollVotes.filter(func((_, optionId)) { optionId == option.optionId }).size();
+        };
+      };
+      (option.optionId, count);
+    });
+
+    {
+      poll with
+      results = voteCounts;
+    };
   };
 };

@@ -1,57 +1,56 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-09T09:15:38.914Z",
+  "generatedAt": "2026-02-11T09:25:37.075Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
+    "total": 2,
     "implemented": 2,
     "items": [
       {
-        "id": "REQ-90",
-        "summary": "Add backend canister support for admin status checking and one-time admin claiming so the currently authenticated Internet Identity principal can become an admin (only if no admin has been set yet). Expose a query to check whether the caller is an admin, and a shared method to claim admin for the caller with clear error behavior when admin is already claimed.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-91",
-        "summary": "Update the frontend admin-claim flow in `frontend/src/components/AuthControls.tsx` to use the backend’s one-time admin claim method (and not call a non-existent or mismatched role-assignment API). After a successful claim, refresh the cached admin status and show clear English toasts for success and failure states.",
+        "id": "REQ-1",
+        "summary": "Extend the existing URL parsing/rendering used by Community Board posts and comments to auto-embed videos for supported video URLs (at minimum YouTube and Vimeo) while keeping all other URLs rendered as normal clickable external links.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/AuthControls.tsx",
-          "frontend/src/utils/actorError.ts"
+          "frontend/src/utils/videoEmbeds.ts",
+          "frontend/src/utils/linkifyText.ts",
+          "frontend/src/components/community/VideoEmbed.tsx",
+          "frontend/src/components/community/LinkifiedText.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/AuthControls.tsx",
-          "frontend/src/utils/actorError.ts"
+          "frontend/src/utils/videoEmbeds.ts",
+          "frontend/src/utils/linkifyText.ts",
+          "frontend/src/components/community/VideoEmbed.tsx",
+          "frontend/src/components/community/LinkifiedText.tsx"
         ]
       },
       {
-        "id": "REQ-92",
-        "summary": "Update the generated frontend backend bindings/types so the frontend can call the backend admin methods required by the existing React Query hooks (`useIsCallerAdmin`) and the updated admin-claim UI.",
+        "id": "REQ-2",
+        "summary": "Apply video-embed rendering consistently anywhere the app currently uses LinkifiedText to render user-generated text (including CommunityBoardPage post title/body and PostComments comment content).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/backend.d.ts"
+          "frontend/src/pages/CommunityBoardPage.tsx",
+          "frontend/src/components/community/PostComments.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/backend.d.ts"
+          "frontend/src/components/community/PostComments.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.d.ts",
-    "frontend/src/components/AuthControls.tsx",
-    "frontend/src/utils/actorError.ts",
+    "frontend/src/components/community/LinkifiedText.tsx",
+    "frontend/src/components/community/PostComments.tsx",
+    "frontend/src/components/community/VideoEmbed.tsx",
+    "frontend/src/utils/linkifyText.ts",
+    "frontend/src/utils/videoEmbeds.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

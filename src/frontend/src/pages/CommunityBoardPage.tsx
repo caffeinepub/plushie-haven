@@ -1,93 +1,82 @@
 import { useState, useRef } from 'react';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import { useListPosts, useCreatePost, useDeletePost, useEditPost, useIsCallerAdmin } from '../hooks/useQueries';
-import { useActor } from '../hooks/useActor';
-import { Button } from '@/components/ui/button';
+import { useListPostsWithCounts, useCreatePost, useDeletePost, useEditPost, useIsCallerAdmin } from '../hooks/useQueries';
+import { useGetCallerUserProfile } from '../hooks/useProfileQueries';
+import { useGetSupporters } from '../hooks/useSupporterQueries';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { User, Clock, X, Loader2 } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
+import { Loader2, ImagePlus, X, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { normalizeActorError, isStoppedCanisterError } from '../utils/actorError';
+import { ACCEPTED_IMAGE_TYPES, MAX_IMAGE_SIZE_BYTES, formatFileSize } from '../utils/imageAttachment';
 import { PostImageAttachment } from '../components/community/PostImageAttachment';
 import { PostActions } from '../components/community/PostActions';
 import { PostLikeButton } from '../components/community/PostLikeButton';
 import { PostComments } from '../components/community/PostComments';
+import { SupporterBadge } from '../components/supporter/SupporterBadge';
+import { LinkifiedText } from '../components/community/LinkifiedText';
 import LoadingState from '../components/LoadingState';
-import { normalizeActorError } from '../utils/actorError';
-import type { LegacyPost } from '../backend';
-import {
-  fileToImageData,
-  isValidImageType,
-  isValidImageSize,
-  formatFileSize,
-  MAX_IMAGE_SIZE_BYTES,
-  ACCEPTED_IMAGE_TYPES,
-  type ImageFileData,
-} from '../utils/imageAttachment';
+import { PollsSection } from '../components/community/PollsSection';
+
+// Single file validation helper
+function validateImageFile(file: File): { valid: boolean; error?: string } {
+  if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+    return { valid: false, error: 'Please use PNG, JPEG, or WebP images only.' };
+  }
+  if (file.size > MAX_IMAGE_SIZE_BYTES) {
+    return { valid: false, error: `Image is too large. Maximum size is ${formatFileSize(MAX_IMAGE_SIZE_BYTES)}.` };
+  }
+  return { valid: true };
+}
 
 export default function CommunityBoardPage() {
   const { identity } = useInternetIdentity();
-  const { actor, isFetching: actorFetching } = useActor();
   const isAuthenticated = identity && !identity.getPrincipal().isAnonymous();
-  const isConnecting = actorFetching && !actor;
 
-  const { data: posts, isLoading } = useListPosts();
-  const { data: isAdmin = false } = useIsCallerAdmin();
+  const { data: posts, isLoading, error: postsError } = useListPostsWithCounts();
+  const { data: userProfile } = useGetCallerUserProfile();
+  const { data: supportersMap } = useGetSupporters();
+  const { data: isAdmin } = useIsCallerAdmin();
   const createPostMutation = useCreatePost();
   const deletePostMutation = useDeletePost();
   const editPostMutation = useEditPost();
 
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
-  const [authorName, setAuthorName] = useState('');
-  const [selectedImage, setSelectedImage] = useState<ImageFileData | null>(null);
-  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Check if backend is unavailable due to stopped canister
+  const isBackendUnavailable = !!(postsError && isStoppedCanisterError(postsError));
+  const backendUnavailableMessage = isBackendUnavailable ? normalizeActorError(postsError) : null;
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!isValidImageType(file)) {
-      toast.error('Please select a valid image file (PNG, JPEG, or WebP)');
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      toast.error(validation.error);
       return;
     }
 
-    // Validate file size
-    if (!isValidImageSize(file)) {
-      toast.error(`Image size must be less than ${formatFileSize(MAX_IMAGE_SIZE_BYTES)}`);
-      return;
-    }
-
-    try {
-      const imageData = await fileToImageData(file);
-      setSelectedImage(imageData);
-
-      // Create preview URL
-      const bytes = new Uint8Array(imageData.bytes);
-      const blob = new Blob([bytes], { type: imageData.contentType });
-      const previewUrl = URL.createObjectURL(blob);
-      
-      // Revoke old preview URL if exists
-      if (imagePreviewUrl) {
-        URL.revokeObjectURL(imagePreviewUrl);
-      }
-      
-      setImagePreviewUrl(previewUrl);
-    } catch (error) {
-      toast.error('Failed to process image. Please try again.');
-    }
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleRemoveImage = () => {
-    setSelectedImage(null);
-    if (imagePreviewUrl) {
-      URL.revokeObjectURL(imagePreviewUrl);
-      setImagePreviewUrl(null);
-    }
+    setImageFile(null);
+    setImagePreview(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -101,23 +90,39 @@ export default function CommunityBoardPage() {
       return;
     }
 
+    // Prevent submission if backend is unavailable
+    if (isBackendUnavailable) {
+      toast.error(backendUnavailableMessage || 'Service is temporarily unavailable');
+      return;
+    }
+
     if (!title.trim() || !body.trim()) {
-      toast.error('Title and message are required');
+      toast.error('Title and body are required');
       return;
     }
 
     try {
+      let imageBytes: Uint8Array | null = null;
+      let imageContentType: string | null = null;
+
+      if (imageFile) {
+        const arrayBuffer = await imageFile.arrayBuffer();
+        imageBytes = new Uint8Array(arrayBuffer);
+        imageContentType = imageFile.type;
+      }
+
+      const authorName = userProfile?.displayName || null;
+
       await createPostMutation.mutateAsync({
-        authorName: authorName.trim() || null,
+        authorName,
         title: title.trim(),
         body: body.trim(),
-        imageBytes: selectedImage?.bytes || null,
-        imageContentType: selectedImage?.contentType || null,
+        imageBytes,
+        imageContentType,
       });
 
       setTitle('');
       setBody('');
-      setAuthorName('');
       handleRemoveImage();
       toast.success('Post created successfully!');
     } catch (error) {
@@ -125,24 +130,24 @@ export default function CommunityBoardPage() {
     }
   };
 
-  const handleDeletePost = async (postId: bigint) => {
-    try {
-      await deletePostMutation.mutateAsync(postId);
-      toast.success('Post deleted successfully!');
-    } catch (error) {
-      toast.error(normalizeActorError(error));
-    }
-  };
-
-  const handleEditPost = async (postId: bigint, newTitle: string, newBody: string, newAuthorName: string | null) => {
+  const handleEditPost = async (id: bigint, newTitle: string, newBody: string, newAuthorName: string | null) => {
     try {
       await editPostMutation.mutateAsync({
-        id: postId,
+        id,
         title: newTitle,
         body: newBody,
         authorName: newAuthorName,
       });
       toast.success('Post updated successfully!');
+    } catch (error) {
+      toast.error(normalizeActorError(error));
+    }
+  };
+
+  const handleDeletePost = async (id: bigint) => {
+    try {
+      await deletePostMutation.mutateAsync(id);
+      toast.success('Post deleted successfully!');
     } catch (error) {
       toast.error(normalizeActorError(error));
     }
@@ -159,200 +164,212 @@ export default function CommunityBoardPage() {
     });
   };
 
-  const isPostAuthor = (post: LegacyPost): boolean => {
+  const isSupporter = (authorPrincipal: any): boolean => {
+    if (!supportersMap) return false;
+    return supportersMap.has(authorPrincipal.toString());
+  };
+
+  const canEditPost = (post: any): boolean => {
     if (!identity) return false;
-    return post.author.toString() === identity.getPrincipal().toString();
+    const callerPrincipal = identity.getPrincipal();
+    return post.author.toString() === callerPrincipal.toString() || isAdmin === true;
+  };
+
+  const canDeletePost = (post: any): boolean => {
+    if (!identity) return false;
+    const callerPrincipal = identity.getPrincipal();
+    return post.author.toString() === callerPrincipal.toString() || isAdmin === true;
   };
 
   return (
-    <div className="container py-12">
-      <div className="mb-12">
-        <h1 className="mb-4 text-4xl font-bold tracking-tight">Community Board</h1>
-        <p className="text-lg text-muted-foreground">
-          Share your plushie stories, ask questions, and connect with fellow enthusiasts.
+    <div className="container mx-auto max-w-4xl space-y-8 px-4 py-8">
+      <div>
+        <h1 className="mb-2 text-4xl font-bold tracking-tight">Community Board</h1>
+        <p className="text-muted-foreground">
+          Share your plushie stories, photos, and connect with fellow enthusiasts.
         </p>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-3">
-        {/* Create Post Form */}
-        <div className="lg:col-span-1">
-          <Card className="sticky top-20 border-2 shadow-soft">
-            <CardHeader>
-              <CardTitle>Create a Post</CardTitle>
-              <CardDescription>Share your thoughts with the community</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {!isAuthenticated ? (
-                <Alert>
-                  <AlertDescription>Please sign in to create posts and join the conversation.</AlertDescription>
-                </Alert>
-              ) : isConnecting ? (
-                <Alert>
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <AlertDescription>Connecting to the server...</AlertDescription>
-                  </div>
-                </Alert>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="authorName">Display Name (Optional)</Label>
-                    <Input
-                      id="authorName"
-                      placeholder="Anonymous"
-                      value={authorName}
-                      onChange={(e) => setAuthorName(e.target.value)}
-                      maxLength={50}
-                      disabled={isConnecting}
+      {/* Backend Unavailable Alert */}
+      {isBackendUnavailable && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Service Unavailable</AlertTitle>
+          <AlertDescription>{backendUnavailableMessage}</AlertDescription>
+        </Alert>
+      )}
+
+      {/* Create Post Form */}
+      <Card className="border-2 shadow-soft">
+        <CardHeader>
+          <CardTitle>Create a Post</CardTitle>
+          <CardDescription>Share something with the community</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {!isAuthenticated ? (
+            <Alert>
+              <AlertDescription>Please sign in to create posts.</AlertDescription>
+            </Alert>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">
+                  Title <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="title"
+                  placeholder="Give your post a title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                  maxLength={100}
+                  disabled={isBackendUnavailable}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="body">
+                  Body <span className="text-destructive">*</span>
+                </Label>
+                <Textarea
+                  id="body"
+                  placeholder="What's on your mind?"
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                  required
+                  maxLength={2000}
+                  rows={5}
+                  disabled={isBackendUnavailable}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Image (optional)</Label>
+                {imagePreview ? (
+                  <div className="relative">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="h-48 w-full rounded-lg object-cover"
                     />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute right-2 top-2"
+                      onClick={handleRemoveImage}
+                      disabled={isBackendUnavailable}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="title">
-                      Title <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="title"
-                      placeholder="What's on your mind?"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      required
-                      maxLength={100}
-                      disabled={isConnecting}
+                ) : (
+                  <div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleImageSelect}
+                      className="hidden"
+                      id="image-upload"
+                      disabled={isBackendUnavailable}
                     />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full"
+                      disabled={isBackendUnavailable}
+                    >
+                      <ImagePlus className="mr-2 h-4 w-4" />
+                      Add Image
+                    </Button>
                   </div>
+                )}
+              </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="body">
-                      Message <span className="text-destructive">*</span>
-                    </Label>
-                    <Textarea
-                      id="body"
-                      placeholder="Share your story..."
-                      value={body}
-                      onChange={(e) => setBody(e.target.value)}
-                      required
-                      rows={6}
-                      maxLength={1000}
-                      disabled={isConnecting}
-                    />
-                  </div>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={createPostMutation.isPending || isBackendUnavailable}
+              >
+                {createPostMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  'Create Post'
+                )}
+              </Button>
+            </form>
+          )}
+        </CardContent>
+      </Card>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="image">Image (Optional)</Label>
-                    <div className="space-y-2">
-                      <Input
-                        ref={fileInputRef}
-                        id="image"
-                        type="file"
-                        accept={ACCEPTED_IMAGE_TYPES.join(',')}
-                        onChange={handleImageSelect}
-                        className="cursor-pointer"
-                        disabled={isConnecting}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Max size: {formatFileSize(MAX_IMAGE_SIZE_BYTES)}. Formats: PNG, JPEG, WebP
-                      </p>
-                    </div>
-
-                    {imagePreviewUrl && (
-                      <div className="relative mt-2 overflow-hidden rounded-lg border-2">
-                        <img
-                          src={imagePreviewUrl}
-                          alt="Preview"
-                          className="h-48 w-full object-cover"
-                        />
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          className="absolute right-2 top-2"
-                          onClick={handleRemoveImage}
-                          disabled={isConnecting}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    disabled={createPostMutation.isPending || isConnecting}
-                  >
-                    {createPostMutation.isPending ? 'Posting...' : 'Create Post'}
-                  </Button>
-                </form>
-              )}
+      {/* Posts Feed */}
+      <div className="space-y-4">
+        {isLoading ? (
+          <LoadingState message="Loading posts..." />
+        ) : isBackendUnavailable ? (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Unable to Load Posts</AlertTitle>
+            <AlertDescription>{backendUnavailableMessage}</AlertDescription>
+          </Alert>
+        ) : !posts || posts.length === 0 ? (
+          <Card className="border-2 shadow-soft">
+            <CardContent className="py-12 text-center">
+              <p className="text-muted-foreground">No posts yet. Be the first to share!</p>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Posts List */}
-        <div className="space-y-6 lg:col-span-2">
-          {isLoading ? (
-            <LoadingState message="Loading posts..." />
-          ) : !posts || posts.length === 0 ? (
-            <Card className="border-2 shadow-soft">
-              <CardContent className="py-12 text-center">
-                <p className="text-muted-foreground">
-                  No posts yet. Be the first to share something with the community!
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            posts
-              .slice()
-              .sort((a, b) => Number(b.createdAt - a.createdAt))
-              .map((post) => {
-                const canEdit = isPostAuthor(post) || isAdmin;
-                const canDelete = isPostAuthor(post) || isAdmin;
-
-                return (
-                  <Card key={post.id.toString()} className="border-2 shadow-soft">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <CardTitle className="mb-2">{post.title}</CardTitle>
-                          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <User className="h-4 w-4" />
-                              <span>{post.authorName || 'Anonymous'}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
-                              <span>{formatDate(post.createdAt)}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <PostActions
-                          post={post}
-                          canEdit={canEdit}
-                          canDelete={canDelete}
-                          onEdit={handleEditPost}
-                          onDelete={handleDeletePost}
-                          isEditPending={editPostMutation.isPending}
-                          isDeletePending={deletePostMutation.isPending}
-                        />
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p className="whitespace-pre-wrap text-foreground">{post.body}</p>
-                      {post.image && <PostImageAttachment image={post.image} />}
-                      
-                      <div className="flex items-center gap-4 border-t pt-4">
-                        <PostLikeButton postId={post.id} />
-                      </div>
-
-                      <PostComments postId={post.id} />
-                    </CardContent>
-                  </Card>
-                );
-              })
-          )}
-        </div>
+        ) : (
+          posts
+            .sort((a, b) => Number(b.post.createdAt - a.post.createdAt))
+            .map(({ post, likeCount, commentCount }) => (
+              <Card key={post.id.toString()} className="border-2 shadow-soft">
+                <CardHeader>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <CardTitle className="text-xl">
+                        <LinkifiedText text={post.title} />
+                      </CardTitle>
+                      <CardDescription className="mt-2 flex flex-wrap items-center gap-2">
+                        <span>
+                          By {post.authorName || 'Anonymous'} • {formatDate(post.createdAt)}
+                        </span>
+                        {isSupporter(post.author) && <SupporterBadge />}
+                      </CardDescription>
+                    </div>
+                    <PostActions
+                      post={post}
+                      canEdit={canEditPost(post)}
+                      canDelete={canDeletePost(post)}
+                      onEdit={handleEditPost}
+                      onDelete={handleDeletePost}
+                      isEditPending={editPostMutation.isPending}
+                      isDeletePending={deletePostMutation.isPending}
+                    />
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="text-foreground">
+                    <LinkifiedText text={post.body} />
+                  </div>
+                  <PostImageAttachment image={post.image} />
+                  <div className="flex items-center gap-4 border-t pt-4">
+                    <PostLikeButton postId={post.id} />
+                    <PostComments postId={post.id} initialCount={Number(commentCount)} />
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+        )}
       </div>
+
+      {/* Polls Section */}
+      <Separator className="my-8" />
+      <PollsSection />
     </div>
   );
 }

@@ -1,42 +1,58 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Frontend: One-time admin claim UI + updated backend bindings",
+  "title": "Add allowlisted YouTube/Vimeo video embeds to LinkifiedText",
   "requirements": [
     {
-      "id": "REQ-91",
-      "summary": "Update AuthControls admin-claim UI to call the backend one-time claim method, refresh cached admin status, and show clear English toasts for success/failure including actor-not-ready.",
+      "id": "REQ-1",
+      "summary": "Extend LinkifiedText token parsing/rendering to auto-embed responsive players for allowlisted YouTube/Vimeo URLs while keeping all other URLs as external links.",
       "acceptanceCriteria": [
-        "Clicking the \"Claim Admin\" menu item successfully calls the backend admin-claim method for the signed-in user.",
-        "On success, the UI shows a success toast in English (e.g., \"You are now an admin.\") and invalidates/refetches the ['isAdmin'] query so admin-only controls appear without a page reload.",
-        "If admin was already claimed (or the user is not eligible), the UI shows a clear English error toast (e.g., \"Admin access has already been claimed on this canister.\") rather than a technical error.",
-        "If the actor is not ready, the UI shows an English message (existing or updated) indicating the system is still connecting."
+        "When a user includes a YouTube or Vimeo URL in post titles, post bodies, or comment content, the UI renders an embedded video player for that URL.",
+        "Non-video URLs continue to render as clickable links (open in a new tab) exactly as they do today.",
+        "Embeds are implemented using a strict allowlist of video providers (e.g., YouTube/Vimeo) and do not allow arbitrary iframe embedding.",
+        "Embedded players are responsive (maintain aspect ratio and fit the container on mobile/desktop)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/AuthControls.tsx",
-          "operation": "modify",
-          "description": "Replace the current role-assignment call with the backend one-time admin claim call (actor.claimAdmin()). On success, show an English success toast and invalidate/refetch the React Query ['isAdmin'] query. If actor is not available, show an English 'still connecting' message instead of proceeding. Ensure all user-facing strings remain English."
+          "path": "frontend/src/utils/videoEmbeds.ts",
+          "operation": "create",
+          "description": "Add allowlist-based helpers to detect supported video URLs (minimum YouTube and Vimeo) and convert them into safe embed descriptors (provider + canonical embed URL + optional video id), ensuring only known embed hostnames are produced."
         },
         {
-          "path": "frontend/src/utils/actorError.ts",
+          "path": "frontend/src/utils/linkifyText.ts",
           "operation": "modify",
-          "description": "Add/adjust error normalization so admin-claim failures (e.g., admin already claimed / not eligible) map to clear, non-technical English messages suitable for toasts, while preserving the existing 'still connecting' handling for actor readiness errors."
+          "description": "Extend the existing tokenization to emit a distinct token type for supported video URLs using a strict allowlist (via the new video embed helpers); keep existing behavior for all other URLs (still emitted as link tokens)."
+        },
+        {
+          "path": "frontend/src/components/community/VideoEmbed.tsx",
+          "operation": "create",
+          "description": "Create a dedicated, responsive VideoEmbed component that renders an iframe only from allowlisted providers (YouTube/Vimeo) and maintains aspect ratio across mobile/desktop without using dangerouslySetInnerHTML."
+        },
+        {
+          "path": "frontend/src/components/community/LinkifiedText.tsx",
+          "operation": "modify",
+          "description": "Update LinkifiedText to render the new video tokens with the VideoEmbed component and continue rendering non-video URL tokens as external links (target=_blank, rel=noopener noreferrer); adjust the wrapper element as needed to safely support block embeds while preserving whitespace."
         }
       ]
     },
     {
-      "id": "REQ-92",
-      "summary": "Update generated frontend backend bindings/types so the frontend can type-check when calling isCallerAdmin() and the new claimAdmin() method.",
+      "id": "REQ-2",
+      "summary": "Ensure video-embed rendering applies consistently everywhere LinkifiedText is used (CommunityBoardPage post title/body and PostComments comment content).",
       "acceptanceCriteria": [
-        "Type-check/build succeeds with the frontend calling actor.isCallerAdmin() from frontend/src/hooks/useQueries.ts.",
-        "Type-check/build succeeds with the frontend calling the backend admin-claim method from frontend/src/components/AuthControls.tsx."
+        "CommunityBoardPage renders video embeds in post titles and post bodies where applicable.",
+        "PostComments renders video embeds in comment content where applicable.",
+        "No changes are required to backend data structures or APIs to support video embedding (embeds are derived from existing text content)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/backend.d.ts",
+          "path": "frontend/src/pages/CommunityBoardPage.tsx",
           "operation": "modify",
-          "description": "Update the backend interface type definitions to include the admin-claim method signature (claimAdmin(): Promise<void>) and ensure isCallerAdmin(): Promise<boolean> remains correctly typed, so AuthControls.tsx and useQueries.ts compile without type errors."
+          "description": "Adjust post title/body rendering as needed to accommodate block-level video embeds produced by LinkifiedText (e.g., avoid placing embed-capable content inside a heading element that only allows phrasing content) while keeping existing UI behavior for non-video links."
+        },
+        {
+          "path": "frontend/src/components/community/PostComments.tsx",
+          "operation": "modify",
+          "description": "Confirm/adjust comment content layout so LinkifiedText-rendered video embeds display correctly and responsively within the comment container, without changing comment submission/loading behavior."
         }
       ]
     }

@@ -13,18 +13,27 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { LogOut, Shield } from 'lucide-react';
 import { toast } from 'sonner';
+import { normalizeActorError } from '../utils/actorError';
 
 export default function AuthControls() {
   const { identity, login, clear, isLoggingIn, isInitializing } = useInternetIdentity();
-  const { actor } = useActor();
+  const { actor, isFetching: actorFetching } = useActor();
   const queryClient = useQueryClient();
   const { data: userProfile, isLoading: profileLoading } = useGetCallerUserProfile();
 
   const isAuthenticated = identity && !identity.getPrincipal().isAnonymous();
+  const isConnecting = actorFetching && !actor;
 
   const handleClaimAdmin = async () => {
+    // If actor is connecting, show appropriate message
+    if (isConnecting) {
+      toast.error('Connecting to the server. Please wait a moment...');
+      return;
+    }
+
+    // If actor is still not available, show error
     if (!actor) {
-      toast.error('Still connecting to the server. Please try again in a moment.');
+      toast.error('Failed to connect to the server. Please try again.');
       return;
     }
 
@@ -45,19 +54,7 @@ export default function AuthControls() {
       
       toast.success('You are now an admin.');
     } catch (error: any) {
-      const message = error?.message || 'An error occurred';
-      
-      if (message.includes('Admin has already been claimed') || 
-          message.includes('already claimed') || 
-          message.includes('Admin already exists')) {
-        toast.error('Admin access has already been claimed on this canister.');
-      } else if (message.includes('Actor not initialized') || 
-                 message.includes('Actor not available') || 
-                 message.includes('Still connecting')) {
-        toast.error('Still connecting to the server. Please try again in a moment.');
-      } else {
-        toast.error(message);
-      }
+      toast.error(normalizeActorError(error));
     }
   };
 

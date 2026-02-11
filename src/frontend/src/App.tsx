@@ -10,8 +10,9 @@ import CommunityBoardPage from './pages/CommunityBoardPage';
 import EventsPage from './pages/EventsPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
-import ProfilesDirectoryPage from './pages/ProfilesDirectoryPage';
 import PlushieBrandsPage from './pages/PlushieBrandsPage';
+import AdultPacifierBrandsPage from './pages/AdultPacifierBrandsPage';
+import SupportPage from './pages/SupportPage';
 import { Toaster } from '@/components/ui/sonner';
 
 const rootRoute = createRootRoute({
@@ -60,6 +61,18 @@ const brandsRoute = createRoute({
   component: PlushieBrandsPage,
 });
 
+const pacifierBrandsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/pacifier-brands',
+  component: AdultPacifierBrandsPage,
+});
+
+const supportRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/support',
+  component: SupportPage,
+});
+
 const aboutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/about',
@@ -72,12 +85,6 @@ const contactRoute = createRoute({
   component: ContactPage,
 });
 
-const profilesRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/profiles',
-  component: ProfilesDirectoryPage,
-});
-
 const routeTree = rootRoute.addChildren([
   indexRoute,
   articlesRoute,
@@ -86,9 +93,10 @@ const routeTree = rootRoute.addChildren([
   communityRoute,
   eventsRoute,
   brandsRoute,
+  pacifierBrandsRoute,
+  supportRoute,
   aboutRoute,
   contactRoute,
-  profilesRoute,
 ]);
 
 const router = createRouter({ routeTree });

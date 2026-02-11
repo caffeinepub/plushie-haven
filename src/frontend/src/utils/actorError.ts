@@ -1,18 +1,74 @@
 /**
  * Normalizes backend errors into user-friendly English messages.
- * Handles authorization traps and other common backend errors.
+ * Handles authorization traps, stopped-canister rejections, and other common backend errors.
  */
+
+/**
+ * Helper to check if an error is a stopped-canister rejection.
+ */
+export function isStoppedCanisterError(error: unknown): boolean {
+  if (error instanceof Error) {
+    const message = error.message;
+    return (
+      message.includes('IC0508') ||
+      message.includes('is stopped') ||
+      (message.includes('reject_code') && message.includes(': 5'))
+    );
+  }
+  return false;
+}
+
+/**
+ * Sanitizes error messages by removing internal request IDs and low-level diagnostic fragments.
+ */
+function sanitizeErrorMessage(message: string): string {
+  // Remove request IDs (hex patterns like "3818892c9b2074c3...")
+  let sanitized = message.replace(/Request ID: [a-f0-9]+/gi, '');
+  
+  // Remove canister IDs in error context
+  sanitized = sanitized.replace(/Canister [a-z0-9-]+ /gi, '');
+  
+  // Remove HTTP details blocks
+  sanitized = sanitized.replace(/HTTP details:[\s\S]*$/i, '');
+  
+  // Remove reject code details
+  sanitized = sanitized.replace(/Reject code: \d+/gi, '');
+  sanitized = sanitized.replace(/Error code: IC\d+/gi, '');
+  
+  // Clean up extra whitespace
+  sanitized = sanitized.replace(/\s+/g, ' ').trim();
+  
+  return sanitized;
+}
+
 export function normalizeActorError(error: unknown): string {
   if (error instanceof Error) {
     const message = error.message;
     
-    // Handle actor readiness/initialization errors
+    // Handle stopped-canister replica rejections (IC0508)
+    if (isStoppedCanisterError(error)) {
+      return 'The service is temporarily unavailable. Please try again later.';
+    }
+    
+    // Handle actor state errors with distinct messages
+    if (message === 'ACTOR_CONNECTING') {
+      return 'Connecting to the server. Please wait a moment...';
+    }
+    
+    if (message === 'ACTOR_FAILED') {
+      return 'Failed to connect to the server. Please try again.';
+    }
+    
+    // Handle legacy actor readiness/initialization errors
     if (
       message.includes('Actor not initialized') ||
-      message.includes('Actor not available') ||
-      message.includes('Still connecting to the server')
+      message.includes('Actor not available')
     ) {
-      return 'Still connecting to the server. Please try again in a moment.';
+      return 'Failed to connect to the server. Please try again.';
+    }
+    
+    if (message.includes('Still connecting to the server')) {
+      return 'Connecting to the server. Please wait a moment...';
     }
 
     // Handle admin claim errors
@@ -39,6 +95,11 @@ export function normalizeActorError(error: unknown): string {
         return 'Please sign in to perform this action.';
       }
       return 'You are not authorized to perform this action.';
+    }
+
+    // Handle supporter-specific errors
+    if (message.includes('Supporter request not found')) {
+      return 'Supporter request not found.';
     }
 
     // Handle profile visibility errors
@@ -75,8 +136,21 @@ export function normalizeActorError(error: unknown): string {
       return 'You cannot follow yourself.';
     }
 
-    // Return the original message if no specific match
-    return message;
+    // Handle poll errors
+    if (message.includes('Poll does not exist')) {
+      return 'This poll no longer exists.';
+    }
+
+    if (message.includes('already voted')) {
+      return 'You have already voted in this poll.';
+    }
+
+    if (message.includes('Voting for this poll has ended')) {
+      return 'This poll is closed.';
+    }
+
+    // Sanitize and return the original message if no specific match
+    return sanitizeErrorMessage(message);
   }
 
   return 'An unexpected error occurred. Please try again.';
