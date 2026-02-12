@@ -1,16 +1,10 @@
 import { useEffect, useState } from 'react';
-import type { ImageAttachment } from '../../backend';
 
 interface PostImageAttachmentProps {
-  image?: ImageAttachment;
-  alt?: string;
+  image?: { bytes: number[]; contentType: string } | null;
 }
 
-/**
- * Component to display an optional post image attachment
- * Converts bytes to Blob URL and handles cleanup
- */
-export function PostImageAttachment({ image, alt = 'Post attachment' }: PostImageAttachmentProps) {
+export function PostImageAttachment({ image }: PostImageAttachmentProps) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -19,14 +13,13 @@ export function PostImageAttachment({ image, alt = 'Post attachment' }: PostImag
       return;
     }
 
-    // Convert Uint8Array to Blob URL for display
-    // Create a new Uint8Array to ensure proper ArrayBuffer type
-    const bytes = new Uint8Array(image.bytes);
-    const blob = new Blob([bytes], { type: image.contentType });
+    // Convert bytes array to Uint8Array and then to Blob
+    const uint8Array = new Uint8Array(image.bytes);
+    const blob = new Blob([uint8Array], { type: image.contentType });
     const url = URL.createObjectURL(blob);
     setImageUrl(url);
 
-    // Cleanup: revoke the object URL when component unmounts or image changes
+    // Cleanup on unmount
     return () => {
       URL.revokeObjectURL(url);
     };
@@ -37,12 +30,11 @@ export function PostImageAttachment({ image, alt = 'Post attachment' }: PostImag
   }
 
   return (
-    <div className="mt-4 overflow-hidden rounded-lg border-2 border-border">
+    <div className="w-full overflow-hidden rounded-lg">
       <img
         src={imageUrl}
-        alt={alt}
-        className="h-auto w-full object-contain"
-        style={{ maxHeight: '400px' }}
+        alt="Post attachment"
+        className="h-auto w-full rounded-lg object-cover"
       />
     </div>
   );

@@ -22,10 +22,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Pencil, Trash2 } from 'lucide-react';
-import type { LegacyPost } from '../../backend';
+import type { Post } from '../../backend';
 
 interface PostActionsProps {
-  post: LegacyPost;
+  post: Post;
   canEdit: boolean;
   canDelete: boolean;
   onEdit: (id: bigint, title: string, body: string, authorName: string | null) => Promise<void>;

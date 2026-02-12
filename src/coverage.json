@@ -1,56 +1,85 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T09:25:37.075Z",
+  "generatedAt": "2026-02-11T10:30:04.078Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 2,
+    "total": 5,
+    "implemented": 3,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Extend the existing URL parsing/rendering used by Community Board posts and comments to auto-embed videos for supported video URLs (at minimum YouTube and Vimeo) while keeping all other URLs rendered as normal clickable external links.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/utils/videoEmbeds.ts",
-          "frontend/src/utils/linkifyText.ts",
-          "frontend/src/components/community/VideoEmbed.tsx",
-          "frontend/src/components/community/LinkifiedText.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/utils/videoEmbeds.ts",
-          "frontend/src/utils/linkifyText.ts",
-          "frontend/src/components/community/VideoEmbed.tsx",
-          "frontend/src/components/community/LinkifiedText.tsx"
-        ]
+        "summary": "Implement an on-canister (no external API) AI-assisted moderation check for Community Board post creation that analyzes the post title/body and any attached video metadata and returns one of: allow, block, or manual-review.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       },
       {
         "id": "REQ-2",
-        "summary": "Apply video-embed rendering consistently anywhere the app currently uses LinkifiedText to render user-generated text (including CommunityBoardPage post title/body and PostComments comment content).",
+        "summary": "Enforce moderation outcomes on Community Board uploads with the specified policy: underage content must be blocked entirely; copyright violations must be blocked entirely; borderline hate speech cases must be routed to manual review (not published in the public feed).",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Add a moderation review queue for Community Board content that is routed to manual review, including backend methods for admins to list pending items and to approve or reject them.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/CommunityBoardPage.tsx",
-          "frontend/src/components/community/PostComments.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/community/ModerationQueuePanel.tsx",
+          "frontend/src/pages/CommunityBoardPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/community/PostComments.tsx"
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/community/ModerationQueuePanel.tsx",
+          "frontend/src/pages/CommunityBoardPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "When an upload is blocked by moderation, show the user a clear error message stating that the upload was blocked for violating guidelines.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/CommunityBoardPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/CommunityBoardPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Update frontend actor error normalization to recognize moderation-related backend errors (blocked vs. manual review) and present user-friendly English messaging without exposing internal details.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/utils/actorError.ts",
+          "frontend/src/pages/CommunityBoardPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/utils/actorError.ts",
+          "frontend/src/pages/CommunityBoardPage.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/community/LinkifiedText.tsx",
-    "frontend/src/components/community/PostComments.tsx",
-    "frontend/src/components/community/VideoEmbed.tsx",
-    "frontend/src/utils/linkifyText.ts",
-    "frontend/src/utils/videoEmbeds.ts",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/community/ModerationQueuePanel.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/CommunityBoardPage.tsx",
+    "frontend/src/utils/actorError.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

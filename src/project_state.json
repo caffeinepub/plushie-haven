@@ -1,24 +1,38 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
-  "architectural_notes": [],
-  "known_issues": [],
+  "summary": "Community Board will include an AI-assisted moderation system to block/route illegal content during uploads, with specific enforcement rules and user messaging.",
+  "architectural_notes": [
+    "Moderation scope limited to Community Board uploads (not app-wide).",
+    "Enforcement rules: underage content = block upload; copyright violations = block upload; borderline hate speech = manual review (threats also to be detected; disposition not further specified).",
+    "User-facing messaging: display a notice that the upload was blocked for violating guidelines when blocked."
+  ],
+  "known_issues": [
+    "Build attempt for the moderation system failed with error: 'AI was unable to complete your request. Try rephrasing it more clearly.'"
+  ],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-extend-the-existing-url-parsing-rendering-used-by-community-board-posts-and-comments-to-auto-embed-videos-for-supported-video-urls-at-minimum-youtube-and-vimeo-while-keeping-all-other-urls-rendered-as-normal-clickable-external-links",
-      "title": "Extend the existing URL parsing/rendering used by Community Board posts and comments to auto-embed videos for supported video URLs (at minimum YouTube and Vimeo) while keeping all other URLs rendered as normal clickable external links.",
+      "id": "feature-add-a-moderation-review-queue-for-community-board-content-that-is-routed-to-manual-review-including-backend-methods-for-admins-to-list-pending-items-and-to-approve-or-reject-them",
+      "title": "Add a moderation review queue for Community Board content that is routed to manual review, including backend methods for admins to list pending items and to approve or reject them.",
       "reqIds": [
-        "REQ-1"
+        "REQ-3"
       ],
       "version": 1
     },
     {
-      "id": "feature-apply-video-embed-rendering-consistently-anywhere-the-app-currently-uses-linkifiedtext-to-render-user-generated-text-including-communityboardpage-post-title-body-and-postcomments-comment-content",
-      "title": "Apply video-embed rendering consistently anywhere the app currently uses LinkifiedText to render user-generated text (including CommunityBoardPage post title/body and PostComments comment content).",
+      "id": "feature-when-an-upload-is-blocked-by-moderation-show-the-user-a-clear-error-message-stating-that-the-upload-was-blocked-for-violating-guidelines",
+      "title": "When an upload is blocked by moderation, show the user a clear error message stating that the upload was blocked for violating guidelines.",
       "reqIds": [
-        "REQ-2"
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-frontend-actor-error-normalization-to-recognize-moderation-related-backend-errors-blocked-vs-manual-review-and-present-user-friendly-english-messaging-without-exposing-internal-details",
+      "title": "Update frontend actor error normalization to recognize moderation-related backend errors (blocked vs. manual review) and present user-friendly English messaging without exposing internal details.",
+      "reqIds": [
+        "REQ-5"
       ],
       "version": 1
     }
@@ -26,12 +40,28 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Add video embeds",
+      "summary": "AI-assisted moderation for Community Board uploads: detect hate speech, underage content, threats, and copyright; block underage/copyright; send borderline hate speech to manual review; show 'blocked for violating guidelines' message",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Implement an on-canister (no external API) AI-assisted moderation check for Community Board post creation that analyzes the post title/body and any attached video metadata and returns one of: allow, block, or manual-review.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Enforce moderation outcomes on Community Board uploads with the specified policy: underage content must be blocked entirely; copyright violations must be blocked entirely; borderline hate speech cases must be routed to manual review (not published in the public feed).",
+      "reqIds": [
+        "REQ-2"
+      ],
       "status": "pending"
     }
   ],
-  "projectName": "Add video embeds for supported video links",
+  "projectName": "Add AI-assisted moderation to Community Board uploads (block illegal content + manual review queue)",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

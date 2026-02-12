@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useInternetIdentity } from '../../hooks/useInternetIdentity';
-import { useGetPollResults, useVotePoll } from '../../hooks/useQueries';
+import { useGetPollResults, useVote } from '../../hooks/useQueries';
 import { useGetSupporters } from '../../hooks/useSupporterQueries';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,7 +24,7 @@ export function PollCard({ poll }: PollCardProps) {
 
   const { data: pollResults, isLoading: resultsLoading, error: resultsError } = useGetPollResults(poll.pollId);
   const { data: supportersMap } = useGetSupporters();
-  const voteMutation = useVotePoll();
+  const voteMutation = useVote();
 
   const [selectedOption, setSelectedOption] = useState<string>('');
 

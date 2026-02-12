@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import type { LegacyPost, Event, Comment, LegacyPostWithCounts, Poll, PollWithResults, PollOption, backendInterface } from '../backend';
+import type { Post, Event, Comment, PostWithCounts, Poll, PollWithResults, PollOption, backendInterface, PostEdit, ExternalBlob, ModeratedContent } from '../backend';
 
 /**
  * Helper to ensure actor is available before mutation.
@@ -23,7 +23,7 @@ function requireActor(actor: backendInterface | null, isFetching: boolean): back
 export function useListPosts() {
   const { actor, isFetching } = useActor();
 
-  return useQuery<LegacyPost[]>({
+  return useQuery<Post[]>({
     queryKey: ['posts'],
     queryFn: async () => {
       if (!actor) return [];
@@ -36,7 +36,7 @@ export function useListPosts() {
 export function useListPostsWithCounts() {
   const { actor, isFetching } = useActor();
 
-  return useQuery<LegacyPostWithCounts[]>({
+  return useQuery<PostWithCounts[]>({
     queryKey: ['postsWithCounts'],
     queryFn: async () => {
       if (!actor) return [];
@@ -57,25 +57,28 @@ export function useCreatePost() {
       body,
       imageBytes,
       imageContentType,
+      video,
     }: {
       authorName: string | null;
       title: string;
       body: string;
       imageBytes?: Uint8Array | null;
       imageContentType?: string | null;
+      video?: ExternalBlob | null;
     }) => {
       const validActor = requireActor(actor, isFetching);
-      return validActor.createPost(
-        authorName,
+      
+      // Use createModerationRequest instead of createPost
+      return validActor.createModerationRequest(
         title,
         body,
-        imageBytes || null,
-        imageContentType || null
+        video || null
       );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
       queryClient.invalidateQueries({ queryKey: ['postsWithCounts'] });
+      queryClient.invalidateQueries({ queryKey: ['moderationQueue'] });
     },
   });
 }
@@ -113,7 +116,15 @@ export function useEditPost() {
       authorName: string | null;
     }) => {
       const validActor = requireActor(actor, isFetching);
-      return validActor.editPost(id, title, body, authorName);
+      
+      const postEdit: PostEdit = {
+        authorName: authorName || undefined,
+        title,
+        body,
+        video: undefined,
+      };
+      
+      return validActor.editPost(id, postEdit);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['posts'] });
@@ -132,6 +143,52 @@ export function useIsCallerAdmin() {
       return actor.isCallerAdmin();
     },
     enabled: !!actor && !isFetching,
+  });
+}
+
+// Moderation Queue Operations
+export function useGetModerationQueue() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Array<[bigint, ModeratedContent]>>({
+    queryKey: ['moderationQueue'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getModerationQueue();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useApproveModerationRequest() {
+  const { actor, isFetching } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: bigint) => {
+      const validActor = requireActor(actor, isFetching);
+      return validActor.approveModerationRequest(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['moderationQueue'] });
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      queryClient.invalidateQueries({ queryKey: ['postsWithCounts'] });
+    },
+  });
+}
+
+export function useRejectModerationRequest() {
+  const { actor, isFetching } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: bigint) => {
+      const validActor = requireActor(actor, isFetching);
+      return validActor.rejectModerationRequest(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['moderationQueue'] });
+    },
   });
 }
 
@@ -169,7 +226,14 @@ export function useCreateEvent() {
       endTime: bigint;
     }) => {
       const validActor = requireActor(actor, isFetching);
-      return validActor.createEvent(authorName, title, description, location, startTime, endTime);
+      return validActor.createEvent(
+        authorName,
+        title,
+        description,
+        location,
+        startTime,
+        endTime
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
@@ -177,19 +241,57 @@ export function useCreateEvent() {
   });
 }
 
-// Post Likes
+// Comments
+export function useGetComments(postId: bigint) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Comment[]>({
+    queryKey: ['comments', postId.toString()],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getComments(postId);
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useCreateComment() {
+  const { actor, isFetching } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      postId,
+      authorName,
+      content,
+    }: {
+      postId: bigint;
+      authorName: string | null;
+      content: string;
+    }) => {
+      const validActor = requireActor(actor, isFetching);
+      return validActor.createComment(postId, authorName, content);
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['comments', variables.postId.toString()] });
+      queryClient.invalidateQueries({ queryKey: ['postsWithCounts'] });
+    },
+  });
+}
+
+// Likes
 export function useGetPostLikeSummary(postId: bigint) {
   const { actor, isFetching } = useActor();
 
   return useQuery({
     queryKey: ['postLike', postId.toString()],
     queryFn: async () => {
-      if (!actor) return { likeCount: 0n, callerLiked: false };
-      const [likeCount, callerLiked] = await Promise.all([
+      if (!actor) return { count: 0n, isLiked: false };
+      const [count, isLiked] = await Promise.all([
         actor.getPostLikeCount(postId),
         actor.isPostLikedByCaller(postId),
       ]);
-      return { likeCount, callerLiked };
+      return { count, isLiked };
     },
     enabled: !!actor && !isFetching,
   });
@@ -227,59 +329,6 @@ export function useUnlikePost() {
   });
 }
 
-// Comments
-export function useListComments(postId: bigint) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Comment[]>({
-    queryKey: ['comments', postId.toString()],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getComments(postId);
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useGetCommentCount(postId: bigint) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<number>({
-    queryKey: ['commentCount', postId.toString()],
-    queryFn: async () => {
-      if (!actor) return 0;
-      const results = await actor.getCommentCounts([postId]);
-      return results.length > 0 ? Number(results[0][1]) : 0;
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useCreateComment() {
-  const { actor, isFetching } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({
-      postId,
-      authorName,
-      content,
-    }: {
-      postId: bigint;
-      authorName: string | null;
-      content: string;
-    }) => {
-      const validActor = requireActor(actor, isFetching);
-      return validActor.createComment(postId, authorName, content);
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['comments', variables.postId.toString()] });
-      queryClient.invalidateQueries({ queryKey: ['commentCount', variables.postId.toString()] });
-      queryClient.invalidateQueries({ queryKey: ['postsWithCounts'] });
-    },
-  });
-}
-
 // Polls
 export function useListPolls() {
   const { actor, isFetching } = useActor();
@@ -289,19 +338,6 @@ export function useListPolls() {
     queryFn: async () => {
       if (!actor) return [];
       return actor.listPolls();
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useGetPollResults(pollId: bigint) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<PollWithResults>({
-    queryKey: ['pollResults', pollId.toString()],
-    queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.getPollResults(pollId);
     },
     enabled: !!actor && !isFetching,
   });
@@ -328,7 +364,7 @@ export function useCreatePoll() {
   });
 }
 
-export function useVotePoll() {
+export function useVote() {
   const { actor, isFetching } = useActor();
   const queryClient = useQueryClient();
 
@@ -344,8 +380,20 @@ export function useVotePoll() {
       return validActor.vote(pollId, optionId);
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['polls'] });
       queryClient.invalidateQueries({ queryKey: ['pollResults', variables.pollId.toString()] });
     },
+  });
+}
+
+export function useGetPollResults(pollId: bigint) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<PollWithResults>({
+    queryKey: ['pollResults', pollId.toString()],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getPollResults(pollId);
+    },
+    enabled: !!actor && !isFetching,
   });
 }

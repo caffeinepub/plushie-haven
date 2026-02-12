@@ -40,13 +40,10 @@ export interface SupporterRequest {
     message: string;
     validUntil?: Time;
 }
-export interface Poll {
-    question: string;
-    createdAt: Time;
-    createdBy: Principal;
-    isActive: boolean;
-    options: Array<PollOption>;
-    pollId: bigint;
+export interface PostWithCounts {
+    likeCount: bigint;
+    post: Post;
+    commentCount: bigint;
 }
 export interface PollWithResults {
     question: string;
@@ -57,9 +54,13 @@ export interface PollWithResults {
     options: Array<PollOption>;
     pollId: bigint;
 }
-export interface ImageAttachment {
-    contentType: string;
-    bytes: Uint8Array;
+export interface Poll {
+    question: string;
+    createdAt: Time;
+    createdBy: Principal;
+    isActive: boolean;
+    options: Array<PollOption>;
+    pollId: bigint;
 }
 export interface UserProfileEdit {
     bio: string;
@@ -69,24 +70,19 @@ export interface UserProfileEdit {
     publicDirectory: boolean;
     avatar?: ExternalBlob;
 }
-export interface LegacyPostWithCounts {
-    likeCount: bigint;
-    post: LegacyPost;
-    commentCount: bigint;
-}
 export interface SupporterProfile {
     displayName: string;
     addedAt: Time;
     validUntil?: Time;
 }
-export interface LegacyPost {
+export interface Post {
     id: bigint;
     title: string;
+    video?: ExternalBlob;
     body: string;
     createdAt: Time;
     authorName?: string;
     author: Principal;
-    image?: ImageAttachment;
 }
 export interface PollOption {
     optionId: bigint;
@@ -96,9 +92,24 @@ export interface FollowCounts {
     followers: bigint;
     following: bigint;
 }
+export interface ModeratedContent {
+    id: bigint;
+    title: string;
+    moderationOutcome: ModerationOutcome;
+    video?: ExternalBlob;
+    body: string;
+    submittedAt: Time;
+    author: Principal;
+}
 export interface Link {
     url: string;
     displayName: string;
+}
+export interface PostEdit {
+    title: string;
+    video?: ExternalBlob;
+    body: string;
+    authorName?: string;
 }
 export interface UserProfile {
     bio: string;
@@ -108,21 +119,27 @@ export interface UserProfile {
     publicDirectory: boolean;
     avatar?: ExternalBlob;
 }
+export enum ModerationOutcome {
+    allow = "allow",
+    manualReview = "manualReview",
+    block = "block"
+}
 export enum UserRole {
     admin = "admin",
     user = "user",
     guest = "guest"
 }
 export interface backendInterface {
+    approveModerationRequest(id: bigint): Promise<void>;
     approveSupporter(supporter: Principal, validUntil: Time | null): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     createComment(postId: bigint, authorName: string | null, content: string): Promise<Comment>;
     createEvent(authorName: string | null, title: string, description: string, location: string, startTime: Time, endTime: Time): Promise<bigint>;
+    createModerationRequest(title: string, body: string, video: ExternalBlob | null): Promise<bigint>;
     createPoll(question: string, options: Array<PollOption>): Promise<bigint>;
-    createPost(authorName: string | null, title: string, body: string, imageBytes: Uint8Array | null, imageContentType: string | null): Promise<bigint>;
     deletePost(id: bigint): Promise<void>;
     doesCallerFollow(target: Principal): Promise<boolean>;
-    editPost(id: bigint, newTitle: string, newBody: string, newAuthorName: string | null): Promise<void>;
+    editPost(id: bigint, postEdit: PostEdit): Promise<void>;
     follow(target: Principal): Promise<void>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
@@ -130,11 +147,12 @@ export interface backendInterface {
     getComments(postId: bigint): Promise<Array<Comment>>;
     getEvent(id: bigint): Promise<Event>;
     getFollowCounts(user: Principal): Promise<FollowCounts>;
+    getModerationQueue(): Promise<Array<[bigint, ModeratedContent]>>;
     getPoll(id: bigint): Promise<Poll>;
     getPollResults(id: bigint): Promise<PollWithResults>;
-    getPost(id: bigint): Promise<LegacyPost>;
+    getPost(id: bigint): Promise<Post>;
     getPostLikeCount(postId: bigint): Promise<bigint>;
-    getPostsWithCounts(): Promise<Array<LegacyPostWithCounts>>;
+    getPostsWithCounts(): Promise<Array<PostWithCounts>>;
     getProfileLikeCount(profile: Principal): Promise<bigint>;
     getSupporterRequests(): Promise<Array<[Principal, SupporterRequest]>>;
     getSupporters(): Promise<Array<[Principal, SupporterProfile]>>;
@@ -147,7 +165,8 @@ export interface backendInterface {
     listDirectoryProfiles(): Promise<Array<UserProfile>>;
     listEvents(): Promise<Array<Event>>;
     listPolls(): Promise<Array<Poll>>;
-    listPosts(): Promise<Array<LegacyPost>>;
+    listPosts(): Promise<Array<Post>>;
+    rejectModerationRequest(id: bigint): Promise<void>;
     revokeSupporter(supporter: Principal): Promise<void>;
     saveCallerUserProfile(profileEdit: UserProfileEdit): Promise<void>;
     submitSupporterRequest(displayName: string, message: string, numberOfCoffees: bigint | null, validUntil: Time | null): Promise<void>;

@@ -1,43 +1,81 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-11T09:25:37.072Z",
-  "summary": "Implemented safe, allowlisted video embedding by extending token-based URL parsing to emit video tokens for YouTube/Vimeo and rendering them via a responsive iframe component inside LinkifiedText. Non-video URLs remain standard external links. CommunityBoardPage usage is asserted via a summary file, but actual code changes for CommunityBoardPage/PostComments rendering are not fully visible in the provided diff summary (PostComments is truncated).",
+  "generatedAt": "2026-02-11T10:30:04.074Z",
+  "summary": "Diff adds frontend moderation queue UI scaffolding and error normalization for moderation outcomes, plus a backend state migration that introduces a moderationQueue. However, the diff summary does not provide evidence of the core backend moderation checks/policy enforcement on post creation, nor the required admin-only backend APIs for listing/approving/rejecting moderation items. It also introduces backend logic outside backend/main.mo (migration.mo) and makes unrequested changes to post creation wiring (switching to createModerationRequest and seemingly dropping image handling).",
   "missing_requirements": [
     {
-      "id": "REQ-2",
-      "requirement": "Apply video-embed rendering consistently anywhere the app currently uses LinkifiedText to render user-generated text (including CommunityBoardPage post title/body and PostComments comment content).",
-      "reason": "LinkifiedText now supports video tokens, and PostComments imports LinkifiedText, but the diff for PostComments is truncated and no concrete diff for CommunityBoardPage is shown—so consistent application to post titles/bodies and comment content cannot be fully verified from the provided diff summary alone.",
+      "id": "REQ-1",
+      "requirement": "Implement an on-canister (no external API) AI-assisted moderation check for Community Board post creation that analyzes post title/body and attached video metadata and returns allow/block/manual-review; runs before persisting; evaluates at minimum hate speech, underage content, threats, and copyright indicators.",
+      "reason": "The diff summary does not show any moderation analysis implementation or rule/heuristic evaluation logic in backend/main.mo. While frontend now calls createModerationRequest, the backend-side moderation classifier and checks are not evidenced.",
       "evidence": [
-        "frontend/src/components/community/PostComments.tsx (truncated)",
-        "frontend-file-summaries.txt (claims CommunityBoardPage now renders via LinkifiedText, but no actual code diff shown)"
+        "backend/main.mo (truncated)",
+        "frontend/src/hooks/useQueries.ts (uses createModerationRequest)"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "requirement": "Enforce moderation outcomes: underage content must be blocked (not saved), copyright must be blocked (not saved), borderline hate speech must go to manual review and not appear in listPosts/getPostsWithCounts until approved; approved posts appear normally.",
+      "reason": "No evidence in the diff summary that backend post persistence/listing is gated by moderation outcomes (e.g., rejecting underage/copyright before saving, hiding manual-review items from listPosts/getPostsWithCounts, and publishing on approval). The only evidenced backend change is adding moderationQueue to migrated state; enforcement behavior is not shown.",
+      "evidence": [
+        "backend/migration.mo",
+        "backend/main.mo (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "Add moderation review queue routed to manual review with admin-only backend APIs to list pending items and approve/reject; non-admins get authorization error; frontend shows admin-only UI on Community Board to review and approve/reject.",
+      "reason": "Frontend panel and hooks are added, but the diff summary does not show the backend admin-only APIs (get queue / approve / reject) or their authorization checks. Also, the CommunityBoardPage truncation does not show whether the moderation panel is actually gated to admins only.",
+      "evidence": [
+        "frontend/src/components/community/ModerationQueuePanel.tsx",
+        "frontend/src/hooks/useQueries.ts (mentions moderation queue operations; truncated)",
+        "backend/main.mo (truncated)",
+        "frontend/src/pages/CommunityBoardPage.tsx (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "requirement": "When an upload is blocked by moderation, show a clear English error message stating the upload was blocked for violating guidelines, using the existing error/toast pattern in CommunityBoardPage; other errors continue to go through normalizeActorError.",
+      "reason": "actorError normalization includes the exact blocked-guidelines message, but the diff summary does not show CommunityBoardPage handling create-post failures specifically for moderation block using the existing toast/error pattern (the file is truncated before create/submit error handling is evidenced).",
+      "evidence": [
+        "frontend/src/utils/actorError.ts",
+        "frontend/src/pages/CommunityBoardPage.tsx (truncated)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Added/updated project tracking metadata (project_state.json new_feature_requests entries) unrelated to the UI video-embed requirements.",
-      "reason": "The BuildRequest does not request adding or modifying project_state.json or introducing AR-* tracking entries.",
+      "description": "Backend migration module added outside backend/main.mo (backend/migration.mo) to introduce moderationQueue state.",
+      "reason": "BuildRequest constraints specify: \"Backend must remain a single Motoko actor (all logic in backend/main.mo).\" Adding backend/migration.mo introduces backend logic outside main.mo, which is not requested and appears to violate the constraint.",
       "evidence": [
-        "project_state.json"
+        "backend/migration.mo",
+        "backend/main.mo (imports Migration \"migration\" and uses (with migration = Migration.run))"
       ]
     },
     {
-      "description": "Updated frontend-file-summaries.txt with broad app feature descriptions beyond the requested video-embed change.",
-      "reason": "The BuildRequest only asks for video embeds in LinkifiedText usage; modifying a repository-wide summary file (and including unrelated feature claims) is not requested.",
+      "description": "Changed post creation flow to call createModerationRequest and appears to drop image upload parameters/handling in the mutation.",
+      "reason": "BuildRequest did not request changing the post creation API shape beyond adding moderation. In useCreatePost, imageBytes/imageContentType are accepted but not passed, and authorName is not passed either; only title/body/video are sent to createModerationRequest. This is an unrequested behavioral change and may regress existing image attachment behavior.",
       "evidence": [
-        "frontend-file-summaries.txt (truncated)"
+        "frontend/src/hooks/useQueries.ts (useCreatePost uses createModerationRequest; ignores imageBytes/imageContentType/authorName)"
+      ]
+    },
+    {
+      "description": "Added/expanded stopped-canister and actor-connection messaging in normalizeActorError.",
+      "reason": "Not requested by the moderation-focused BuildRequest; this is additional unrelated error handling behavior added alongside moderation normalization.",
+      "evidence": [
+        "frontend/src/utils/actorError.ts"
       ]
     }
   ],
   "confidence": 0.62,
   "changed_files": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/community/LinkifiedText.tsx",
-    "frontend/src/components/community/PostComments.tsx",
-    "frontend/src/components/community/VideoEmbed.tsx",
-    "frontend/src/utils/linkifyText.ts",
-    "frontend/src/utils/videoEmbeds.ts",
+    "frontend/src/components/community/ModerationQueuePanel.tsx",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/CommunityBoardPage.tsx",
+    "frontend/src/utils/actorError.ts",
     "project_state.json"
   ]
 }

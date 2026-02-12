@@ -1,7 +1,7 @@
 import { useInternetIdentity } from '../../hooks/useInternetIdentity';
 import { useGetPostLikeSummary, useLikePost, useUnlikePost } from '../../hooks/useQueries';
 import { Button } from '@/components/ui/button';
-import { Heart, Loader2 } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { toast } from 'sonner';
 import { normalizeActorError, isStoppedCanisterError } from '../../utils/actorError';
 
@@ -13,14 +13,14 @@ export function PostLikeButton({ postId }: PostLikeButtonProps) {
   const { identity } = useInternetIdentity();
   const isAuthenticated = identity && !identity.getPrincipal().isAnonymous();
 
-  const { data: likeSummary, isLoading, error: likeSummaryError } = useGetPostLikeSummary(postId);
+  const { data: likeSummary, error: likeSummaryError } = useGetPostLikeSummary(postId);
   const likeMutation = useLikePost();
   const unlikeMutation = useUnlikePost();
 
   // Check if backend is unavailable due to stopped canister
   const isBackendUnavailable = !!(likeSummaryError && isStoppedCanisterError(likeSummaryError));
 
-  const handleToggleLike = async () => {
+  const handleLike = async () => {
     if (!isAuthenticated) {
       toast.error('Please sign in to like posts');
       return;
@@ -33,7 +33,7 @@ export function PostLikeButton({ postId }: PostLikeButtonProps) {
     }
 
     try {
-      if (likeSummary?.callerLiked) {
+      if (likeSummary?.isLiked) {
         await unlikeMutation.mutateAsync(postId);
       } else {
         await likeMutation.mutateAsync(postId);
@@ -43,24 +43,19 @@ export function PostLikeButton({ postId }: PostLikeButtonProps) {
     }
   };
 
-  const isPending = likeMutation.isPending || unlikeMutation.isPending;
-  const isLiked = likeSummary?.callerLiked || false;
-  const likeCount = likeSummary?.likeCount ? Number(likeSummary.likeCount) : 0;
+  const isLiked = likeSummary?.isLiked || false;
+  const likeCount = likeSummary?.count ? Number(likeSummary.count) : 0;
 
   return (
     <Button
       variant="ghost"
       size="sm"
-      onClick={handleToggleLike}
-      disabled={isPending || isLoading || isBackendUnavailable}
+      onClick={handleLike}
+      disabled={likeMutation.isPending || unlikeMutation.isPending || !!isBackendUnavailable}
       className="gap-2"
     >
-      {isPending ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <Heart className={`h-4 w-4 ${isLiked ? 'fill-pink-500 text-pink-500' : ''}`} />
-      )}
-      {likeCount} {likeCount === 1 ? 'Like' : 'Likes'}
+      <Heart className={`h-4 w-4 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
+      <span>{likeCount} {likeCount === 1 ? 'Like' : 'Likes'}</span>
     </Button>
   );
 }

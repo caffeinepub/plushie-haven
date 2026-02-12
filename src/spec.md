@@ -1,12 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Auto-embed supported video links (YouTube and Vimeo) anywhere user-generated text is linkified, while keeping all other URLs as normal external links.
+**Goal:** Add on-canister, AI-assisted moderation for Community Board post creation to block illegal content, route borderline cases to manual review, and provide an admin review queue.
 
 **Planned changes:**
-- Extend the existing URL parsing/rendering used for Community Board posts and comments to detect YouTube/Vimeo URLs and render a responsive embedded player for those links.
-- Keep non-video URLs rendering exactly as they do today (clickable external links opening in a new tab).
-- Apply the same video-embed behavior consistently anywhere the app uses `LinkifiedText` (including CommunityBoardPage post title/body and PostComments comment content).
-- Ensure embeds use a strict provider allowlist (YouTube/Vimeo only) and safe token-based rendering (no arbitrary iframe embedding).
+- Add backend moderation logic (local heuristics/rules only) that evaluates Community Board post title/body and attached video metadata and returns: allow, block, or manual-review.
+- Enforce moderation policy on post creation: block underage content and copyright indicators; route borderline hate-speech cases to manual review so they are not published to the public feed until approved.
+- Add backend admin-only APIs to list pending moderation items and approve (publish) or reject (discard) them, with authorization errors for non-admin callers.
+- Add an admin-only Community Board UI section to view pending items and approve/reject them.
+- Update frontend error normalization and Community Board UI messaging to show clear English messages for moderation outcomes (blocked for violating guidelines; pending manual review) without exposing internal error details.
 
-**User-visible outcome:** When users paste a YouTube or Vimeo link in a post title, post body, or comment, it displays an in-page video player; other links remain standard clickable external links.
+**User-visible outcome:** When creating a Community Board post, content that violates guidelines is blocked with a clear message, borderline cases can be submitted for manual review, and admins can review pending posts and approve or reject them from an admin-only queue.

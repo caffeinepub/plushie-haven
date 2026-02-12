@@ -1,6 +1,6 @@
 /**
  * Normalizes backend errors into user-friendly English messages.
- * Handles authorization traps, stopped-canister rejections, and other common backend errors.
+ * Handles authorization traps, stopped-canister rejections, moderation errors, and other common backend errors.
  */
 
 /**
@@ -69,6 +69,19 @@ export function normalizeActorError(error: unknown): string {
     
     if (message.includes('Still connecting to the server')) {
       return 'Connecting to the server. Please wait a moment...';
+    }
+
+    // Handle moderation-related errors
+    if (message.includes('MODERATION_BLOCK') || message.includes('blocked for violating')) {
+      return 'The upload was blocked for violating guidelines.';
+    }
+
+    if (message.includes('MODERATION_REVIEW') || message.includes('pending review')) {
+      return 'Your post has been submitted and is pending review.';
+    }
+
+    if (message.includes('Moderation request not found')) {
+      return 'Moderation request not found.';
     }
 
     // Handle admin claim errors

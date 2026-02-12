@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useInternetIdentity } from '../../hooks/useInternetIdentity';
-import { useListComments, useCreateComment } from '../../hooks/useQueries';
+import { useGetComments, useCreateComment } from '../../hooks/useQueries';
 import { useGetCallerUserProfile } from '../../hooks/useProfileQueries';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -22,7 +22,7 @@ export function PostComments({ postId, initialCount = 0 }: PostCommentsProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [commentText, setCommentText] = useState('');
 
-  const { data: comments, isLoading, error: commentsError } = useListComments(postId);
+  const { data: comments, isLoading, error: commentsError } = useGetComments(postId);
   const { data: userProfile } = useGetCallerUserProfile();
   const createCommentMutation = useCreateComment();
 

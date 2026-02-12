@@ -1,58 +1,67 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Add allowlisted YouTube/Vimeo video embeds to LinkifiedText",
+  "title": "Community Board moderation UX: blocked messaging + admin review queue",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Extend LinkifiedText token parsing/rendering to auto-embed responsive players for allowlisted YouTube/Vimeo URLs while keeping all other URLs as external links.",
+      "id": "REQ-3",
+      "summary": "Add an admin-only moderation review queue UI on the Community Board page to list pending items and approve/reject them.",
       "acceptanceCriteria": [
-        "When a user includes a YouTube or Vimeo URL in post titles, post bodies, or comment content, the UI renders an embedded video player for that URL.",
-        "Non-video URLs continue to render as clickable links (open in a new tab) exactly as they do today.",
-        "Embeds are implemented using a strict allowlist of video providers (e.g., YouTube/Vimeo) and do not allow arbitrary iframe embedding.",
-        "Embedded players are responsive (maintain aspect ratio and fit the container on mobile/desktop)."
+        "Frontend provides an admin-only UI section on the Community Board page to view pending items and approve/reject them.",
+        "Approving publishes the post to the standard feed; rejecting prevents it from appearing and removes it from the pending list."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/utils/videoEmbeds.ts",
-          "operation": "create",
-          "description": "Add allowlist-based helpers to detect supported video URLs (minimum YouTube and Vimeo) and convert them into safe embed descriptors (provider + canonical embed URL + optional video id), ensuring only known embed hostnames are produced."
-        },
-        {
-          "path": "frontend/src/utils/linkifyText.ts",
+          "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Extend the existing tokenization to emit a distinct token type for supported video URLs using a strict allowlist (via the new video embed helpers); keep existing behavior for all other URLs (still emitted as link tokens)."
+          "description": "Add React Query hooks/mutations for moderation queue operations using existing actor methods (getModerationQueue, approveModerationRequest, rejectModerationRequest), including cache invalidation for the public posts feed and the queue after actions."
         },
         {
-          "path": "frontend/src/components/community/VideoEmbed.tsx",
+          "path": "frontend/src/components/community/ModerationQueuePanel.tsx",
           "operation": "create",
-          "description": "Create a dedicated, responsive VideoEmbed component that renders an iframe only from allowlisted providers (YouTube/Vimeo) and maintains aspect ratio across mobile/desktop without using dangerouslySetInnerHTML."
+          "description": "Create an admin-only ModerationQueuePanel component that renders pending moderation items with approve/reject actions and appropriate loading/empty/error states. Use shadcn-ui components (e.g., Card, Button, Alert) for consistent UI; verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/components/community/LinkifiedText.tsx",
+          "path": "frontend/src/pages/CommunityBoardPage.tsx",
           "operation": "modify",
-          "description": "Update LinkifiedText to render the new video tokens with the VideoEmbed component and continue rendering non-video URL tokens as external links (target=_blank, rel=noopener noreferrer); adjust the wrapper element as needed to safely support block embeds while preserving whitespace."
+          "description": "Wire ModerationQueuePanel into the CommunityBoardPage with an admin-only guard (based on the existing useIsCallerAdmin hook) so non-admin users never see the queue UI. Ensure actions trigger refetch/invalidation so approvals appear in the standard feed and rejections disappear from the queue."
         }
       ]
     },
     {
-      "id": "REQ-2",
-      "summary": "Ensure video-embed rendering applies consistently everywhere LinkifiedText is used (CommunityBoardPage post title/body and PostComments comment content).",
+      "id": "REQ-4",
+      "summary": "Show a clear toast/error message when a Community Board upload is blocked by moderation.",
       "acceptanceCriteria": [
-        "CommunityBoardPage renders video embeds in post titles and post bodies where applicable.",
-        "PostComments renders video embeds in comment content where applicable.",
-        "No changes are required to backend data structures or APIs to support video embedding (embeds are derived from existing text content)."
+        "If createPost fails due to moderation block, the UI shows an English message indicating the upload was blocked for violating guidelines.",
+        "The blocked message is shown using the existing error/toast pattern in CommunityBoardPage.",
+        "Other backend errors continue to be normalized via existing normalizeActorError behavior."
       ],
       "file_operations": [
         {
           "path": "frontend/src/pages/CommunityBoardPage.tsx",
           "operation": "modify",
-          "description": "Adjust post title/body rendering as needed to accommodate block-level video embeds produced by LinkifiedText (e.g., avoid placing embed-capable content inside a heading element that only allows phrasing content) while keeping existing UI behavior for non-video links."
+          "description": "Ensure post submission continues to surface moderation-block failures via the existing toast.error(normalizeActorError(error)) pattern, without exposing internal details, and without changing non-moderation error handling."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Normalize moderation-related backend errors into user-friendly English messages for blocked vs manual-review outcomes.",
+      "acceptanceCriteria": [
+        "Moderation block errors are normalized to an English message that matches the requested wording.",
+        "Manual-review submission (if implemented as a successful submission or distinct error) is communicated in a user-friendly way (e.g., indicates it is pending review).",
+        "No raw Motoko Runtime.trap strings or internal codes are shown to end users for moderation outcomes."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/actorError.ts",
+          "operation": "modify",
+          "description": "Extend normalizeActorError() to detect moderation-related failures and map them to user-friendly English messages: (1) blocked: \"The upload was blocked for violating guidelines.\" (2) manual review: a message indicating the submission is pending review. Ensure sanitized output and no raw trap strings/codes are exposed."
         },
         {
-          "path": "frontend/src/components/community/PostComments.tsx",
+          "path": "frontend/src/pages/CommunityBoardPage.tsx",
           "operation": "modify",
-          "description": "Confirm/adjust comment content layout so LinkifiedText-rendered video embeds display correctly and responsively within the comment container, without changing comment submission/loading behavior."
+          "description": "Adjust success/error toast messaging around post submission to clearly communicate moderation outcomes based on normalized messages (e.g., blocked vs pending review) while preserving existing normalizeActorError usage for all other errors."
         }
       ]
     }

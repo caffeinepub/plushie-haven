@@ -3,22 +3,23 @@ import Map "mo:core/Map";
 import Nat "mo:core/Nat";
 import List "mo:core/List";
 import Array "mo:core/Array";
+import Text "mo:core/Text";
 import Runtime "mo:core/Runtime";
 import Principal "mo:core/Principal";
+import Iter "mo:core/Iter";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor {
-  // Authorization
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
-  // Storage
   include MixinStorage();
 
-  // Supporter/coffees system
   public type SupporterRequest = {
     submittedAt : Time.Time;
     displayName : Text;
@@ -93,7 +94,6 @@ actor {
     supporters.toArray();
   };
 
-  // User Profile Types
   public type Link = {
     url : Text;
     displayName : Text;
@@ -119,7 +119,6 @@ actor {
 
   let userProfiles = Map.empty<Principal, UserProfile>();
 
-  // Profile CRUD
   public shared ({ caller }) func saveCallerUserProfile(profileEdit : UserProfileEdit) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can save profiles");
@@ -156,27 +155,43 @@ actor {
   };
 
   public query ({ caller }) func listDirectoryProfiles() : async [UserProfile] {
-    // No authorization needed - public directory is meant to be publicly accessible
     userProfiles.values().toArray().filter(func(profile) { profile.publicDirectory });
   };
 
-  // Legacy (unchanged)
-  type ImageAttachment = {
-    bytes : [Nat8];
-    contentType : Text;
+  public type ModerationOutcome = {
+    #allow;
+    #block;
+    #manualReview;
   };
 
-  type LegacyPost = {
+  public type ModeratedContent = {
+    id : Nat;
+    author : Principal;
+    title : Text;
+    body : Text;
+    video : ?Storage.ExternalBlob;
+    submittedAt : Time.Time;
+    moderationOutcome : ModerationOutcome;
+  };
+
+  public type Post = {
     id : Nat;
     author : Principal;
     authorName : ?Text;
     title : Text;
     body : Text;
     createdAt : Time.Time;
-    image : ?ImageAttachment;
+    video : ?Storage.ExternalBlob;
   };
 
-  type Event = {
+  public type PostEdit = {
+    authorName : ?Text;
+    title : Text;
+    body : Text;
+    video : ?Storage.ExternalBlob;
+  };
+
+  public type Event = {
     id : Nat;
     author : Principal;
     authorName : ?Text;
@@ -188,53 +203,79 @@ actor {
     createdAt : Time.Time;
   };
 
-  let posts = Map.empty<Nat, LegacyPost>();
+  let posts = Map.empty<Nat, Post>();
   var nextPostId = 0;
 
   let events = Map.empty<Nat, Event>();
   var nextEventId = 0;
 
-  public shared ({ caller }) func createPost(authorName : ?Text, title : Text, body : Text, imageBytes : ?[Nat8], imageContentType : ?Text) : async Nat {
+  let moderationQueue = Map.empty<Nat, ModeratedContent>();
+
+  public shared ({ caller }) func createModerationRequest(title : Text, body : Text, video : ?Storage.ExternalBlob) : async Nat {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only authenticated users can create posts");
+      Runtime.trap("Unauthorized: Only authenticated users can create moderation requests");
     };
 
-    if (title.trim(#char ' ').size() == 0) { Runtime.trap("Title cannot be empty") };
-    if (body.trim(#char ' ').size() == 0) { Runtime.trap("Body cannot be empty") };
-
-    let image = switch (imageBytes, imageContentType) {
-      case (?bytes, ?contentType) {
-        ?{
-          bytes;
-          contentType;
-        };
-      };
-      case (_) { null };
-    };
-
-    let post : LegacyPost = {
+    let moderationRequest : ModeratedContent = {
       id = nextPostId;
       author = caller;
-      authorName;
       title;
       body;
-      createdAt = Time.now();
-      image;
+      submittedAt = Time.now();
+      video;
+      moderationOutcome = #manualReview;
     };
 
-    posts.add(nextPostId, post);
-    let postId = nextPostId;
+    moderationQueue.add(nextPostId, moderationRequest);
+    let requestId = nextPostId;
     nextPostId += 1;
-    postId;
+    requestId;
   };
 
-  public query ({ caller }) func listPosts() : async [LegacyPost] {
-    // No authorization needed - posts are publicly viewable
+  public shared ({ caller }) func approveModerationRequest(id : Nat) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can approve moderation requests");
+    };
+
+    let moderationRequest = switch (moderationQueue.get(id)) {
+      case (null) { Runtime.trap("Moderation request not found!") };
+      case (?request) { request };
+    };
+
+    let newPost : Post = {
+      id = moderationRequest.id;
+      author = moderationRequest.author;
+      authorName = null;
+      title = moderationRequest.title;
+      body = moderationRequest.body;
+      createdAt = Time.now();
+      video = moderationRequest.video;
+    };
+
+    posts.add(moderationRequest.id, newPost);
+    moderationQueue.remove(id);
+  };
+
+  public shared ({ caller }) func rejectModerationRequest(id : Nat) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can reject moderation requests");
+    };
+
+    moderationQueue.remove(id);
+  };
+
+  public query ({ caller }) func getModerationQueue() : async [(Nat, ModeratedContent)] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can view the moderation queue");
+    };
+    moderationQueue.toArray();
+  };
+
+  public query ({ caller }) func listPosts() : async [Post] {
     posts.values().toArray();
   };
 
-  public query ({ caller }) func getPost(id : Nat) : async LegacyPost {
-    // No authorization needed - posts are publicly viewable
+  public query ({ caller }) func getPost(id : Nat) : async Post {
     switch (posts.get(id)) {
       case (null) { Runtime.trap("Post not found") };
       case (?post) { post };
@@ -260,36 +301,28 @@ actor {
     posts.remove(id);
   };
 
-  public shared ({ caller }) func editPost(id : Nat, newTitle : Text, newBody : Text, newAuthorName : ?Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only authenticated users can edit posts");
+  public shared ({ caller }) func editPost(id : Nat, postEdit : PostEdit) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can edit posts");
     };
 
-    if (newTitle.trim(#char ' ').size() == 0) { Runtime.trap("Title cannot be empty") };
-    if (newBody.trim(#char ' ').size() == 0) { Runtime.trap("Body cannot be empty") };
+    if (postEdit.title.trim(#char ' ').size() == 0) { Runtime.trap("Title cannot be empty") };
+    if (postEdit.body.trim(#char ' ').size() == 0) { Runtime.trap("Body cannot be empty") };
 
-    let post = switch (posts.get(id)) {
+    let existingPost = switch (posts.get(id)) {
       case (null) { Runtime.trap("Post not found") };
       case (?post) { post };
     };
 
-    if (not AccessControl.isAdmin(accessControlState, caller)) {
-      if (post.author != caller) {
-        Runtime.trap("Unauthorized: Only the author or an admin can edit this post");
-      };
+    let updatedPost : Post = {
+      existingPost with
+      authorName = postEdit.authorName;
+      title = postEdit.title;
+      body = postEdit.body;
+      video = postEdit.video;
     };
-
-    let updatedPost : LegacyPost = {
-      post with
-      title = newTitle;
-      body = newBody;
-      authorName = newAuthorName;
-    };
-
     posts.add(id, updatedPost);
   };
-
-  // Events
 
   public shared ({ caller }) func createEvent(authorName : ?Text, title : Text, description : Text, location : Text, startTime : Time.Time, endTime : Time.Time) : async Nat {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
@@ -320,19 +353,16 @@ actor {
   };
 
   public query ({ caller }) func listEvents() : async [Event] {
-    // No authorization needed - events are publicly viewable
     events.values().toArray();
   };
 
   public query ({ caller }) func getEvent(id : Nat) : async Event {
-    // No authorization needed - events are publicly viewable
     switch (events.get(id)) {
       case (null) { Runtime.trap("Event not found") };
       case (?event) { event };
     };
   };
 
-  // Follow system
   type FollowInfo = {
     followers : List.List<Principal>;
     following : List.List<Principal>;
@@ -414,7 +444,6 @@ actor {
   };
 
   public query ({ caller }) func doesCallerFollow(target : Principal) : async Bool {
-    // No authorization needed - checking follow status is public information
     switch (followData.get(caller)) {
       case (null) { false };
       case (?info) {
@@ -424,7 +453,6 @@ actor {
   };
 
   public query ({ caller }) func getFollowCounts(user : Principal) : async FollowCounts {
-    // No authorization needed - follow counts are public information
     let info = switch (followData.get(user)) {
       case (null) {
         {
@@ -440,7 +468,6 @@ actor {
     };
   };
 
-  // Likes system
   let postLikes = Map.empty<Nat, List.List<Principal>>();
   let profileLikes = Map.empty<Principal, List.List<Principal>>();
 
@@ -487,7 +514,6 @@ actor {
   };
 
   public query ({ caller }) func isPostLikedByCaller(postId : Nat) : async Bool {
-    // No authorization needed - checking like status is public information
     switch (postLikes.get(postId)) {
       case (null) { false };
       case (?likes) {
@@ -497,7 +523,6 @@ actor {
   };
 
   public query ({ caller }) func getPostLikeCount(postId : Nat) : async Nat {
-    // No authorization needed - like counts are public information
     switch (postLikes.get(postId)) {
       case (null) { 0 };
       case (?likes) { likes.size() };
@@ -537,7 +562,6 @@ actor {
   };
 
   public query ({ caller }) func isProfileLikedByCaller(profile : Principal) : async Bool {
-    // No authorization needed - checking like status is public information
     switch (profileLikes.get(profile)) {
       case (null) { false };
       case (?likes) {
@@ -547,14 +571,11 @@ actor {
   };
 
   public query ({ caller }) func getProfileLikeCount(profile : Principal) : async Nat {
-    // No authorization needed - like counts are public information
     switch (profileLikes.get(profile)) {
       case (null) { 0 };
       case (?likes) { likes.size() };
     };
   };
-
-  // === NEW COMMENT SYSTEM ===
 
   public type Comment = {
     postId : Nat;
@@ -596,7 +617,6 @@ actor {
   };
 
   public query ({ caller }) func getComments(postId : Nat) : async [Comment] {
-    // No authorization needed - comments are publicly viewable
     switch (comments.get(postId)) {
       case (null) { [] };
       case (?postComments) { postComments.toArray() };
@@ -604,8 +624,6 @@ actor {
   };
 
   public query ({ caller }) func getCommentCounts(postIds : [Nat]) : async [(Nat, Nat)] {
-    // No authorization needed - comment counts are public information
-    // Return array of (postId, commentCount)
     postIds.map(func(id) {
       let count = switch (comments.get(id)) {
         case (null) { 0 };
@@ -615,16 +633,13 @@ actor {
     });
   };
 
-  // EXTENDING BACKEND TO BETTER SUPPORT NEW FRONTEND
-
-  public type LegacyPostWithCounts = {
-    post : LegacyPost;
+  public type PostWithCounts = {
+    post : Post;
     likeCount : Nat;
     commentCount : Nat;
   };
 
-  public query ({ caller }) func getPostsWithCounts() : async [LegacyPostWithCounts] {
-    // No authorization needed - posts and their counts are publicly viewable
+  public query ({ caller }) func getPostsWithCounts() : async [PostWithCounts] {
     let postsArray = posts.values().toArray();
     postsArray.map(func(post) {
       {
@@ -640,8 +655,6 @@ actor {
       };
     });
   };
-
-  // === POLLING SYSTEM ===
 
   public type PollOption = {
     optionId : Nat;
@@ -735,7 +748,6 @@ actor {
   };
 
   public query ({ caller }) func listPolls() : async [Poll] {
-    // No authorization needed - polls are publicly viewable
     polls.values().toArray();
   };
 

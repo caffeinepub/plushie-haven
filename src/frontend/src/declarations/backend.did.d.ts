@@ -30,25 +30,19 @@ export interface Event {
 }
 export type ExternalBlob = Uint8Array;
 export interface FollowCounts { 'followers' : bigint, 'following' : bigint }
-export interface ImageAttachment {
-  'contentType' : string,
-  'bytes' : Uint8Array,
-}
-export interface LegacyPost {
+export interface Link { 'url' : string, 'displayName' : string }
+export interface ModeratedContent {
   'id' : bigint,
   'title' : string,
+  'moderationOutcome' : ModerationOutcome,
+  'video' : [] | [ExternalBlob],
   'body' : string,
-  'createdAt' : Time,
-  'authorName' : [] | [string],
+  'submittedAt' : Time,
   'author' : Principal,
-  'image' : [] | [ImageAttachment],
 }
-export interface LegacyPostWithCounts {
-  'likeCount' : bigint,
-  'post' : LegacyPost,
-  'commentCount' : bigint,
-}
-export interface Link { 'url' : string, 'displayName' : string }
+export type ModerationOutcome = { 'allow' : null } |
+  { 'manualReview' : null } |
+  { 'block' : null };
 export interface Poll {
   'question' : string,
   'createdAt' : Time,
@@ -66,6 +60,26 @@ export interface PollWithResults {
   'isActive' : boolean,
   'options' : Array<PollOption>,
   'pollId' : bigint,
+}
+export interface Post {
+  'id' : bigint,
+  'title' : string,
+  'video' : [] | [ExternalBlob],
+  'body' : string,
+  'createdAt' : Time,
+  'authorName' : [] | [string],
+  'author' : Principal,
+}
+export interface PostEdit {
+  'title' : string,
+  'video' : [] | [ExternalBlob],
+  'body' : string,
+  'authorName' : [] | [string],
+}
+export interface PostWithCounts {
+  'likeCount' : bigint,
+  'post' : Post,
+  'commentCount' : bigint,
 }
 export interface SupporterProfile {
   'displayName' : string,
@@ -127,6 +141,7 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'approveModerationRequest' : ActorMethod<[bigint], undefined>,
   'approveSupporter' : ActorMethod<[Principal, [] | [Time]], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'createComment' : ActorMethod<[bigint, [] | [string], string], Comment>,
@@ -134,14 +149,14 @@ export interface _SERVICE {
     [[] | [string], string, string, string, Time, Time],
     bigint
   >,
-  'createPoll' : ActorMethod<[string, Array<PollOption>], bigint>,
-  'createPost' : ActorMethod<
-    [[] | [string], string, string, [] | [Uint8Array], [] | [string]],
+  'createModerationRequest' : ActorMethod<
+    [string, string, [] | [ExternalBlob]],
     bigint
   >,
+  'createPoll' : ActorMethod<[string, Array<PollOption>], bigint>,
   'deletePost' : ActorMethod<[bigint], undefined>,
   'doesCallerFollow' : ActorMethod<[Principal], boolean>,
-  'editPost' : ActorMethod<[bigint, string, string, [] | [string]], undefined>,
+  'editPost' : ActorMethod<[bigint, PostEdit], undefined>,
   'follow' : ActorMethod<[Principal], undefined>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
@@ -149,11 +164,12 @@ export interface _SERVICE {
   'getComments' : ActorMethod<[bigint], Array<Comment>>,
   'getEvent' : ActorMethod<[bigint], Event>,
   'getFollowCounts' : ActorMethod<[Principal], FollowCounts>,
+  'getModerationQueue' : ActorMethod<[], Array<[bigint, ModeratedContent]>>,
   'getPoll' : ActorMethod<[bigint], Poll>,
   'getPollResults' : ActorMethod<[bigint], PollWithResults>,
-  'getPost' : ActorMethod<[bigint], LegacyPost>,
+  'getPost' : ActorMethod<[bigint], Post>,
   'getPostLikeCount' : ActorMethod<[bigint], bigint>,
-  'getPostsWithCounts' : ActorMethod<[], Array<LegacyPostWithCounts>>,
+  'getPostsWithCounts' : ActorMethod<[], Array<PostWithCounts>>,
   'getProfileLikeCount' : ActorMethod<[Principal], bigint>,
   'getSupporterRequests' : ActorMethod<
     [],
@@ -169,7 +185,8 @@ export interface _SERVICE {
   'listDirectoryProfiles' : ActorMethod<[], Array<UserProfile>>,
   'listEvents' : ActorMethod<[], Array<Event>>,
   'listPolls' : ActorMethod<[], Array<Poll>>,
-  'listPosts' : ActorMethod<[], Array<LegacyPost>>,
+  'listPosts' : ActorMethod<[], Array<Post>>,
+  'rejectModerationRequest' : ActorMethod<[bigint], undefined>,
   'revokeSupporter' : ActorMethod<[Principal], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfileEdit], undefined>,
   'submitSupporterRequest' : ActorMethod<

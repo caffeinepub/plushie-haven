@@ -2,13 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-extend-the-existing-url-parsing-rendering-used-by-community-board-posts-and-comments-to-auto-embed-videos-for-supported-video-urls-at-minimum-youtube-and-vimeo-while-keeping-all-other-urls-rendered-as-normal-clickable-external-links",
-      "featureTitle": "Extend the existing URL parsing/rendering used by Community Board posts and comments to auto-embed videos for supported video URLs (at minimum YouTube and Vimeo) while keeping all other URLs rendered as normal clickable external links.",
+      "featureId": "feature-add-a-moderation-review-queue-for-community-board-content-that-is-routed-to-manual-review-including-backend-methods-for-admins-to-list-pending-items-and-to-approve-or-reject-them",
+      "featureTitle": "Add a moderation review queue for Community Board content that is routed to manual review, including backend methods for admins to list pending items and to approve or reject them.",
       "files": [
-        "frontend/src/components/community/LinkifiedText.tsx",
-        "frontend/src/components/community/VideoEmbed.tsx",
-        "frontend/src/utils/linkifyText.ts",
-        "frontend/src/utils/videoEmbeds.ts"
+        "frontend/src/components/community/ModerationQueuePanel.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/CommunityBoardPage.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -20,15 +19,15 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-1"
+        "REQ-3"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-apply-video-embed-rendering-consistently-anywhere-the-app-currently-uses-linkifiedtext-to-render-user-generated-text-including-communityboardpage-post-title-body-and-postcomments-comment-content",
-      "featureTitle": "Apply video-embed rendering consistently anywhere the app currently uses LinkifiedText to render user-generated text (including CommunityBoardPage post title/body and PostComments comment content).",
+      "featureId": "feature-when-an-upload-is-blocked-by-moderation-show-the-user-a-clear-error-message-stating-that-the-upload-was-blocked-for-violating-guidelines",
+      "featureTitle": "When an upload is blocked by moderation, show the user a clear error message stating that the upload was blocked for violating guidelines.",
       "files": [
-        "frontend/src/components/community/PostComments.tsx"
+        "frontend/src/pages/CommunityBoardPage.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -40,7 +39,28 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-2"
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-update-frontend-actor-error-normalization-to-recognize-moderation-related-backend-errors-blocked-vs-manual-review-and-present-user-friendly-english-messaging-without-exposing-internal-details",
+      "featureTitle": "Update frontend actor error normalization to recognize moderation-related backend errors (blocked vs. manual review) and present user-friendly English messaging without exposing internal details.",
+      "files": [
+        "frontend/src/pages/CommunityBoardPage.tsx",
+        "frontend/src/utils/actorError.ts"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
       ],
       "confidence": "high"
     }
