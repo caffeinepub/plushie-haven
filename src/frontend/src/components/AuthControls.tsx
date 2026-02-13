@@ -2,6 +2,7 @@ import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useActor } from '../hooks/useActor';
 import { useGetCallerUserProfile } from '../hooks/useProfileQueries';
 import { useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, Shield } from 'lucide-react';
+import { LogOut, Shield, User, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import { normalizeActorError } from '../utils/actorError';
 
@@ -19,6 +20,7 @@ export default function AuthControls() {
   const { identity, login, clear, isLoggingIn, isInitializing } = useInternetIdentity();
   const { actor, isFetching: actorFetching } = useActor();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { data: userProfile, isLoading: profileLoading } = useGetCallerUserProfile();
 
   const isAuthenticated = identity && !identity.getPrincipal().isAnonymous();
@@ -58,6 +60,20 @@ export default function AuthControls() {
     }
   };
 
+  const handleViewProfile = () => {
+    if (identity) {
+      const principalString = identity.getPrincipal().toString();
+      navigate({ to: '/profiles/$principal', params: { principal: principalString } });
+    }
+  };
+
+  const handleEditProfile = () => {
+    if (identity) {
+      const principalString = identity.getPrincipal().toString();
+      navigate({ to: '/profiles/$principal', params: { principal: principalString }, search: { edit: true } });
+    }
+  };
+
   if (isInitializing) {
     return null;
   }
@@ -85,6 +101,15 @@ export default function AuthControls() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>Signed In</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleViewProfile} className="gap-2">
+          <User className="h-4 w-4" />
+          View My Profile
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleEditProfile} className="gap-2">
+          <Edit className="h-4 w-4" />
+          Edit Profile
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleClaimAdmin} className="gap-2">
           <Shield className="h-4 w-4" />

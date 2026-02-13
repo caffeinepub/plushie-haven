@@ -13,6 +13,8 @@ import ContactPage from './pages/ContactPage';
 import PlushieBrandsPage from './pages/PlushieBrandsPage';
 import AdultPacifierBrandsPage from './pages/AdultPacifierBrandsPage';
 import SupportPage from './pages/SupportPage';
+import ProfilesDirectoryPage from './pages/ProfilesDirectoryPage';
+import ProfilePage from './pages/ProfilePage';
 import { Toaster } from '@/components/ui/sonner';
 
 const rootRoute = createRootRoute({
@@ -73,6 +75,18 @@ const supportRoute = createRoute({
   component: SupportPage,
 });
 
+const profilesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/profiles',
+  component: ProfilesDirectoryPage,
+});
+
+const profileRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/profiles/$principal',
+  component: ProfilePage,
+});
+
 const aboutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/about',
@@ -95,6 +109,8 @@ const routeTree = rootRoute.addChildren([
   brandsRoute,
   pacifierBrandsRoute,
   supportRoute,
+  profilesRoute,
+  profileRoute,
   aboutRoute,
   contactRoute,
 ]);

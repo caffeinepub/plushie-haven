@@ -1,67 +1,158 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Community Board moderation UX: blocked messaging + admin review queue",
+  "title": "User profiles (directory, view, and edit) with Internet Identity",
   "requirements": [
     {
-      "id": "REQ-3",
-      "summary": "Add an admin-only moderation review queue UI on the Community Board page to list pending items and approve/reject them.",
+      "id": "REQ-1",
+      "summary": "Add TanStack Router routes for profiles directory and individual profile by principal string.",
       "acceptanceCriteria": [
-        "Frontend provides an admin-only UI section on the Community Board page to view pending items and approve/reject them.",
-        "Approving publishes the post to the standard feed; rejecting prevents it from appearing and removes it from the pending list."
+        "The app has a working route for a profiles directory page (e.g., /profiles).",
+        "The app has a working route for viewing a specific user profile by principal (e.g., /profiles/$principal).",
+        "Navigation to these routes works without full page reloads and does not break existing routes."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Add React Query hooks/mutations for moderation queue operations using existing actor methods (getModerationQueue, approveModerationRequest, rejectModerationRequest), including cache invalidation for the public posts feed and the queue after actions."
+          "description": "Register the Profiles routes in the TanStack Router route tree: a directory route at /profiles and a profile route at /profiles/$principal that renders the appropriate pages. Keep routing consistent with existing createRoute/createRootRoute setup."
         },
         {
-          "path": "frontend/src/components/community/ModerationQueuePanel.tsx",
-          "operation": "create",
-          "description": "Create an admin-only ModerationQueuePanel component that renders pending moderation items with approve/reject actions and appropriate loading/empty/error states. Use shadcn-ui components (e.g., Card, Button, Alert) for consistent UI; verify the component's usage instructions before implementing."
+          "path": "frontend/src/pages/ProfilePage.tsx",
+          "operation": "modify",
+          "description": "Implement the Profile page component to accept the principal route param from TanStack Router and render the profile view. Use the blob-storage ExternalBlob display pattern (direct URL) when rendering images. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/pages/CommunityBoardPage.tsx",
+          "path": "frontend/src/pages/ProfilesDirectoryPage.tsx",
           "operation": "modify",
-          "description": "Wire ModerationQueuePanel into the CommunityBoardPage with an admin-only guard (based on the existing useIsCallerAdmin hook) so non-admin users never see the queue UI. Ensure actions trigger refetch/invalidation so approvals appear in the standard feed and rejections disappear from the queue."
+          "description": "Update the directory page component so it can be mounted by the /profiles route and navigate to /profiles/$principal via TanStack Router links (no full reload)."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Implement a functional Profiles Directory page listing public profiles and linking to profile views.",
+      "acceptanceCriteria": [
+        "Profiles directory uses the existing React Query hook for directory listing (listDirectoryProfiles) and renders a non-empty state when profiles exist.",
+        "Each listed profile entry shows at least display name and (if available) avatar, and links to that user’s profile page.",
+        "Page shows a clear empty state message when there are zero public profiles.",
+        "All user-facing text is in English."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useProfileQueries.ts",
+          "operation": "modify",
+          "description": "Ensure the existing useListDirectoryProfiles hook returns enough information for the UI to link to an individual profile (principal string) while still using the backend capability listDirectoryProfiles. Keep the hook name intact to satisfy existing call sites."
+        },
+        {
+          "path": "frontend/src/backend.d.ts",
+          "operation": "modify",
+          "description": "Adjust/extend the frontend type definitions to correctly represent the directory listing shape needed by the UI (including the principal identifier) so the directory can link to /profiles/$principal without unsafe casting."
+        },
+        {
+          "path": "frontend/src/pages/ProfilesDirectoryPage.tsx",
+          "operation": "modify",
+          "description": "Replace the placeholder card with a directory listing UI: fetch via useListDirectoryProfiles, show empty/loading/error states in English, render each profile with display name and optional avatar thumbnail (using blob-storage ExternalBlob getDirectURL), and link each entry to its profile route using TanStack Router Link. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Implement Profile page UI with avatar, bio, links, plushie grid, counts, and like/follow actions gated by authentication.",
+      "acceptanceCriteria": [
+        "Profile page fetches the profile by principal via existing hook and handles invalid/missing principal by showing an English error/empty state.",
+        "Profile page renders avatar (or a fallback), display name, bio, links list, and plushie images grid when present.",
+        "Profile page shows follower/following counts and like count using existing hooks.",
+        "Authenticated users can Follow/Unfollow and Like/Unlike from the profile page; unauthenticated users see a sign-in prompt and controls are disabled/hidden appropriately.",
+        "All user-facing text is in English."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/ProfilePage.tsx",
+          "operation": "modify",
+          "description": "Build the profile view: read $principal param, fetch via useGetUserProfile, and render avatar (ExternalBlob direct URL with fallback), display name, bio, ProfileLinksList, and ProfileImageGrid. Show follow summary via useGetFollowSummary and like summary via useGetProfileLikeSummary, and wire Follow/Unfollow + Like/Unlike mutations. Use the authorization + Internet Identity state (via existing hooks) to gate actions and show an English sign-in prompt when unauthenticated. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/profiles/ProfileImageGrid.tsx",
+          "operation": "modify",
+          "description": "Ensure the plushie image grid remains robust for empty/missing images and uses ExternalBlob direct URLs safely (e.g., stable keys, accessible alt text), aligning with the Profile page requirements. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
       "id": "REQ-4",
-      "summary": "Show a clear toast/error message when a Community Board upload is blocked by moderation.",
+      "summary": "Add owner-only profile editing for the signed-in user with save, feedback, and query refresh.",
       "acceptanceCriteria": [
-        "If createPost fails due to moderation block, the UI shows an English message indicating the upload was blocked for violating guidelines.",
-        "The blocked message is shown using the existing error/toast pattern in CommunityBoardPage.",
-        "Other backend errors continue to be normalized via existing normalizeActorError behavior."
+        "Signed-in user can open an Edit Profile UI that is prefilled using getCallerUserProfile.",
+        "Edit Profile supports editing: display name, bio, avatar image, links (url + display name), plushie images (multiple), and publicDirectory toggle.",
+        "Saving calls the existing saveCallerUserProfile mutation and shows success/error feedback in English.",
+        "After saving, the caller profile query and directory listing are refreshed (via existing invalidations).",
+        "If the user is not signed in, the edit UI is not accessible and an English sign-in prompt is shown instead."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/CommunityBoardPage.tsx",
+          "path": "frontend/src/pages/ProfilePage.tsx",
           "operation": "modify",
-          "description": "Ensure post submission continues to surface moderation-block failures via the existing toast.error(normalizeActorError(error)) pattern, without exposing internal details, and without changing non-moderation error handling."
+          "description": "Add an owner-only edit entry point on the Profile page: if the route principal matches the signed-in principal, show an Edit Profile action that opens EditProfilePanel. Prefill from useGetCallerUserProfile, save via useSaveCallerUserProfile, and show English success/error feedback (e.g., using existing toaster patterns). Gate the edit UI behind Internet Identity authentication per the authorization component guidance. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/profiles/EditProfilePanel.tsx",
+          "operation": "modify",
+          "description": "Implement the owner edit form container (Save/Cancel) that composes AvatarUploader, PlushieImagesEditor, link editing controls, and publicDirectory toggle. On Save, produce a UserProfileEdit payload and call the provided save mutation. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
       "id": "REQ-5",
-      "summary": "Normalize moderation-related backend errors into user-friendly English messages for blocked vs manual-review outcomes.",
+      "summary": "Implement profile editor components with image validation, local previews, and ExternalBlob conversion using existing utilities.",
       "acceptanceCriteria": [
-        "Moderation block errors are normalized to an English message that matches the requested wording.",
-        "Manual-review submission (if implemented as a successful submission or distinct error) is communicated in a user-friendly way (e.g., indicates it is pending review).",
-        "No raw Motoko Runtime.trap strings or internal codes are shown to end users for moderation outcomes."
+        "AvatarUploader supports selecting a single image file, validates allowed image types/sizes using existing utilities, shows a preview, and outputs an ExternalBlob for saving.",
+        "PlushieImagesEditor supports adding/removing multiple image files, shows previews, and outputs an array of ExternalBlobs for saving.",
+        "EditProfilePanel composes AvatarUploader, PlushieImagesEditor, and link editing controls into a single coherent form with Save/Cancel behavior.",
+        "Preview URLs are revoked/cleaned up to avoid memory leaks.",
+        "All user-facing text is in English."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/utils/actorError.ts",
+          "path": "frontend/src/components/profiles/AvatarUploader.tsx",
           "operation": "modify",
-          "description": "Extend normalizeActorError() to detect moderation-related failures and map them to user-friendly English messages: (1) blocked: \"The upload was blocked for violating guidelines.\" (2) manual review: a message indicating the submission is pending review. Ensure sanitized output and no raw trap strings/codes are exposed."
+          "description": "Implement AvatarUploader: single-file image input, validate with existing imageAttachment utilities (type/size), create/revoke local preview URLs via utils/profileImages, and convert to blob-storage ExternalBlob for output to the parent form. Ensure all labels/errors are English. Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/pages/CommunityBoardPage.tsx",
+          "path": "frontend/src/components/profiles/PlushieImagesEditor.tsx",
           "operation": "modify",
-          "description": "Adjust success/error toast messaging around post submission to clearly communicate moderation outcomes based on normalized messages (e.g., blocked vs pending review) while preserving existing normalizeActorError usage for all other errors."
+          "description": "Implement PlushieImagesEditor: multi-file add/remove, validate with existing utilities, show thumbnails via local preview URLs, revoke previews on remove/unmount, and output an array of blob-storage ExternalBlob instances for saving. Ensure all labels/errors are English. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/profiles/EditProfilePanel.tsx",
+          "operation": "modify",
+          "description": "Wire AvatarUploader and PlushieImagesEditor into EditProfilePanel state management, ensuring previews are cleaned up and the resulting UserProfileEdit uses ExternalBlob values produced by the editors. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Expose navigation entry points to Profiles directory and the signed-in user’s own profile/edit view.",
+      "acceptanceCriteria": [
+        "Primary navigation includes a “Profiles” link that routes to the profiles directory.",
+        "Signed-in users have an obvious way to navigate to their own profile/edit view (e.g., from the auth dropdown or profile page), without modifying immutable hook files.",
+        "All user-facing text is in English."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/Nav.tsx",
+          "operation": "modify",
+          "description": "Add a primary navigation link labeled “Profiles” pointing to /profiles using TanStack Router Link. Use existing shadcn-ui composed components already referenced in Nav (do not edit frontend/src/components/ui). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/AuthControls.tsx",
+          "operation": "modify",
+          "description": "Add signed-in dropdown items to navigate to the user’s own profile (using the logged-in principal string to build /profiles/$principal) and an Edit Profile shortcut that routes to the same profile view and opens edit mode via a safe UI mechanism (e.g., search param). Keep all user-facing text in English and follow the authorization component guidance for authenticated navigation. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/pages/ProfilePage.tsx",
+          "operation": "modify",
+          "description": "Ensure the Profile page supports an obvious Edit Profile entry point for owners and a clear sign-in prompt for unauthenticated users, aligning navigation behavior with the AuthControls link. Verify the component's usage instructions before implementing."
         }
       ]
     }

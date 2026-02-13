@@ -75,6 +75,7 @@ export function useGetCallerUserProfile() {
 export function useSaveCallerUserProfile() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
+  const { identity } = useInternetIdentity();
 
   return useMutation({
     mutationFn: async (profileEdit: UserProfileEdit) => {
@@ -90,8 +91,11 @@ export function useSaveCallerUserProfile() {
         queryClient.invalidateQueries({ queryKey: ['directoryProfiles'] });
       }
       
-      // Invalidate the specific user profile view
-      queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+      // Invalidate the specific user profile view for the caller
+      if (identity) {
+        const principalString = identity.getPrincipal().toString();
+        queryClient.invalidateQueries({ queryKey: ['userProfile', principalString] });
+      }
     },
     onError: (error) => {
       throw new Error(normalizeActorError(error));

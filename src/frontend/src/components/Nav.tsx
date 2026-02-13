@@ -12,6 +12,7 @@ const navLinks = [
   { href: '/events', label: 'Events' },
   { href: '/brands', label: 'Brands' },
   { href: '/pacifier-brands', label: 'Pacifier Brands' },
+  { href: '/profiles', label: 'Profiles' },
   { href: '/support', label: 'Support' },
 ];
 

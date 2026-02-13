@@ -2,12 +2,53 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-a-moderation-review-queue-for-community-board-content-that-is-routed-to-manual-review-including-backend-methods-for-admins-to-list-pending-items-and-to-approve-or-reject-them",
-      "featureTitle": "Add a moderation review queue for Community Board content that is routed to manual review, including backend methods for admins to list pending items and to approve or reject them.",
+      "featureId": "feature-add-profiles-routes-to-the-tanstack-router-including-a-profiles-directory-route-and-an-individual-profile-route-that-supports-viewing-a-profile-by-principal-string",
+      "featureTitle": "Add Profiles routes to the TanStack Router, including a profiles directory route and an individual profile route that supports viewing a profile by principal string.",
       "files": [
-        "frontend/src/components/community/ModerationQueuePanel.tsx",
-        "frontend/src/hooks/useQueries.ts",
-        "frontend/src/pages/CommunityBoardPage.tsx"
+        "frontend/src/App.tsx",
+        "frontend/src/pages/ProfilePage.tsx",
+        "frontend/src/pages/ProfilesDirectoryPage.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-replace-the-current-profiles-currently-unavailable-placeholder-with-a-functional-profiles-directory-page-that-lists-public-directory-profiles-from-the-backend-and-links-to-each-profile-view",
+      "featureTitle": "Replace the current “Profiles Currently Unavailable” placeholder with a functional Profiles Directory page that lists public directory profiles from the backend and links to each profile view.",
+      "files": [
+        "frontend/src/hooks/useProfileQueries.ts",
+        "frontend/src/pages/ProfilesDirectoryPage.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-the-profile-page-ui-to-view-a-user-profile-avatar-display-name-bio-links-plushie-image-grid-and-show-follow-follower-counts-and-profile-like-count-with-like-unlike-and-follow-unfollow-actions-for-authenticated-users",
+      "featureTitle": "Implement the Profile page UI to view a user profile (avatar, display name, bio, links, plushie image grid) and show follow/follower counts and profile like count with Like/Unlike and Follow/Unfollow actions for authenticated users.",
+      "files": [
+        "frontend/src/pages/ProfilePage.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -24,10 +65,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-when-an-upload-is-blocked-by-moderation-show-the-user-a-clear-error-message-stating-that-the-upload-was-blocked-for-violating-guidelines",
-      "featureTitle": "When an upload is blocked by moderation, show the user a clear error message stating that the upload was blocked for violating guidelines.",
+      "featureId": "feature-implement-an-owner-only-profile-editing-experience-for-the-signed-in-user-allowing-editing-and-saving-of-all-profile-fields-display-name-bio-avatar-image-links-plushie-images-and-public-directory-opt-in",
+      "featureTitle": "Implement an owner-only profile editing experience for the signed-in user, allowing editing and saving of all profile fields: display name, bio, avatar image, links, plushie images, and public directory opt-in.",
       "files": [
-        "frontend/src/pages/CommunityBoardPage.tsx"
+        "frontend/src/components/profiles/EditProfilePanel.tsx",
+        "frontend/src/pages/ProfilePage.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -44,11 +86,12 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-update-frontend-actor-error-normalization-to-recognize-moderation-related-backend-errors-blocked-vs-manual-review-and-present-user-friendly-english-messaging-without-exposing-internal-details",
-      "featureTitle": "Update frontend actor error normalization to recognize moderation-related backend errors (blocked vs. manual review) and present user-friendly English messaging without exposing internal details.",
+      "featureId": "feature-implement-the-missing-profile-editor-components-avataruploader-plushieimageseditor-editprofilepanel-with-file-validation-local-previews-and-conversion-to-externalblob-using-the-existing-utilities-in-the-codebase",
+      "featureTitle": "Implement the missing profile editor components (AvatarUploader, PlushieImagesEditor, EditProfilePanel) with file validation, local previews, and conversion to ExternalBlob, using the existing utilities in the codebase.",
       "files": [
-        "frontend/src/pages/CommunityBoardPage.tsx",
-        "frontend/src/utils/actorError.ts"
+        "frontend/src/components/profiles/AvatarUploader.tsx",
+        "frontend/src/components/profiles/EditProfilePanel.tsx",
+        "frontend/src/components/profiles/PlushieImagesEditor.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -61,6 +104,28 @@
       ],
       "testIds": [
         "REQ-5"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-expose-profiles-navigation-entry-points-in-the-ui-so-users-can-find-the-profiles-directory-and-their-own-profile-easily",
+      "featureTitle": "Expose Profiles navigation entry points in the UI so users can find the profiles directory and their own profile easily.",
+      "files": [
+        "frontend/src/components/AuthControls.tsx",
+        "frontend/src/components/Nav.tsx",
+        "frontend/src/pages/ProfilePage.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-6"
       ],
       "confidence": "high"
     }
