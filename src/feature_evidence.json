@@ -2,14 +2,32 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-update-the-gallery-page-ui-to-allow-signed-in-users-to-upload-images-and-videos-and-display-uploaded-items-mixed-together-with-the-existing-gallery-content-in-the-same-grid",
-      "featureTitle": "Update the Gallery page UI to allow signed-in users to upload images and videos, and display uploaded items mixed together with the existing gallery content in the same grid.",
+      "featureId": "feature-fix-the-public-profiles-directory-so-each-listed-card-links-to-the-correct-user-s-profile-instead-of-incorrectly-using-the-current-viewer-s-principal-or-a-non-principal-fallback-like-profile-0-update-both-backend-and-frontend-so-the-directory-listing-includes-each-profile-s-principal-and-the-ui-routes-to-profiles-principal-using-that-value",
+      "featureTitle": "Fix the public Profiles directory so each listed card links to the correct user’s profile instead of incorrectly using the current viewer’s principal (or a non-principal fallback like `profile-0`). Update both backend and frontend so the directory listing includes each profile’s Principal and the UI routes to `/profiles/$principal` using that value.",
       "files": [
-        "frontend/src/components/gallery/GalleryUploadDialog.tsx",
-        "frontend/src/hooks/useGalleryFavorites.ts",
-        "frontend/src/hooks/useGalleryMediaQueries.ts",
-        "frontend/src/pages/GalleryPage.tsx",
-        "frontend/src/utils/galleryMedia.ts"
+        "frontend/src/hooks/useProfileQueries.ts",
+        "frontend/src/pages/ProfilesDirectoryPage.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-make-profile-editing-reliably-accessible-and-functional-from-navigation-when-navigating-to-profiles-principal-edit-true-for-the-signed-in-user-the-profile-page-must-automatically-open-the-edit-profile-panel-closing-the-editor-should-return-to-the-normal-profile-view-and-remove-the-edit-state-from-the-url-ui",
+      "featureTitle": "Make profile editing reliably accessible and functional from navigation: when navigating to `/profiles/$principal?edit=true` for the signed-in user, the Profile page must automatically open the Edit Profile panel. Closing the editor should return to the normal profile view and remove the edit state from the URL/UI.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/pages/ProfilePage.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -26,11 +44,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-extend-the-gallery-lightbox-viewer-experience-to-support-both-images-and-videos-in-addition-to-existing-image-viewing-including-keyboard-navigation-and-accessible-controls",
-      "featureTitle": "Extend the gallery lightbox/viewer experience to support both images and videos (in addition to existing image viewing), including keyboard navigation and accessible controls.",
+      "featureId": "feature-improve-the-profile-page-data-loading-so-the-signed-in-user-can-always-view-their-own-profile-even-if-it-is-not-public-prefer-fetching-the-caller-s-profile-when-the-page-principal-matches-the-signed-in-principal-and-only-use-public-profile-fetching-for-other-users",
+      "featureTitle": "Improve the Profile page data loading so the signed-in user can always view their own profile even if it is not public. Prefer fetching the caller’s profile when the page principal matches the signed-in principal, and only use public-profile fetching for other users.",
       "files": [
-        "frontend/src/components/gallery/GalleryLightbox.tsx",
-        "frontend/src/pages/GalleryPage.tsx"
+        "frontend/src/hooks/useProfileQueries.ts",
+        "frontend/src/pages/ProfilePage.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -43,6 +61,29 @@
       ],
       "testIds": [
         "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-cute-teddy-themed-storybook-item-to-the-gallery-as-part-of-the-mixed-feed-the-storybook-item-must-be-viewable-from-the-gallery-grid-and-readable-in-the-lightbox-viewer-experience-text-content-included-in-the-app-not-dependent-on-uploads",
+      "featureTitle": "Add a cute teddy-themed storybook item to the Gallery as part of the mixed feed. The storybook item must be viewable from the gallery grid and readable in the lightbox/viewer experience (text content included in the app, not dependent on uploads).",
+      "files": [
+        "frontend/src/components/gallery/GalleryLightbox.tsx",
+        "frontend/src/content/teddyStorybook.ts",
+        "frontend/src/pages/GalleryPage.tsx",
+        "frontend/src/utils/galleryMedia.ts"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
       ],
       "confidence": "high"
     }

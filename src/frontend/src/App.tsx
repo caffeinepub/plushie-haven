@@ -85,6 +85,11 @@ const profileRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/profiles/$principal',
   component: ProfilePage,
+  validateSearch: (search: Record<string, unknown>): { edit?: boolean } => {
+    return {
+      edit: search.edit === true || search.edit === 'true',
+    };
+  },
 });
 
 const aboutRoute = createRoute({

@@ -4,11 +4,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Users, User } from 'lucide-react';
 import LoadingState from '../components/LoadingState';
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
 
 export default function ProfilesDirectoryPage() {
-  const { data: profiles, isLoading, error } = useListDirectoryProfiles();
-  const { identity } = useInternetIdentity();
+  const { data: profileEntries, isLoading, error } = useListDirectoryProfiles();
 
   if (isLoading) {
     return (
@@ -36,7 +34,7 @@ export default function ProfilesDirectoryPage() {
     );
   }
 
-  if (!profiles || profiles.length === 0) {
+  if (!profileEntries || profileEntries.length === 0) {
     return (
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-2xl mx-auto">
@@ -65,47 +63,42 @@ export default function ProfilesDirectoryPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {profiles.map((profile, index) => {
-            // Get principal from identity if available, otherwise use index as fallback
-            const principalString = identity?.getPrincipal().toString() || `profile-${index}`;
-            
-            return (
-              <Link
-                key={index}
-                to="/profiles/$principal"
-                params={{ principal: principalString }}
-                className="block"
-              >
-                <Card className="hover:shadow-gentle transition-shadow cursor-pointer h-full">
-                  <CardContent className="pt-6">
-                    <div className="flex items-start gap-4">
-                      <Avatar className="h-16 w-16 border-2 border-primary/20">
-                        {profile.avatar ? (
-                          <AvatarImage
-                            src={profile.avatar.getDirectURL()}
-                            alt={profile.displayName}
-                          />
-                        ) : null}
-                        <AvatarFallback className="bg-primary/10 text-primary">
-                          <User className="h-8 w-8" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-lg mb-1 truncate">
-                          {profile.displayName}
-                        </h3>
-                        {profile.bio && (
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {profile.bio}
-                          </p>
-                        )}
-                      </div>
+          {profileEntries.map((entry, index) => (
+            <Link
+              key={index}
+              to="/profiles/$principal"
+              params={{ principal: entry.principal }}
+              className="block"
+            >
+              <Card className="hover:shadow-gentle transition-shadow cursor-pointer h-full">
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-4">
+                    <Avatar className="h-16 w-16 border-2 border-primary/20">
+                      {entry.profile.avatar ? (
+                        <AvatarImage
+                          src={entry.profile.avatar.getDirectURL()}
+                          alt={entry.profile.displayName}
+                        />
+                      ) : null}
+                      <AvatarFallback className="bg-primary/10 text-primary">
+                        <User className="h-8 w-8" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-lg mb-1 truncate">
+                        {entry.profile.displayName}
+                      </h3>
+                      {entry.profile.bio && (
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {entry.profile.bio}
+                        </p>
+                      )}
                     </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            );
-          })}
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
         </div>
       </div>
     </div>

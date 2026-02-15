@@ -201,7 +201,7 @@ export interface _SERVICE {
   'isProfileLikedByCaller' : ActorMethod<[Principal], boolean>,
   'likePost' : ActorMethod<[bigint], undefined>,
   'likeProfile' : ActorMethod<[Principal], undefined>,
-  'listDirectoryProfiles' : ActorMethod<[], Array<UserProfile>>,
+  'listDirectoryProfiles' : ActorMethod<[], Array<[Principal, UserProfile]>>,
   'listEvents' : ActorMethod<[], Array<Event>>,
   'listGalleryMediaItems' : ActorMethod<[], Array<GalleryMediaItem>>,
   'listPolls' : ActorMethod<[], Array<Poll>>,

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { X, Search, Heart, LogIn, Play } from 'lucide-react';
+import { X, Search, Heart, LogIn, Play, BookOpen } from 'lucide-react';
 import { GalleryLightbox } from '@/components/gallery/GalleryLightbox';
 import { GalleryUploadDialog } from '@/components/gallery/GalleryUploadDialog';
 import { useGalleryFavorites } from '@/hooks/useGalleryFavorites';
@@ -28,7 +28,7 @@ export default function GalleryPage() {
 
   const isAuthenticated = !!identity;
 
-  // Merge static and uploaded items
+  // Merge static, storybook, and uploaded items
   const allItems = mergeGalleryItems(uploadedItems);
 
   // Filter items based on search and favorites
@@ -178,6 +178,19 @@ export default function GalleryPage() {
                     <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
                       <div className="bg-white/90 rounded-full p-3 shadow-lg">
                         <Play className="h-8 w-8 text-primary" />
+                      </div>
+                    </div>
+                  </>
+                ) : item.mediaType === 'storybook' ? (
+                  <>
+                    <img
+                      src={item.src}
+                      alt={item.description}
+                      className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/40 to-transparent">
+                      <div className="bg-white/95 rounded-full p-3 shadow-lg">
+                        <BookOpen className="h-8 w-8 text-primary" />
                       </div>
                     </div>
                   </>

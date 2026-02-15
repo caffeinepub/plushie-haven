@@ -1,24 +1,45 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Interactive gallery app with user-uploaded images and videos displayed together in a single mixed gallery feed.",
-  "architectural_notes": [],
-  "known_issues": [],
-  "isFixRequest": false,
+  "summary": "App now needs a teddy-themed storybook item in the gallery and a working user profile system (profiles viewable and editable) to address 'Profile Not Found' / broken profile editing.",
+  "architectural_notes": [
+    "Need user profile model + routing/lookup to avoid 'Profile Not Found' for valid users and support public visibility rules.",
+    "Profile editing flow must persist changes and reflect updates on profile view."
+  ],
+  "known_issues": [
+    "Profile page shows 'Profile Not Found' and edit profile does not work."
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-update-the-gallery-page-ui-to-allow-signed-in-users-to-upload-images-and-videos-and-display-uploaded-items-mixed-together-with-the-existing-gallery-content-in-the-same-grid",
-      "title": "Update the Gallery page UI to allow signed-in users to upload images and videos, and display uploaded items mixed together with the existing gallery content in the same grid.",
+      "id": "feature-fix-the-public-profiles-directory-so-each-listed-card-links-to-the-correct-user-s-profile-instead-of-incorrectly-using-the-current-viewer-s-principal-or-a-non-principal-fallback-like-profile-0-update-both-backend-and-frontend-so-the-directory-listing-includes-each-profile-s-principal-and-the-ui-routes-to-profiles-principal-using-that-value",
+      "title": "Fix the public Profiles directory so each listed card links to the correct user’s profile instead of incorrectly using the current viewer’s principal (or a non-principal fallback like `profile-0`). Update both backend and frontend so the directory listing includes each profile’s Principal and the UI routes to `/profiles/$principal` using that value.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-make-profile-editing-reliably-accessible-and-functional-from-navigation-when-navigating-to-profiles-principal-edit-true-for-the-signed-in-user-the-profile-page-must-automatically-open-the-edit-profile-panel-closing-the-editor-should-return-to-the-normal-profile-view-and-remove-the-edit-state-from-the-url-ui",
+      "title": "Make profile editing reliably accessible and functional from navigation: when navigating to `/profiles/$principal?edit=true` for the signed-in user, the Profile page must automatically open the Edit Profile panel. Closing the editor should return to the normal profile view and remove the edit state from the URL/UI.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-extend-the-gallery-lightbox-viewer-experience-to-support-both-images-and-videos-in-addition-to-existing-image-viewing-including-keyboard-navigation-and-accessible-controls",
-      "title": "Extend the gallery lightbox/viewer experience to support both images and videos (in addition to existing image viewing), including keyboard navigation and accessible controls.",
+      "id": "feature-improve-the-profile-page-data-loading-so-the-signed-in-user-can-always-view-their-own-profile-even-if-it-is-not-public-prefer-fetching-the-caller-s-profile-when-the-page-principal-matches-the-signed-in-principal-and-only-use-public-profile-fetching-for-other-users",
+      "title": "Improve the Profile page data loading so the signed-in user can always view their own profile even if it is not public. Prefer fetching the caller’s profile when the page principal matches the signed-in principal, and only use public-profile fetching for other users.",
       "reqIds": [
         "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-cute-teddy-themed-storybook-item-to-the-gallery-as-part-of-the-mixed-feed-the-storybook-item-must-be-viewable-from-the-gallery-grid-and-readable-in-the-lightbox-viewer-experience-text-content-included-in-the-app-not-dependent-on-uploads",
+      "title": "Add a cute teddy-themed storybook item to the Gallery as part of the mixed feed. The storybook item must be viewable from the gallery grid and readable in the lightbox/viewer experience (text content included in the app, not dependent on uploads).",
+      "reqIds": [
+        "REQ-4"
       ],
       "version": 1
     }
@@ -26,20 +47,18 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Add user uploads for images and videos, displayed mixed together in the existing gallery.",
+      "summary": "Add a cute teddy-themed storybook item to the gallery (text-only or with images)",
       "reqIds": [],
-      "status": "in_progress"
+      "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Add backend support for storing and listing user-uploaded Gallery media items (images and videos), so uploaded items can be fetched by the frontend and displayed mixed together in the /gallery feed.",
-      "reqIds": [
-        "REQ-1"
-      ],
+      "summary": "Build/repair user profile system so profiles can be found/displayed and profile editing works (fix 'Profile Not Found')",
+      "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Add user uploads for images and videos to the Gallery (mixed feed)",
+  "projectName": "Fix Profiles (Profile Not Found / edit profile) and add a teddy storybook item to the Gallery",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

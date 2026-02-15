@@ -1,13 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Let authenticated users upload both images and videos to the Gallery and view them together in a single mixed media feed.
+**Goal:** Fix profile directory/profile routing and editing behavior so profiles reliably load and can be edited, and add a teddy-themed storybook item to the Gallery viewer experience.
 
 **Planned changes:**
-- Add backend storage and listing for user-uploaded gallery items (image/video), including stable IDs, created timestamps, and blob references usable by the frontend.
-- Add an authenticated backend method for creating gallery items by uploading an image or video file via the existing blob storage mixin; block anonymous uploads.
-- Update the /gallery UI to provide an upload entry point for signed-in users (and a sign-in prompt for anonymous users), validate image/video files using existing utilities, and show validation errors.
-- Display uploaded items mixed with existing gallery content in one grid feed, with favorites and search filtering continuing to work across the combined list (and favorites persisting without ID collisions).
-- Extend the lightbox/viewer to support videos (with standard controls, no autoplay by default) alongside images, with accessible controls and keyboard navigation across mixed media.
+- Update backend profile directory listing to include each profile owner’s Principal so the frontend can link correctly per entry.
+- Update the Profiles directory UI to route each card to `/profiles/$principal` using the entry’s Principal (remove index/non-principal fallbacks and avoid reusing the viewer’s principal for all cards).
+- Update Profile page behavior so visiting `/profiles/$principal?edit=true` for the signed-in user automatically opens the Edit Profile panel, and closing the editor returns to normal view and clears the edit state.
+- Improve Profile page data loading so the signed-in user can always view their own existing profile even if it is not public, while keeping current privacy behavior when viewing other users.
+- Add a new teddy-themed storybook item into the mixed Gallery feed; make it readable in the gallery lightbox/viewer with story text bundled in the app.
 
-**User-visible outcome:** Signed-in users can upload images or videos to the Gallery and see them appear in the same grid alongside existing items without a full refresh; users can open items in a lightbox that supports both image viewing and video playback with keyboard navigation and accessible controls.
+**User-visible outcome:** Profiles in the directory open the correct person’s profile, signed-in users can reliably view and edit their own profiles (including via `?edit=true`), and the Gallery includes a new teddy storybook entry that opens and can be read in the viewer.

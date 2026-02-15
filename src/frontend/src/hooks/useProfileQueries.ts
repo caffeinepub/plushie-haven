@@ -5,24 +5,65 @@ import { normalizeActorError } from '../utils/actorError';
 import type { UserProfile, UserProfileEdit, FollowCounts } from '../backend';
 import { Principal } from '@dfinity/principal';
 
+export interface DirectoryProfileEntry {
+  principal: string;
+  profile: UserProfile;
+}
+
 /**
  * Fetch all profiles that are opted into the public directory
  */
 export function useListDirectoryProfiles() {
   const { actor, isFetching } = useActor();
 
-  return useQuery<UserProfile[]>({
+  return useQuery<DirectoryProfileEntry[]>({
     queryKey: ['directoryProfiles'],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.listDirectoryProfiles();
+      const entries = await actor.listDirectoryProfiles();
+      return entries.map(([principal, profile]) => ({
+        principal: principal.toString(),
+        profile,
+      }));
     },
     enabled: !!actor && !isFetching,
   });
 }
 
 /**
- * Fetch a specific user's profile by principal
+ * Fetch a profile for the profile page view
+ * Uses getCallerUserProfile when viewing own profile, getUserProfile otherwise
+ */
+export function useGetProfileForPage(principalString: string) {
+  const { actor, isFetching } = useActor();
+  const { identity } = useInternetIdentity();
+
+  const isOwnProfile = identity && identity.getPrincipal().toString() === principalString;
+
+  return useQuery<UserProfile | null>({
+    queryKey: ['profilePage', principalString],
+    queryFn: async () => {
+      if (!actor) return null;
+      try {
+        if (isOwnProfile) {
+          // Fetch own profile using getCallerUserProfile
+          return actor.getCallerUserProfile();
+        } else {
+          // Fetch other user's profile
+          const principal = Principal.fromText(principalString);
+          return actor.getUserProfile(principal);
+        }
+      } catch (error) {
+        console.error('Error fetching profile for page:', error);
+        return null;
+      }
+    },
+    enabled: !!actor && !isFetching && !!principalString,
+  });
+}
+
+/**
+ * Fetch a specific user's profile by principal (public view only)
  */
 export function useGetUserProfile(principalString: string) {
   const { actor, isFetching } = useActor();
@@ -95,6 +136,7 @@ export function useSaveCallerUserProfile() {
       if (identity) {
         const principalString = identity.getPrincipal().toString();
         queryClient.invalidateQueries({ queryKey: ['userProfile', principalString] });
+        queryClient.invalidateQueries({ queryKey: ['profilePage', principalString] });
       }
     },
     onError: (error) => {

@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { X, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
-import type { UnifiedGalleryItem } from '@/utils/galleryMedia';
+import type { UnifiedGalleryItem, StorybookGalleryItem } from '@/utils/galleryMedia';
 
 interface GalleryLightboxProps {
   item: UnifiedGalleryItem;
@@ -58,6 +59,7 @@ export function GalleryLightbox({
   }, []);
 
   const isVideo = item.mediaType === 'video';
+  const isStorybook = item.mediaType === 'storybook';
 
   return (
     <div
@@ -101,12 +103,30 @@ export function GalleryLightbox({
 
         {/* Media container */}
         <div className="flex-1 flex items-center justify-center p-4 sm:p-8 bg-muted/30 overflow-auto">
-          <div className="relative max-w-full max-h-full">
-            {isVideo ? (
+          <div className="relative max-w-full max-h-full w-full">
+            {isStorybook ? (
+              <ScrollArea className="h-[60vh] sm:h-[70vh] w-full max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-8">
+                <div className="prose prose-lg max-w-none">
+                  <div className="flex items-center justify-center mb-8">
+                    <img
+                      src={item.src}
+                      alt={item.title}
+                      className="w-32 h-32 object-contain rounded-full border-4 border-primary/20"
+                    />
+                  </div>
+                  <h2 className="text-3xl font-bold text-center mb-6 text-primary">
+                    {item.title}
+                  </h2>
+                  <div className="text-lg leading-relaxed whitespace-pre-wrap text-foreground">
+                    {(item as StorybookGalleryItem).story}
+                  </div>
+                </div>
+              </ScrollArea>
+            ) : isVideo ? (
               <video
                 src={item.src}
                 controls
-                className="max-w-full max-h-[60vh] sm:max-h-[70vh] w-auto h-auto rounded-lg shadow-lg"
+                className="max-w-full max-h-[60vh] sm:max-h-[70vh] w-auto h-auto rounded-lg shadow-lg mx-auto"
                 aria-label={item.description}
               >
                 Your browser does not support the video tag.
@@ -115,7 +135,7 @@ export function GalleryLightbox({
               <img
                 src={item.src}
                 alt={item.description}
-                className="max-w-full max-h-[60vh] sm:max-h-[70vh] w-auto h-auto object-contain rounded-lg shadow-lg"
+                className="max-w-full max-h-[60vh] sm:max-h-[70vh] w-auto h-auto object-contain rounded-lg shadow-lg mx-auto"
               />
             )}
           </div>

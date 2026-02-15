@@ -152,8 +152,8 @@ actor {
     };
   };
 
-  public query ({ caller }) func listDirectoryProfiles() : async [UserProfile] {
-    userProfiles.values().toArray().filter(func(profile) { profile.publicDirectory });
+  public query ({ caller }) func listDirectoryProfiles() : async [(Principal, UserProfile)] {
+    userProfiles.filter(func(_principal, profile) { profile.publicDirectory }).toArray();
   };
 
   public type ModerationOutcome = {

@@ -1,87 +1,106 @@
 {
   "kind": "build_request",
-  "title": "Add user uploads for images and videos to the Gallery (mixed feed)",
+  "title": "Fix Profiles (Profile Not Found / edit profile) and add a teddy storybook item to the Gallery",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Add backend support for storing and listing user-uploaded Gallery media items (images and videos), so uploaded items can be fetched by the frontend and displayed mixed together in the /gallery feed.",
-      "target": "backend",
+      "text": "Fix the public Profiles directory so each listed card links to the correct user’s profile instead of incorrectly using the current viewer’s principal (or a non-principal fallback like `profile-0`). Update both backend and frontend so the directory listing includes each profile’s Principal and the UI routes to `/profiles/$principal` using that value.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-6",
-          "msg-7"
+          "recent-messages"
         ],
         "quotes": [
-          "videos and images 2 upload them  mixed in",
-          "build it"
+          "Profile Not Found\nThis profile doesn't exist or is not publicly visible.\n\nBack to Profiles",
+          "fix profile",
+          "edit profile doesnt work"
         ]
       },
       "acceptanceCriteria": [
-        "Backend exposes a query method to list gallery items (including type=image|video, createdAt timestamp, and a blob reference usable by the frontend).",
-        "Backend exposes an authenticated update method that allows a signed-in user to create a gallery item with either an image file or a video file stored via the existing blob-storage mixin (Storage.ExternalBlob).",
-        "Unauthorized (anonymous) callers cannot upload gallery media (the call traps with an authorization error).",
-        "Gallery item IDs are stable and unique.",
-        "If persistent state schema changes are required, add a conditional Motoko migration (backend/migration.mo) so existing canister state upgrades safely."
+        "The backend directory listing returns enough information to build a correct profile link for each entry (includes the owner Principal for each profile).",
+        "The Profiles directory page routes each card to that profile owner’s `/profiles/$principal` route (no `profile-${index}` fallback and no reuse of the viewer’s principal for all cards).",
+        "Clicking any directory profile card opens a Profile page that loads a real profile when it exists and is public."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Update the Gallery page UI to allow signed-in users to upload images and videos, and display uploaded items mixed together with the existing gallery content in the same grid.",
+      "text": "Make profile editing reliably accessible and functional from navigation: when navigating to `/profiles/$principal?edit=true` for the signed-in user, the Profile page must automatically open the Edit Profile panel. Closing the editor should return to the normal profile view and remove the edit state from the URL/UI.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6",
-          "msg-7"
+          "recent-messages"
         ],
         "quotes": [
-          "videos and images 2 upload them  mixed in",
+          "edit profile doesnt work",
           "build it"
         ]
       },
       "acceptanceCriteria": [
-        "/gallery includes an upload entry point (e.g., button opening a dialog/panel) that is only enabled/visible for authenticated users; anonymous users see a clear prompt to sign in to upload.",
-        "The upload UI accepts both image and video files and validates files using the existing utilities (frontend/src/utils/imageAttachment.ts and frontend/src/utils/videoAttachment.ts), showing user-friendly validation errors.",
-        "After a successful upload, the newly uploaded item appears in the gallery grid without a full page refresh (React Query cache invalidation/refetch).",
-        "The gallery grid renders a mixed list of items (existing static items plus uploaded items) together in one feed; search and favorites filtering continue to work on the combined list.",
-        "Favorites functionality works for both static and uploaded items (no ID collisions; favorites persist in localStorage)."
+        "Navigating to the signed-in user’s profile with `edit=true` immediately shows the Edit Profile panel without requiring an extra click.",
+        "Closing the Edit Profile panel returns to the profile display view and the page no longer remains in editing mode on refresh unless `edit=true` is present.",
+        "The existing \"Edit Profile\" button on the Profile page still works and opens the editor."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Extend the gallery lightbox/viewer experience to support both images and videos (in addition to existing image viewing), including keyboard navigation and accessible controls.",
+      "text": "Improve the Profile page data loading so the signed-in user can always view their own profile even if it is not public. Prefer fetching the caller’s profile when the page principal matches the signed-in principal, and only use public-profile fetching for other users.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6",
-          "msg-7"
+          "recent-messages"
         ],
         "quotes": [
-          "videos and images 2 upload them  mixed in",
+          "Profile Not Found\nThis profile doesn't exist or is not publicly visible."
+        ]
+      },
+      "acceptanceCriteria": [
+        "When a signed-in user visits their own `/profiles/$principal` page, the profile loads if it exists regardless of the `publicDirectory` setting.",
+        "When viewing another user’s profile, the existing privacy behavior remains (non-public profiles are not shown to other non-admin users).",
+        "The \"Profile Not Found\" screen no longer appears for the signed-in user’s own existing profile due to privacy/public-directory settings."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Add a cute teddy-themed storybook item to the Gallery as part of the mixed feed. The storybook item must be viewable from the gallery grid and readable in the lightbox/viewer experience (text content included in the app, not dependent on uploads).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "recent-messages"
+        ],
+        "quotes": [
+          "Add a cute story book about teddies",
           "build it"
         ]
       },
       "acceptanceCriteria": [
-        "Clicking an image item opens the existing lightbox with the image displayed as before.",
-        "Clicking a video item opens a lightbox that plays the video with standard controls (play/pause/seek/volume) and does not autoplay by default.",
-        "Previous/Next navigation works across the mixed media list (images and videos) using both on-screen buttons and ArrowLeft/ArrowRight keys; Escape closes the lightbox.",
-        "The lightbox remains accessible: focus is managed on open/close, controls have appropriate aria-labels, and the overlay can be closed reliably."
+        "The Gallery shows a new teddy storybook entry alongside existing static gallery items and uploaded items.",
+        "Opening the new entry in the gallery viewer displays the full story text in a readable layout.",
+        "The storybook content is included as app content (no backend upload required to make it appear)."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo; do not introduce additional backend services.",
-    "Do not modify files under frontend/src/components/ui or other frontend immutablePaths listed in SYSTEM_CONTEXT; compose them instead.",
-    "Use English for all user-facing text.",
-    "Do not introduce third-party auth providers; use existing Internet Identity integration."
+    "Backend must remain a single Motoko actor in backend/main.mo; add migration.mo only if existing stable state needs upgrading.",
+    "Do not edit files under frontend/src/components/ui or any paths listed in frontend.immutablePaths."
   ],
   "nonGoals": [
-    "Adding categories/albums or separating images vs videos into different gallery sections.",
-    "Real-time updates via websockets or live collaboration features.",
-    "External database or third-party media hosting integrations."
+    "Adding third-party authentication providers (only Internet Identity is supported).",
+    "Adding external databases or non-Internet-Computer backend services.",
+    "Implementing real-time messaging or push notifications."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

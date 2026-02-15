@@ -243,7 +243,11 @@ export const idlService = IDL.Service({
   'isProfileLikedByCaller' : IDL.Func([IDL.Principal], [IDL.Bool], ['query']),
   'likePost' : IDL.Func([IDL.Nat], [], []),
   'likeProfile' : IDL.Func([IDL.Principal], [], []),
-  'listDirectoryProfiles' : IDL.Func([], [IDL.Vec(UserProfile)], ['query']),
+  'listDirectoryProfiles' : IDL.Func(
+      [],
+      [IDL.Vec(IDL.Tuple(IDL.Principal, UserProfile))],
+      ['query'],
+    ),
   'listEvents' : IDL.Func([], [IDL.Vec(Event)], ['query']),
   'listGalleryMediaItems' : IDL.Func(
       [],
@@ -501,7 +505,11 @@ export const idlFactory = ({ IDL }) => {
     'isProfileLikedByCaller' : IDL.Func([IDL.Principal], [IDL.Bool], ['query']),
     'likePost' : IDL.Func([IDL.Nat], [], []),
     'likeProfile' : IDL.Func([IDL.Principal], [], []),
-    'listDirectoryProfiles' : IDL.Func([], [IDL.Vec(UserProfile)], ['query']),
+    'listDirectoryProfiles' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Tuple(IDL.Principal, UserProfile))],
+        ['query'],
+      ),
     'listEvents' : IDL.Func([], [IDL.Vec(Event)], ['query']),
     'listGalleryMediaItems' : IDL.Func(
         [],

@@ -3,6 +3,7 @@
  */
 
 import type { GalleryMediaItem } from '../backend';
+import { teddyStorybook } from '../content/teddyStorybook';
 
 export interface StaticGalleryItem {
   id: string;
@@ -11,6 +12,16 @@ export interface StaticGalleryItem {
   src: string;
   title: string;
   description: string;
+}
+
+export interface StorybookGalleryItem {
+  id: string;
+  type: 'storybook';
+  mediaType: 'storybook';
+  src: string;
+  title: string;
+  description: string;
+  story: string;
 }
 
 export interface UploadedGalleryItem {
@@ -23,7 +34,7 @@ export interface UploadedGalleryItem {
   createdAt: bigint;
 }
 
-export type UnifiedGalleryItem = StaticGalleryItem | UploadedGalleryItem;
+export type UnifiedGalleryItem = StaticGalleryItem | StorybookGalleryItem | UploadedGalleryItem;
 
 /**
  * Static gallery items (existing images)
@@ -80,6 +91,19 @@ export const staticGalleryItems: StaticGalleryItem[] = [
 ];
 
 /**
+ * Storybook gallery item
+ */
+export const storybookGalleryItem: StorybookGalleryItem = {
+  id: teddyStorybook.id,
+  type: 'storybook',
+  mediaType: 'storybook',
+  src: teddyStorybook.coverImage,
+  title: teddyStorybook.title,
+  description: teddyStorybook.description,
+  story: teddyStorybook.story,
+};
+
+/**
  * Convert backend GalleryMediaItem to UploadedGalleryItem
  */
 export function backendItemToUploadedItem(item: GalleryMediaItem, index: number): UploadedGalleryItem {
@@ -98,13 +122,13 @@ export function backendItemToUploadedItem(item: GalleryMediaItem, index: number)
 }
 
 /**
- * Merge static and uploaded items into a unified list
+ * Merge static, storybook, and uploaded items into a unified list
  */
 export function mergeGalleryItems(uploadedItems: GalleryMediaItem[]): UnifiedGalleryItem[] {
   const uploaded = uploadedItems.map((item, index) => backendItemToUploadedItem(item, index));
   
-  // Combine static items first, then uploaded items (newest first)
-  return [...staticGalleryItems, ...uploaded.reverse()];
+  // Combine static items, storybook, then uploaded items (newest first)
+  return [...staticGalleryItems, storybookGalleryItem, ...uploaded.reverse()];
 }
 
 /**

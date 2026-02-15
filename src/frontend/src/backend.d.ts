@@ -175,7 +175,7 @@ export interface backendInterface {
     isProfileLikedByCaller(profile: Principal): Promise<boolean>;
     likePost(postId: bigint): Promise<void>;
     likeProfile(profile: Principal): Promise<void>;
-    listDirectoryProfiles(): Promise<Array<UserProfile>>;
+    listDirectoryProfiles(): Promise<Array<[Principal, UserProfile]>>;
     listEvents(): Promise<Array<Event>>;
     listGalleryMediaItems(): Promise<Array<GalleryMediaItem>>;
     listPolls(): Promise<Array<Poll>>;
