@@ -30,6 +30,15 @@ export interface Event {
 }
 export type ExternalBlob = Uint8Array;
 export interface FollowCounts { 'followers' : bigint, 'following' : bigint }
+export interface GalleryMediaItem {
+  'title' : [] | [string],
+  'blob' : ExternalBlob,
+  'createdAt' : Time,
+  'description' : [] | [string],
+  'author' : Principal,
+  'mediaType' : { 'video' : null } |
+    { 'image' : null },
+}
 export interface Link { 'url' : string, 'displayName' : string }
 export interface ModeratedContent {
   'id' : bigint,
@@ -141,6 +150,16 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'addGalleryMediaItem' : ActorMethod<
+    [
+      { 'video' : null } |
+        { 'image' : null },
+      ExternalBlob,
+      [] | [string],
+      [] | [string],
+    ],
+    undefined
+  >,
   'approveModerationRequest' : ActorMethod<[bigint], undefined>,
   'approveSupporter' : ActorMethod<[Principal, [] | [Time]], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
@@ -184,6 +203,7 @@ export interface _SERVICE {
   'likeProfile' : ActorMethod<[Principal], undefined>,
   'listDirectoryProfiles' : ActorMethod<[], Array<UserProfile>>,
   'listEvents' : ActorMethod<[], Array<Event>>,
+  'listGalleryMediaItems' : ActorMethod<[], Array<GalleryMediaItem>>,
   'listPolls' : ActorMethod<[], Array<Poll>>,
   'listPosts' : ActorMethod<[], Array<Post>>,
   'rejectModerationRequest' : ActorMethod<[bigint], undefined>,

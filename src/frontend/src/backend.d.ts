@@ -14,6 +14,14 @@ export class ExternalBlob {
     static fromBytes(blob: Uint8Array<ArrayBuffer>): ExternalBlob;
     withUploadProgress(onProgress: (percentage: number) => void): ExternalBlob;
 }
+export interface GalleryMediaItem {
+    title?: string;
+    blob: ExternalBlob;
+    createdAt: Time;
+    description?: string;
+    author: Principal;
+    mediaType: Variant_video_image;
+}
 export type Time = bigint;
 export interface Comment {
     content: string;
@@ -129,7 +137,12 @@ export enum UserRole {
     user = "user",
     guest = "guest"
 }
+export enum Variant_video_image {
+    video = "video",
+    image = "image"
+}
 export interface backendInterface {
+    addGalleryMediaItem(mediaType: Variant_video_image, blob: ExternalBlob, title: string | null, description: string | null): Promise<void>;
     approveModerationRequest(id: bigint): Promise<void>;
     approveSupporter(supporter: Principal, validUntil: Time | null): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
@@ -164,6 +177,7 @@ export interface backendInterface {
     likeProfile(profile: Principal): Promise<void>;
     listDirectoryProfiles(): Promise<Array<UserProfile>>;
     listEvents(): Promise<Array<Event>>;
+    listGalleryMediaItems(): Promise<Array<GalleryMediaItem>>;
     listPolls(): Promise<Array<Poll>>;
     listPosts(): Promise<Array<Post>>;
     rejectModerationRequest(id: bigint): Promise<void>;

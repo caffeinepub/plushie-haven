@@ -12,8 +12,6 @@ import MixinAuthorization "authorization/MixinAuthorization";
 import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
 
-
-
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -201,6 +199,41 @@ actor {
     startTime : Time.Time;
     endTime : Time.Time;
     createdAt : Time.Time;
+  };
+
+  public type GalleryMediaItem = {
+    author : Principal;
+    mediaType : {
+      #image;
+      #video;
+    };
+    createdAt : Time.Time;
+    blob : Storage.ExternalBlob;
+    title : ?Text;
+    description : ?Text;
+  };
+
+  let galleryMediaItems = List.empty<GalleryMediaItem>();
+
+  public shared ({ caller }) func addGalleryMediaItem(mediaType : { #image; #video }, blob : Storage.ExternalBlob, title : ?Text, description : ?Text) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can add media items");
+    };
+
+    let newItem : GalleryMediaItem = {
+      author = caller;
+      mediaType;
+      createdAt = Time.now();
+      blob;
+      title;
+      description;
+    };
+
+    galleryMediaItems.add(newItem);
+  };
+
+  public query ({ caller }) func listGalleryMediaItems() : async [GalleryMediaItem] {
+    galleryMediaItems.toArray();
   };
 
   let posts = Map.empty<Nat, Post>();

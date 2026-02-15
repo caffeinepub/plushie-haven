@@ -1,134 +1,84 @@
 {
   "kind": "build_request",
-  "title": "Implement user profiles (display name, bio, avatar, links, plushie images) with Internet Identity",
+  "title": "Add user uploads for images and videos to the Gallery (mixed feed)",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Add Profiles routes to the TanStack Router, including a profiles directory route and an individual profile route that supports viewing a profile by principal string.",
-      "target": "frontend",
+      "text": "Add backend support for storing and listing user-uploaded Gallery media items (images and videos), so uploaded items can be fetched by the frontend and displayed mixed together in the /gallery feed.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6",
+          "msg-7"
         ],
         "quotes": [
-          "bulid it"
+          "videos and images 2 upload them  mixed in",
+          "build it"
         ]
       },
       "acceptanceCriteria": [
-        "The app has a working route for a profiles directory page (e.g., /profiles).",
-        "The app has a working route for viewing a specific user profile by principal (e.g., /profiles/$principal).",
-        "Navigation to these routes works without full page reloads and does not break existing routes."
+        "Backend exposes a query method to list gallery items (including type=image|video, createdAt timestamp, and a blob reference usable by the frontend).",
+        "Backend exposes an authenticated update method that allows a signed-in user to create a gallery item with either an image file or a video file stored via the existing blob-storage mixin (Storage.ExternalBlob).",
+        "Unauthorized (anonymous) callers cannot upload gallery media (the call traps with an authorization error).",
+        "Gallery item IDs are stable and unique.",
+        "If persistent state schema changes are required, add a conditional Motoko migration (backend/migration.mo) so existing canister state upgrades safely."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Replace the current “Profiles Currently Unavailable” placeholder with a functional Profiles Directory page that lists public directory profiles from the backend and links to each profile view.",
+      "text": "Update the Gallery page UI to allow signed-in users to upload images and videos, and display uploaded items mixed together with the existing gallery content in the same grid.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6",
+          "msg-7"
         ],
         "quotes": [
-          "bulid it"
+          "videos and images 2 upload them  mixed in",
+          "build it"
         ]
       },
       "acceptanceCriteria": [
-        "Profiles directory uses the existing React Query hook for directory listing (listDirectoryProfiles) and renders a non-empty state when profiles exist.",
-        "Each listed profile entry shows at least display name and (if available) avatar, and links to that user’s profile page.",
-        "Page shows a clear empty state message when there are zero public profiles.",
-        "All user-facing text is in English."
+        "/gallery includes an upload entry point (e.g., button opening a dialog/panel) that is only enabled/visible for authenticated users; anonymous users see a clear prompt to sign in to upload.",
+        "The upload UI accepts both image and video files and validates files using the existing utilities (frontend/src/utils/imageAttachment.ts and frontend/src/utils/videoAttachment.ts), showing user-friendly validation errors.",
+        "After a successful upload, the newly uploaded item appears in the gallery grid without a full page refresh (React Query cache invalidation/refetch).",
+        "The gallery grid renders a mixed list of items (existing static items plus uploaded items) together in one feed; search and favorites filtering continue to work on the combined list.",
+        "Favorites functionality works for both static and uploaded items (no ID collisions; favorites persist in localStorage)."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Implement the Profile page UI to view a user profile (avatar, display name, bio, links, plushie image grid) and show follow/follower counts and profile like count with Like/Unlike and Follow/Unfollow actions for authenticated users.",
+      "text": "Extend the gallery lightbox/viewer experience to support both images and videos (in addition to existing image viewing), including keyboard navigation and accessible controls.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6",
+          "msg-7"
         ],
         "quotes": [
-          "bulid it"
+          "videos and images 2 upload them  mixed in",
+          "build it"
         ]
       },
       "acceptanceCriteria": [
-        "Profile page fetches the profile by principal via existing hook and handles invalid/missing principal by showing an English error/empty state.",
-        "Profile page renders avatar (or a fallback), display name, bio, links list, and plushie images grid when present.",
-        "Profile page shows follower/following counts and like count using existing hooks.",
-        "Authenticated users can Follow/Unfollow and Like/Unlike from the profile page; unauthenticated users see a sign-in prompt and controls are disabled/hidden appropriately.",
-        "All user-facing text is in English."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Implement an owner-only profile editing experience for the signed-in user, allowing editing and saving of all profile fields: display name, bio, avatar image, links, plushie images, and public directory opt-in.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "yes all"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Signed-in user can open an Edit Profile UI that is prefilled using getCallerUserProfile.",
-        "Edit Profile supports editing: display name, bio, avatar image, links (url + display name), plushie images (multiple), and publicDirectory toggle.",
-        "Saving calls the existing saveCallerUserProfile mutation and shows success/error feedback in English.",
-        "After saving, the caller profile query and directory listing are refreshed (via existing invalidations).",
-        "If the user is not signed in, the edit UI is not accessible and an English sign-in prompt is shown instead."
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Implement the missing profile editor components (AvatarUploader, PlushieImagesEditor, EditProfilePanel) with file validation, local previews, and conversion to ExternalBlob, using the existing utilities in the codebase.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "yes all"
-        ]
-      },
-      "acceptanceCriteria": [
-        "AvatarUploader supports selecting a single image file, validates allowed image types/sizes using existing utilities, shows a preview, and outputs an ExternalBlob for saving.",
-        "PlushieImagesEditor supports adding/removing multiple image files, shows previews, and outputs an array of ExternalBlobs for saving.",
-        "EditProfilePanel composes AvatarUploader, PlushieImagesEditor, and link editing controls into a single coherent form with Save/Cancel behavior.",
-        "Preview URLs are revoked/cleaned up to avoid memory leaks.",
-        "All user-facing text is in English."
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "text": "Expose Profiles navigation entry points in the UI so users can find the profiles directory and their own profile easily.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "bulid it"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Primary navigation includes a “Profiles” link that routes to the profiles directory.",
-        "Signed-in users have an obvious way to navigate to their own profile/edit view (e.g., from the auth dropdown or profile page), without modifying immutable hook files.",
-        "All user-facing text is in English."
+        "Clicking an image item opens the existing lightbox with the image displayed as before.",
+        "Clicking a video item opens a lightbox that plays the video with standard controls (play/pause/seek/volume) and does not autoplay by default.",
+        "Previous/Next navigation works across the mixed media list (images and videos) using both on-screen buttons and ArrowLeft/ArrowRight keys; Escape closes the lightbox.",
+        "The lightbox remains accessible: focus is managed on open/close, controls have appropriate aria-labels, and the overlay can be closed reliably."
       ]
     }
   ],
   "constraints": [
-    "Do not edit files under frontend/src/components/ui (compose them only).",
-    "Do not modify frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, or frontend/src/main.tsx.",
-    "Keep all backend logic within the single Motoko actor (backend/main.mo); only add backend changes if strictly required for profiles."
+    "Backend must remain a single Motoko actor in backend/main.mo; do not introduce additional backend services.",
+    "Do not modify files under frontend/src/components/ui or other frontend immutablePaths listed in SYSTEM_CONTEXT; compose them instead.",
+    "Use English for all user-facing text.",
+    "Do not introduce third-party auth providers; use existing Internet Identity integration."
   ],
   "nonGoals": [
-    "Adding third-party authentication providers beyond Internet Identity.",
-    "Adding real-time features (websockets/live updates).",
-    "Adding external databases or off-chain storage.",
-    "Building a marketplace, posting system changes, or moderation changes unrelated to profiles."
+    "Adding categories/albums or separating images vs videos into different gallery sections.",
+    "Real-time updates via websockets or live collaboration features.",
+    "External database or third-party media hosting integrations."
   ],
   "imageRequirements": {
     "required": [],

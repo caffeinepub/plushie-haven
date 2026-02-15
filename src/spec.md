@@ -1,14 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Add functional user profiles (directory, view, and owner edit) using Internet Identity, including profile interactions (follow/like) and navigation entry points.
+**Goal:** Let authenticated users upload both images and videos to the Gallery and view them together in a single mixed media feed.
 
 **Planned changes:**
-- Add TanStack Router routes for a profiles directory page (`/profiles`) and an individual profile page by principal (`/profiles/$principal`).
-- Replace the “Profiles Currently Unavailable” placeholder with a working Profiles Directory page that lists public profiles from the backend and links to each profile.
-- Implement a Profile page UI that fetches by principal and displays avatar (or fallback), display name, bio, links, and a plushie image grid, plus follower/following counts and profile like count; enable Like/Unlike and Follow/Unfollow for authenticated users and show a sign-in prompt otherwise.
-- Implement an owner-only Edit Profile experience for the signed-in user, prefilled from `getCallerUserProfile`, allowing editing of display name, bio, avatar image, links, plushie images, and public directory opt-in; save via `saveCallerUserProfile` with English success/error feedback and refresh relevant queries.
-- Add missing profile editor components (AvatarUploader, PlushieImagesEditor, EditProfilePanel) with image validation, local previews, ExternalBlob conversion, and preview URL cleanup.
-- Expose navigation entry points so users can reach the profiles directory and their own profile/edit view easily.
+- Add backend storage and listing for user-uploaded gallery items (image/video), including stable IDs, created timestamps, and blob references usable by the frontend.
+- Add an authenticated backend method for creating gallery items by uploading an image or video file via the existing blob storage mixin; block anonymous uploads.
+- Update the /gallery UI to provide an upload entry point for signed-in users (and a sign-in prompt for anonymous users), validate image/video files using existing utilities, and show validation errors.
+- Display uploaded items mixed with existing gallery content in one grid feed, with favorites and search filtering continuing to work across the combined list (and favorites persisting without ID collisions).
+- Extend the lightbox/viewer to support videos (with standard controls, no autoplay by default) alongside images, with accessible controls and keyboard navigation across mixed media.
 
-**User-visible outcome:** Users can browse a public profiles directory, view individual profiles by principal, and (when signed in) like/follow other profiles; signed-in users can edit and publish their own profile details, including avatar, links, and plushie images, with easy navigation to profiles.
+**User-visible outcome:** Signed-in users can upload images or videos to the Gallery and see them appear in the same grid alongside existing items without a full refresh; users can open items in a lightbox that supports both image viewing and video playback with keyboard navigation and accessible controls.

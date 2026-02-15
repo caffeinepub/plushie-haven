@@ -1,73 +1,39 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-12T03:57:22.556Z",
-  "summary": "Profiles routing, directory page, profile view page scaffolding, profile editing panel, and image uploader/editor components were added/updated. However, the directory links appear to route to the wrong principal, the edit navigation uses a router search param that the Profile page does not (in shown diff) consume, and the edit experience lacks an explicit unauthenticated guard/prompt. Also, unrelated admin-claim UI logic was added.",
+  "generatedAt": "2026-02-13T05:13:50.395Z",
+  "summary": "Frontend changes add an authenticated upload dialog, React Query hooks for listing/adding uploaded gallery media, utilities to merge static+uploaded items, and a lightbox that supports both images and videos with keyboard navigation and basic accessibility. However, the diff summary does not provide evidence that the backend actually implements the required gallery storage/listing APIs, stable IDs, authorization trapping, or an upgrade migration.",
   "missing_requirements": [
     {
-      "id": "REQ-2",
-      "requirement": "Profiles Directory page links each listed profile entry to that user’s profile page (/profiles/$principal).",
-      "reason": "The directory page constructs the route param using the current viewer’s identity principal (or an index-based fallback), not the listed profile’s principal, so links will not reliably open the selected user’s profile.",
+      "id": "REQ-1",
+      "requirement": "Add backend support for storing and listing user-uploaded Gallery media items (images and videos), including a query list method and an authenticated upload method using Storage.ExternalBlob; anonymous upload must trap; IDs must be stable/unique; add conditional migration if schema changes.",
+      "reason": "The frontend calls backend methods `listGalleryMediaItems()` and `addGalleryMediaItem(...)`, but the provided backend diff excerpt does not show any new gallery item types/state, the required query/update methods, authorization checks for gallery uploads, stable ID generation/storage, or any migration file being added/modified.",
       "evidence": [
-        "frontend/src/pages/ProfilesDirectoryPage.tsx (uses identity?.getPrincipal().toString() || `profile-${index}` for params.principal)"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "requirement": "Edit Profile UI is not accessible when the user is not signed in; instead show an English sign-in prompt.",
-      "reason": "EditProfilePanel always renders the form (after loading) and does not show an unauthenticated guard/prompt. Additionally, useGetCallerUserProfile is disabled when unauthenticated, so currentProfile may be null and the form can appear without sign-in gating.",
-      "evidence": [
-        "frontend/src/components/profiles/EditProfilePanel.tsx (no auth check/prompt)",
-        "frontend/src/hooks/useProfileQueries.ts (useGetCallerUserProfile enabled only when authenticated)"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "requirement": "After saving, the caller profile query and the directory listing are refreshed (via existing invalidations).",
-      "reason": "The save mutation invalidates ['directoryProfiles'] only when variables.publicDirectory is truthy, which does not cover all cases (e.g., turning publicDirectory off, or needing to refresh directory entry data after edits).",
-      "evidence": [
-        "frontend/src/hooks/useProfileQueries.ts (onSuccess invalidates directoryProfiles only if variables.publicDirectory)"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "requirement": "Signed-in user can open an Edit Profile UI (prefilled via getCallerUserProfile) from the intended navigation entry point.",
-      "reason": "AuthControls navigates with search: { edit: true }, but ProfilePage (in the provided diff portion) uses local state isEditing and does not read the router search param, so the 'Edit Profile' navigation may not open the editor as intended.",
-      "evidence": [
-        "frontend/src/components/AuthControls.tsx (navigate with search: { edit: true })",
-        "frontend/src/pages/ProfilePage.tsx (uses useState(isEditing) and does not show handling of search param in visible diff)"
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "requirement": "Unauthenticated users see a sign-in prompt and controls are disabled/hidden appropriately on the profile page.",
-      "reason": "The profile page checks isAuthenticated and early-returns in handlers, but the provided diff portion does not show any explicit sign-in prompt UI or disabling/hiding of Like/Follow controls for unauthenticated users.",
-      "evidence": [
-        "frontend/src/pages/ProfilePage.tsx (handlers return early if !isAuthenticated; no prompt shown in visible diff)"
+        "backend/main.mo",
+        "frontend/src/hooks/useGalleryMediaQueries.ts"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Admin-claim functionality and related UI messaging in AuthControls.",
-      "reason": "The BuildRequest is exclusively about user profiles; adding/handling a claimAdmin flow is outside the stated goals and requirements.",
+      "description": "Upload UI includes optional title and description fields for uploaded media items.",
+      "reason": "REQ-2 only specifies uploading and validating image/video files and updating the mixed feed; it does not request collecting or sending title/description metadata with uploads.",
       "evidence": [
-        "frontend/src/components/AuthControls.tsx (handleClaimAdmin, claimAdmin checks, invalidateQueries(['isAdmin']))"
+        "frontend/src/components/gallery/GalleryUploadDialog.tsx",
+        "frontend/src/hooks/useGalleryMediaQueries.ts"
       ]
     }
   ],
-  "confidence": 0.63,
+  "confidence": 0.66,
   "changed_files": [
+    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/App.tsx",
-    "frontend/src/components/AuthControls.tsx",
-    "frontend/src/components/Nav.tsx",
-    "frontend/src/components/profiles/AvatarUploader.tsx",
-    "frontend/src/components/profiles/EditProfilePanel.tsx",
-    "frontend/src/components/profiles/PlushieImagesEditor.tsx",
-    "frontend/src/hooks/useProfileQueries.ts",
-    "frontend/src/pages/ProfilePage.tsx",
-    "frontend/src/pages/ProfilesDirectoryPage.tsx",
+    "frontend/src/components/gallery/GalleryLightbox.tsx",
+    "frontend/src/components/gallery/GalleryUploadDialog.tsx",
+    "frontend/src/hooks/useGalleryFavorites.ts",
+    "frontend/src/hooks/useGalleryMediaQueries.ts",
+    "frontend/src/pages/GalleryPage.tsx",
+    "frontend/src/utils/galleryMedia.ts",
     "project_state.json"
   ]
 }

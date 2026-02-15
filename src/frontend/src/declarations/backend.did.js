@@ -19,6 +19,7 @@ export const _CaffeineStorageRefillResult = IDL.Record({
   'success' : IDL.Opt(IDL.Bool),
   'topped_up_amount' : IDL.Opt(IDL.Nat),
 });
+export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const Time = IDL.Int;
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
@@ -32,7 +33,6 @@ export const Comment = IDL.Record({
   'author' : IDL.Principal,
   'postId' : IDL.Nat,
 });
-export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const PollOption = IDL.Record({
   'optionId' : IDL.Nat,
   'text' : IDL.Text,
@@ -124,6 +124,14 @@ export const SupporterProfile = IDL.Record({
   'addedAt' : Time,
   'validUntil' : IDL.Opt(Time),
 });
+export const GalleryMediaItem = IDL.Record({
+  'title' : IDL.Opt(IDL.Text),
+  'blob' : ExternalBlob,
+  'createdAt' : Time,
+  'description' : IDL.Opt(IDL.Text),
+  'author' : IDL.Principal,
+  'mediaType' : IDL.Variant({ 'video' : IDL.Null, 'image' : IDL.Null }),
+});
 export const UserProfileEdit = IDL.Record({
   'bio' : IDL.Text,
   'displayName' : IDL.Text,
@@ -161,6 +169,16 @@ export const idlService = IDL.Service({
     ),
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  'addGalleryMediaItem' : IDL.Func(
+      [
+        IDL.Variant({ 'video' : IDL.Null, 'image' : IDL.Null }),
+        ExternalBlob,
+        IDL.Opt(IDL.Text),
+        IDL.Opt(IDL.Text),
+      ],
+      [],
+      [],
+    ),
   'approveModerationRequest' : IDL.Func([IDL.Nat], [], []),
   'approveSupporter' : IDL.Func([IDL.Principal, IDL.Opt(Time)], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
@@ -227,6 +245,11 @@ export const idlService = IDL.Service({
   'likeProfile' : IDL.Func([IDL.Principal], [], []),
   'listDirectoryProfiles' : IDL.Func([], [IDL.Vec(UserProfile)], ['query']),
   'listEvents' : IDL.Func([], [IDL.Vec(Event)], ['query']),
+  'listGalleryMediaItems' : IDL.Func(
+      [],
+      [IDL.Vec(GalleryMediaItem)],
+      ['query'],
+    ),
   'listPolls' : IDL.Func([], [IDL.Vec(Poll)], ['query']),
   'listPosts' : IDL.Func([], [IDL.Vec(Post)], ['query']),
   'rejectModerationRequest' : IDL.Func([IDL.Nat], [], []),
@@ -257,6 +280,7 @@ export const idlFactory = ({ IDL }) => {
     'success' : IDL.Opt(IDL.Bool),
     'topped_up_amount' : IDL.Opt(IDL.Nat),
   });
+  const ExternalBlob = IDL.Vec(IDL.Nat8);
   const Time = IDL.Int;
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
@@ -270,7 +294,6 @@ export const idlFactory = ({ IDL }) => {
     'author' : IDL.Principal,
     'postId' : IDL.Nat,
   });
-  const ExternalBlob = IDL.Vec(IDL.Nat8);
   const PollOption = IDL.Record({ 'optionId' : IDL.Nat, 'text' : IDL.Text });
   const PostEdit = IDL.Record({
     'title' : IDL.Text,
@@ -359,6 +382,14 @@ export const idlFactory = ({ IDL }) => {
     'addedAt' : Time,
     'validUntil' : IDL.Opt(Time),
   });
+  const GalleryMediaItem = IDL.Record({
+    'title' : IDL.Opt(IDL.Text),
+    'blob' : ExternalBlob,
+    'createdAt' : Time,
+    'description' : IDL.Opt(IDL.Text),
+    'author' : IDL.Principal,
+    'mediaType' : IDL.Variant({ 'video' : IDL.Null, 'image' : IDL.Null }),
+  });
   const UserProfileEdit = IDL.Record({
     'bio' : IDL.Text,
     'displayName' : IDL.Text,
@@ -396,6 +427,16 @@ export const idlFactory = ({ IDL }) => {
       ),
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    'addGalleryMediaItem' : IDL.Func(
+        [
+          IDL.Variant({ 'video' : IDL.Null, 'image' : IDL.Null }),
+          ExternalBlob,
+          IDL.Opt(IDL.Text),
+          IDL.Opt(IDL.Text),
+        ],
+        [],
+        [],
+      ),
     'approveModerationRequest' : IDL.Func([IDL.Nat], [], []),
     'approveSupporter' : IDL.Func([IDL.Principal, IDL.Opt(Time)], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
@@ -462,6 +503,11 @@ export const idlFactory = ({ IDL }) => {
     'likeProfile' : IDL.Func([IDL.Principal], [], []),
     'listDirectoryProfiles' : IDL.Func([], [IDL.Vec(UserProfile)], ['query']),
     'listEvents' : IDL.Func([], [IDL.Vec(Event)], ['query']),
+    'listGalleryMediaItems' : IDL.Func(
+        [],
+        [IDL.Vec(GalleryMediaItem)],
+        ['query'],
+      ),
     'listPolls' : IDL.Func([], [IDL.Vec(Poll)], ['query']),
     'listPosts' : IDL.Func([], [IDL.Vec(Post)], ['query']),
     'rejectModerationRequest' : IDL.Func([IDL.Nat], [], []),

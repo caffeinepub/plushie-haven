@@ -1,56 +1,24 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "App with moderation flow; user requested adding user profiles with Internet Identity login including display name, bio, and avatar image.",
+  "summary": "Interactive gallery app with user-uploaded images and videos displayed together in a single mixed gallery feed.",
   "architectural_notes": [],
   "known_issues": [],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-add-profiles-routes-to-the-tanstack-router-including-a-profiles-directory-route-and-an-individual-profile-route-that-supports-viewing-a-profile-by-principal-string",
-      "title": "Add Profiles routes to the TanStack Router, including a profiles directory route and an individual profile route that supports viewing a profile by principal string.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-replace-the-current-profiles-currently-unavailable-placeholder-with-a-functional-profiles-directory-page-that-lists-public-directory-profiles-from-the-backend-and-links-to-each-profile-view",
-      "title": "Replace the current “Profiles Currently Unavailable” placeholder with a functional Profiles Directory page that lists public directory profiles from the backend and links to each profile view.",
+      "id": "feature-update-the-gallery-page-ui-to-allow-signed-in-users-to-upload-images-and-videos-and-display-uploaded-items-mixed-together-with-the-existing-gallery-content-in-the-same-grid",
+      "title": "Update the Gallery page UI to allow signed-in users to upload images and videos, and display uploaded items mixed together with the existing gallery content in the same grid.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-the-profile-page-ui-to-view-a-user-profile-avatar-display-name-bio-links-plushie-image-grid-and-show-follow-follower-counts-and-profile-like-count-with-like-unlike-and-follow-unfollow-actions-for-authenticated-users",
-      "title": "Implement the Profile page UI to view a user profile (avatar, display name, bio, links, plushie image grid) and show follow/follower counts and profile like count with Like/Unlike and Follow/Unfollow actions for authenticated users.",
+      "id": "feature-extend-the-gallery-lightbox-viewer-experience-to-support-both-images-and-videos-in-addition-to-existing-image-viewing-including-keyboard-navigation-and-accessible-controls",
+      "title": "Extend the gallery lightbox/viewer experience to support both images and videos (in addition to existing image viewing), including keyboard navigation and accessible controls.",
       "reqIds": [
         "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-an-owner-only-profile-editing-experience-for-the-signed-in-user-allowing-editing-and-saving-of-all-profile-fields-display-name-bio-avatar-image-links-plushie-images-and-public-directory-opt-in",
-      "title": "Implement an owner-only profile editing experience for the signed-in user, allowing editing and saving of all profile fields: display name, bio, avatar image, links, plushie images, and public directory opt-in.",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-the-missing-profile-editor-components-avataruploader-plushieimageseditor-editprofilepanel-with-file-validation-local-previews-and-conversion-to-externalblob-using-the-existing-utilities-in-the-codebase",
-      "title": "Implement the missing profile editor components (AvatarUploader, PlushieImagesEditor, EditProfilePanel) with file validation, local previews, and conversion to ExternalBlob, using the existing utilities in the codebase.",
-      "reqIds": [
-        "REQ-5"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-expose-profiles-navigation-entry-points-in-the-ui-so-users-can-find-the-profiles-directory-and-their-own-profile-easily",
-      "title": "Expose Profiles navigation entry points in the UI so users can find the profiles directory and their own profile easily.",
-      "reqIds": [
-        "REQ-6"
       ],
       "version": 1
     }
@@ -58,12 +26,20 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Add user profiles with Internet Identity login including display name, bio, and avatar image fields.",
+      "summary": "Add user uploads for images and videos, displayed mixed together in the existing gallery.",
       "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Add backend support for storing and listing user-uploaded Gallery media items (images and videos), so uploaded items can be fetched by the frontend and displayed mixed together in the /gallery feed.",
+      "reqIds": [
+        "REQ-1"
+      ],
       "status": "pending"
     }
   ],
-  "projectName": "Implement user profiles (display name, bio, avatar, links, plushie images) with Internet Identity",
+  "projectName": "Add user uploads for images and videos to the Gallery (mixed feed)",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }
