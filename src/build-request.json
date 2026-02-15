@@ -1,106 +1,76 @@
 {
   "kind": "build_request",
-  "title": "Fix Profiles (Profile Not Found / edit profile) and add a teddy storybook item to the Gallery",
+  "title": "Fix “Create My Public Profile” button to open profile creation form and redirect to profile page",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Fix the public Profiles directory so each listed card links to the correct user’s profile instead of incorrectly using the current viewer’s principal (or a non-principal fallback like `profile-0`). Update both backend and frontend so the directory listing includes each profile’s Principal and the UI routes to `/profiles/$principal` using that value.",
-      "target": "both",
+      "text": "Fix the “Create My Public Profile” button on the “No Public Profiles Yet” empty state so that clicking it reliably navigates the authenticated user to their own profile route in edit mode (opening the profile creation form).",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-6",
+          "msg-8",
+          "msg-10"
         ],
         "quotes": [
-          "Profile Not Found\nThis profile doesn't exist or is not publicly visible.\n\nBack to Profiles",
-          "fix profile",
-          "edit profile doesnt work"
+          "add a create my public profile dont work",
+          "create my profile button doesnt work",
+          "nothing, profile creation form,  profile page"
         ]
       },
       "acceptanceCriteria": [
-        "The backend directory listing returns enough information to build a correct profile link for each entry (includes the owner Principal for each profile).",
-        "The Profiles directory page routes each card to that profile owner’s `/profiles/$principal` route (no `profile-${index}` fallback and no reuse of the viewer’s principal for all cards).",
-        "Clicking any directory profile card opens a Profile page that loads a real profile when it exists and is public."
+        "When the profiles directory is empty and the user is authenticated, clicking “Create My Public Profile” navigates to `/profiles/<callerPrincipal>?edit=true`.",
+        "If the user is not authenticated, the UI continues to show a sign-in call-to-action instead of attempting navigation.",
+        "No console errors occur when clicking the button."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Make profile editing reliably accessible and functional from navigation: when navigating to `/profiles/$principal?edit=true` for the signed-in user, the Profile page must automatically open the Edit Profile panel. Closing the editor should return to the normal profile view and remove the edit state from the URL/UI.",
+      "text": "Update the profile page logic so that when the authenticated user navigates to their own profile with `edit=true` and no profile exists yet, the page shows the EditProfilePanel (profile creation form) immediately instead of showing the intermediate “Create Your Profile” empty state.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-10"
         ],
         "quotes": [
-          "edit profile doesnt work",
-          "build it"
+          "nothing, profile creation form,  profile page"
         ]
       },
       "acceptanceCriteria": [
-        "Navigating to the signed-in user’s profile with `edit=true` immediately shows the Edit Profile panel without requiring an extra click.",
-        "Closing the Edit Profile panel returns to the profile display view and the page no longer remains in editing mode on refresh unless `edit=true` is present.",
-        "The existing \"Edit Profile\" button on the Profile page still works and opens the editor."
+        "Given an authenticated user with no saved profile, visiting `/profiles/<callerPrincipal>?edit=true` renders the profile editor form (EditProfilePanel) directly.",
+        "The “Create Your Profile” empty state is only shown when `edit` is not set (or is false)."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Improve the Profile page data loading so the signed-in user can always view their own profile even if it is not public. Prefer fetching the caller’s profile when the page principal matches the signed-in principal, and only use public-profile fetching for other users.",
+      "text": "Ensure that after successfully saving a newly created profile from the profile creation form, the app redirects the user to their profile page view (non-edit mode) so they can see the created profile.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "recent-messages"
+          "msg-10"
         ],
         "quotes": [
-          "Profile Not Found\nThis profile doesn't exist or is not publicly visible."
+          "nothing, profile creation form,  profile page"
         ]
       },
       "acceptanceCriteria": [
-        "When a signed-in user visits their own `/profiles/$principal` page, the profile loads if it exists regardless of the `publicDirectory` setting.",
-        "When viewing another user’s profile, the existing privacy behavior remains (non-public profiles are not shown to other non-admin users).",
-        "The \"Profile Not Found\" screen no longer appears for the signed-in user’s own existing profile due to privacy/public-directory settings."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Add a cute teddy-themed storybook item to the Gallery as part of the mixed feed. The storybook item must be viewable from the gallery grid and readable in the lightbox/viewer experience (text content included in the app, not dependent on uploads).",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "recent-messages"
-        ],
-        "quotes": [
-          "Add a cute story book about teddies",
-          "build it"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The Gallery shows a new teddy storybook entry alongside existing static gallery items and uploaded items.",
-        "Opening the new entry in the gallery viewer displays the full story text in a readable layout.",
-        "The storybook content is included as app content (no backend upload required to make it appear)."
+        "After a successful save from the creation form, the route becomes `/profiles/<callerPrincipal>` (no `edit=true` in the URL).",
+        "The saved profile content is displayed on the profile page immediately after redirect (no manual refresh required)."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo; add migration.mo only if existing stable state needs upgrading.",
-    "Do not edit files under frontend/src/components/ui or any paths listed in frontend.immutablePaths."
+    "Do not modify any files under frontend/src/components/ui or other paths listed in frontend.immutablePaths.",
+    "Keep the backend single-actor architecture (no additional canisters/services)."
   ],
   "nonGoals": [
-    "Adding third-party authentication providers (only Internet Identity is supported).",
-    "Adding external databases or non-Internet-Computer backend services.",
-    "Implementing real-time messaging or push notifications."
+    "Adding new profile fields or changing the profile data model.",
+    "Changing the public profiles directory design beyond what is required to make the creation flow work.",
+    "Adding third-party authentication providers (Internet Identity only)."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

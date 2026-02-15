@@ -1,45 +1,36 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "App now needs a teddy-themed storybook item in the gallery and a working user profile system (profiles viewable and editable) to address 'Profile Not Found' / broken profile editing.",
+  "summary": "Implement and fix the \"Create My Public Profile\" flow so the button opens a profile creation form and redirects to the user's public profile page after creation.",
   "architectural_notes": [
-    "Need user profile model + routing/lookup to avoid 'Profile Not Found' for valid users and support public visibility rules.",
-    "Profile editing flow must persist changes and reflect updates on profile view."
+    "\"Create My Public Profile\" CTA should navigate to a profile creation form; on successful submit, redirect to the newly created public profile page."
   ],
   "known_issues": [
-    "Profile page shows 'Profile Not Found' and edit profile does not work."
+    "\"Create My Public Profile\" button currently does nothing when clicked on the \"No Public Profiles Yet\" screen."
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-fix-the-public-profiles-directory-so-each-listed-card-links-to-the-correct-user-s-profile-instead-of-incorrectly-using-the-current-viewer-s-principal-or-a-non-principal-fallback-like-profile-0-update-both-backend-and-frontend-so-the-directory-listing-includes-each-profile-s-principal-and-the-ui-routes-to-profiles-principal-using-that-value",
-      "title": "Fix the public Profiles directory so each listed card links to the correct user’s profile instead of incorrectly using the current viewer’s principal (or a non-principal fallback like `profile-0`). Update both backend and frontend so the directory listing includes each profile’s Principal and the UI routes to `/profiles/$principal` using that value.",
+      "id": "feature-fix-the-create-my-public-profile-button-on-the-no-public-profiles-yet-empty-state-so-that-clicking-it-reliably-navigates-the-authenticated-user-to-their-own-profile-route-in-edit-mode-opening-the-profile-creation-form",
+      "title": "Fix the “Create My Public Profile” button on the “No Public Profiles Yet” empty state so that clicking it reliably navigates the authenticated user to their own profile route in edit mode (opening the profile creation form).",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-make-profile-editing-reliably-accessible-and-functional-from-navigation-when-navigating-to-profiles-principal-edit-true-for-the-signed-in-user-the-profile-page-must-automatically-open-the-edit-profile-panel-closing-the-editor-should-return-to-the-normal-profile-view-and-remove-the-edit-state-from-the-url-ui",
-      "title": "Make profile editing reliably accessible and functional from navigation: when navigating to `/profiles/$principal?edit=true` for the signed-in user, the Profile page must automatically open the Edit Profile panel. Closing the editor should return to the normal profile view and remove the edit state from the URL/UI.",
+      "id": "feature-update-the-profile-page-logic-so-that-when-the-authenticated-user-navigates-to-their-own-profile-with-edit-true-and-no-profile-exists-yet-the-page-shows-the-editprofilepanel-profile-creation-form-immediately-instead-of-showing-the-intermediate-create-your-profile-empty-state",
+      "title": "Update the profile page logic so that when the authenticated user navigates to their own profile with `edit=true` and no profile exists yet, the page shows the EditProfilePanel (profile creation form) immediately instead of showing the intermediate “Create Your Profile” empty state.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-improve-the-profile-page-data-loading-so-the-signed-in-user-can-always-view-their-own-profile-even-if-it-is-not-public-prefer-fetching-the-caller-s-profile-when-the-page-principal-matches-the-signed-in-principal-and-only-use-public-profile-fetching-for-other-users",
-      "title": "Improve the Profile page data loading so the signed-in user can always view their own profile even if it is not public. Prefer fetching the caller’s profile when the page principal matches the signed-in principal, and only use public-profile fetching for other users.",
+      "id": "feature-ensure-that-after-successfully-saving-a-newly-created-profile-from-the-profile-creation-form-the-app-redirects-the-user-to-their-profile-page-view-non-edit-mode-so-they-can-see-the-created-profile",
+      "title": "Ensure that after successfully saving a newly created profile from the profile creation form, the app redirects the user to their profile page view (non-edit mode) so they can see the created profile.",
       "reqIds": [
         "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-cute-teddy-themed-storybook-item-to-the-gallery-as-part-of-the-mixed-feed-the-storybook-item-must-be-viewable-from-the-gallery-grid-and-readable-in-the-lightbox-viewer-experience-text-content-included-in-the-app-not-dependent-on-uploads",
-      "title": "Add a cute teddy-themed storybook item to the Gallery as part of the mixed feed. The storybook item must be viewable from the gallery grid and readable in the lightbox/viewer experience (text content included in the app, not dependent on uploads).",
-      "reqIds": [
-        "REQ-4"
       ],
       "version": 1
     }
@@ -47,18 +38,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Add a cute teddy-themed storybook item to the gallery (text-only or with images)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Build/repair user profile system so profiles can be found/displayed and profile editing works (fix 'Profile Not Found')",
+      "summary": "Fix \"Create My Public Profile\" button: open profile creation form and redirect to user's profile page after successful creation",
       "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Fix Profiles (Profile Not Found / edit profile) and add a teddy storybook item to the Gallery",
+  "projectName": "Fix “Create My Public Profile” button to open profile creation form and redirect to profile page",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

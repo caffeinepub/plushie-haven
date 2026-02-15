@@ -123,20 +123,18 @@ export function useSaveCallerUserProfile() {
       if (!actor) throw new Error('Actor not initialized');
       return actor.saveCallerUserProfile(profileEdit);
     },
-    onSuccess: (_, variables) => {
-      // Invalidate caller's profile
-      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
+    onSuccess: async (_, variables) => {
+      // Refetch caller's profile immediately
+      await queryClient.refetchQueries({ queryKey: ['currentUserProfile'] });
       
-      // Invalidate directory listing if visibility changed
-      if (variables.publicDirectory) {
-        queryClient.invalidateQueries({ queryKey: ['directoryProfiles'] });
-      }
+      // Always refetch directory listing (for both opt-in and opt-out)
+      await queryClient.refetchQueries({ queryKey: ['directoryProfiles'] });
       
-      // Invalidate the specific user profile view for the caller
+      // Refetch the specific user profile view for the caller
       if (identity) {
         const principalString = identity.getPrincipal().toString();
-        queryClient.invalidateQueries({ queryKey: ['userProfile', principalString] });
-        queryClient.invalidateQueries({ queryKey: ['profilePage', principalString] });
+        await queryClient.refetchQueries({ queryKey: ['userProfile', principalString] });
+        await queryClient.refetchQueries({ queryKey: ['profilePage', principalString] });
       }
     },
     onError: (error) => {

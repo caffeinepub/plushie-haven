@@ -10,16 +10,14 @@ import LoadingState from '../components/LoadingState';
 import { ProfileLinksList } from '../components/profiles/ProfileLinksList';
 import { ProfileImageGrid } from '../components/profiles/ProfileImageGrid';
 import { EditProfilePanel } from '../components/profiles/EditProfilePanel';
-import { useEffect, useState } from 'react';
 
 export default function ProfilePage() {
   const { principal } = useParams({ from: '/profiles/$principal' });
   const search = useSearch({ from: '/profiles/$principal' });
   const navigate = useNavigate();
   const { identity, login } = useInternetIdentity();
-  const [isEditing, setIsEditing] = useState(false);
 
-  const { data: profile, isLoading, error } = useGetProfileForPage(principal);
+  const { data: profile, isLoading, error, isFetched } = useGetProfileForPage(principal);
   const { data: followSummary } = useGetFollowSummary(principal);
   const { data: likeSummary } = useGetProfileLikeSummary(principal);
 
@@ -30,13 +28,6 @@ export default function ProfilePage() {
 
   const isAuthenticated = identity && !identity.getPrincipal().isAnonymous();
   const isOwnProfile = isAuthenticated && identity.getPrincipal().toString() === principal;
-
-  // Handle edit mode from URL search param
-  useEffect(() => {
-    if (search.edit && isOwnProfile) {
-      setIsEditing(true);
-    }
-  }, [search.edit, isOwnProfile]);
 
   const handleFollowToggle = async () => {
     if (!isAuthenticated) return;
@@ -66,17 +57,7 @@ export default function ProfilePage() {
     }
   };
 
-  const handleEditClick = () => {
-    setIsEditing(true);
-    navigate({
-      to: '/profiles/$principal',
-      params: { principal },
-      search: { edit: true },
-    });
-  };
-
   const handleCloseEdit = () => {
-    setIsEditing(false);
     navigate({
       to: '/profiles/$principal',
       params: { principal },
@@ -92,6 +73,43 @@ export default function ProfilePage() {
     );
   }
 
+  // Show edit panel when edit=true and viewing own profile (even if profile doesn't exist yet)
+  if (search.edit && isOwnProfile && isAuthenticated) {
+    return <EditProfilePanel onClose={handleCloseEdit} />;
+  }
+
+  // Special case: own profile doesn't exist yet and not in edit mode - show create-focused empty state
+  if (isAuthenticated && isOwnProfile && isFetched && !profile && !search.edit) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-2xl mx-auto">
+          <Card>
+            <CardContent className="pt-12 pb-12 text-center">
+              <User className="h-16 w-16 mx-auto mb-4 text-primary" />
+              <h2 className="text-2xl font-semibold mb-3">Create Your Profile</h2>
+              <p className="text-muted-foreground mb-6">
+                You haven't created your profile yet. Set up your profile to join the Plushie Haven community and share your collection!
+              </p>
+              <Button 
+                onClick={() => navigate({
+                  to: '/profiles/$principal',
+                  params: { principal },
+                  search: { edit: true },
+                })} 
+                size="lg" 
+                className="gap-2"
+              >
+                <Edit className="h-5 w-5" />
+                Create My Profile
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Other user's profile not found or not public
   if (error || !profile) {
     return (
       <div className="container mx-auto px-4 py-12">
@@ -111,10 +129,6 @@ export default function ProfilePage() {
         </div>
       </div>
     );
-  }
-
-  if (isEditing && isOwnProfile) {
-    return <EditProfilePanel onClose={handleCloseEdit} />;
   }
 
   return (
@@ -158,7 +172,14 @@ export default function ProfilePage() {
 
                   <div className="flex gap-2">
                     {isOwnProfile ? (
-                      <Button onClick={handleEditClick} className="gap-2">
+                      <Button 
+                        onClick={() => navigate({
+                          to: '/profiles/$principal',
+                          params: { principal },
+                          search: { edit: true },
+                        })} 
+                        className="gap-2"
+                      >
                         <Edit className="h-4 w-4" />
                         Edit Profile
                       </Button>

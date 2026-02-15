@@ -1,99 +1,56 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Profiles routing/editing fixes and teddy storybook gallery item",
+  "title": "Fix profile creation navigation and edit-mode flow",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Fix Profiles directory cards to link to the correct `/profiles/$principal` route using each entry’s owner principal rather than the viewer principal or an index fallback.",
+      "summary": "Make “Create My Public Profile” reliably navigate authenticated users to their own profile route in edit mode from the empty directory state.",
       "acceptanceCriteria": [
-        "The backend directory listing returns enough information to build a correct profile link for each entry (includes the owner Principal for each profile).",
-        "The Profiles directory page routes each card to that profile owner’s `/profiles/$principal` route (no `profile-${index}` fallback and no reuse of the viewer’s principal for all cards).",
-        "Clicking any directory profile card opens a Profile page that loads a real profile when it exists and is public."
+        "When the profiles directory is empty and the user is authenticated, clicking “Create My Public Profile” navigates to `/profiles/<callerPrincipal>?edit=true`.",
+        "If the user is not authenticated, the UI continues to show a sign-in call-to-action instead of attempting navigation.",
+        "No console errors occur when clicking the button."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useProfileQueries.ts",
-          "operation": "modify",
-          "description": "Update the directory listing query to consume `listDirectoryProfiles()` as `[Principal, UserProfile][]` (per backend interface), and return a UI-friendly model that includes the owner principal string for each directory entry."
-        },
-        {
           "path": "frontend/src/pages/ProfilesDirectoryPage.tsx",
           "operation": "modify",
-          "description": "Render directory cards using the returned owner principal string for each entry, and set the TanStack Router Link params to route to `/profiles/$principal` with that value (remove the viewer-principal/index fallback logic)."
+          "description": "Harden the empty-state CTA by (1) ensuring the directory page does not render the authenticated “Create My Public Profile” action until Internet Identity auth state is ready and the principal can be read safely, and (2) using a single, consistent navigation call that targets `/profiles/$principal` with `search: { edit: true }` using the caller principal string. Use the existing Internet Identity auth state (authorization component guidance) to gate navigation; verify the component's usage instructions before implementing."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Support `?edit=true` on `/profiles/$principal` to automatically open Edit Profile for the signed-in user, and remove edit state from URL/UI when the editor closes.",
+      "summary": "Show the profile creation form immediately on the profile page when visiting own profile with `edit=true` and no profile exists.",
       "acceptanceCriteria": [
-        "Navigating to the signed-in user’s profile with `edit=true` immediately shows the Edit Profile panel without requiring an extra click.",
-        "Closing the Edit Profile panel returns to the profile display view and the page no longer remains in editing mode on refresh unless `edit=true` is present.",
-        "The existing \"Edit Profile\" button on the Profile page still works and opens the editor."
+        "Given an authenticated user with no saved profile, visiting `/profiles/<callerPrincipal>?edit=true` renders the profile editor form (EditProfilePanel) directly.",
+        "The “Create Your Profile” empty state is only shown when `edit` is not set (or is false)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Add route search validation/typing for the `/profiles/$principal` route to accept an optional `edit` boolean in the URL search params so the page can reliably read `edit=true`."
-        },
-        {
           "path": "frontend/src/pages/ProfilePage.tsx",
           "operation": "modify",
-          "description": "Read the route search param `edit`; when `edit=true` and the viewed principal matches the signed-in user, automatically enter editing mode. On close, navigate to the same profile route with the edit search param cleared and return to view mode; also update the existing \"Edit Profile\" button to set `edit=true` in the URL while still opening the editor."
+          "description": "Update the edit-mode logic to be URL-driven and render-stable: when `search.edit` is true and the viewer is the authenticated owner, render `EditProfilePanel` immediately even if the profile query returns null (first-time creation). Only show the “Create Your Profile” empty state when the profile is missing AND `edit` is not set/false. Use the existing Internet Identity auth state (authorization component guidance) to determine `isOwnProfile`; verify the component's usage instructions before implementing."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Ensure a signed-in user can view their own profile page even when it is not public, while keeping existing privacy behavior when viewing other users’ profiles.",
+      "summary": "After creating a profile successfully, redirect to the non-edit profile view and show the newly saved content without refresh.",
       "acceptanceCriteria": [
-        "When a signed-in user visits their own `/profiles/$principal` page, the profile loads if it exists regardless of the `publicDirectory` setting.",
-        "When viewing another user’s profile, the existing privacy behavior remains (non-public profiles are not shown to other non-admin users).",
-        "The \"Profile Not Found\" screen no longer appears for the signed-in user’s own existing profile due to privacy/public-directory settings."
+        "After a successful save from the creation form, the route becomes `/profiles/<callerPrincipal>` (no `edit=true` in the URL).",
+        "The saved profile content is displayed on the profile page immediately after redirect (no manual refresh required)."
       ],
       "file_operations": [
+        {
+          "path": "frontend/src/components/profiles/EditProfilePanel.tsx",
+          "operation": "modify",
+          "description": "After a successful save, ensure the app transitions to view mode and displays fresh data: refetch/refresh the relevant React Query caches (caller profile + profile page for caller principal) before invoking `onClose()` so that `ProfilePage` can immediately render the saved profile after navigation clears `edit=true`. Use the existing Internet Identity auth state (authorization component guidance) to resolve the caller principal for targeted refetching; verify the component's usage instructions before implementing."
+        },
         {
           "path": "frontend/src/hooks/useProfileQueries.ts",
           "operation": "modify",
-          "description": "Add a dedicated profile-page fetch hook (or extend the existing hook) that, when the requested principal matches the signed-in principal, fetches via `getCallerUserProfile()`; otherwise fetches via `getUserProfile(principal)`. Preserve current error handling so unauthorized/absent profiles still resolve to null for other users."
-        },
-        {
-          "path": "frontend/src/pages/ProfilePage.tsx",
-          "operation": "modify",
-          "description": "Switch the Profile page data loading to use the new \"profile for page\" logic so own-profile views never incorrectly fall back to public-profile fetching and the \"Profile Not Found\" screen is not shown for the caller’s existing private profile."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Add an in-app teddy-themed storybook entry to the mixed Gallery feed and display it in a readable lightbox/viewer layout.",
-      "acceptanceCriteria": [
-        "The Gallery shows a new teddy storybook entry alongside existing static gallery items and uploaded items.",
-        "Opening the new entry in the gallery viewer displays the full story text in a readable layout.",
-        "The storybook content is included as app content (no backend upload required to make it appear)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/content/teddyStorybook.ts",
-          "operation": "create",
-          "description": "Create a local content module that exports the teddy storybook metadata (title/description/cover) and the full story text content to be displayed in the gallery lightbox."
-        },
-        {
-          "path": "frontend/src/utils/galleryMedia.ts",
-          "operation": "modify",
-          "description": "Extend the unified gallery model to support a new static storybook item type and add the teddy storybook entry into the static mixed feed (alongside existing static images)."
-        },
-        {
-          "path": "frontend/src/pages/GalleryPage.tsx",
-          "operation": "modify",
-          "description": "Update gallery grid rendering to handle the new storybook item in the mixed feed (thumbnail/card presentation and selection behavior) without affecting existing uploaded image/video cards."
-        },
-        {
-          "path": "frontend/src/components/gallery/GalleryLightbox.tsx",
-          "operation": "modify",
-          "description": "Enhance the lightbox viewer to render storybook items using an in-app readable text layout (instead of image/video rendering), while preserving existing image/video behavior and keyboard navigation."
+          "description": "Strengthen post-save cache behavior to prevent stale null profile reads after creation: on successful `saveCallerUserProfile`, explicitly refresh or set query data for the caller’s profile page query key(s) in addition to invalidation so that `/profiles/<callerPrincipal>` renders populated data immediately after redirect. Verify the component's usage instructions for authorization before implementing."
         }
       ]
     }
