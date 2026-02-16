@@ -1,76 +1,128 @@
 {
   "kind": "build_request",
-  "title": "Fix “Create My Public Profile” button to open profile creation form and redirect to profile page",
+  "title": "Add deletion for individual uploaded gallery media items",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Fix the “Create My Public Profile” button on the “No Public Profiles Yet” empty state so that clicking it reliably navigates the authenticated user to their own profile route in edit mode (opening the profile creation form).",
-      "target": "frontend",
+      "text": "Add backend support for deleting a single uploaded gallery media item by a stable identifier, with authorization rules: the item’s original author may delete it, and admins may delete any item.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-6",
-          "msg-8",
-          "msg-10"
+          "msg-10",
+          "msg-11"
         ],
         "quotes": [
-          "add a create my public profile dont work",
-          "create my profile button doesnt work",
-          "nothing, profile creation form,  profile page"
+          "make where i can delete",
+          "individual images inside the gallery?"
         ]
       },
       "acceptanceCriteria": [
-        "When the profiles directory is empty and the user is authenticated, clicking “Create My Public Profile” navigates to `/profiles/<callerPrincipal>?edit=true`.",
-        "If the user is not authenticated, the UI continues to show a sign-in call-to-action instead of attempting navigation.",
-        "No console errors occur when clicking the button."
+        "A new canister method exists to delete one gallery media item by id.",
+        "If the caller is not authenticated, the method traps with an authorization error.",
+        "If the caller is authenticated but is neither the item author nor an admin, the method traps with an authorization error.",
+        "If the item id does not exist, the method traps with a not-found error.",
+        "After deletion, subsequent list calls do not return the deleted item."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Update the profile page logic so that when the authenticated user navigates to their own profile with `edit=true` and no profile exists yet, the page shows the EditProfilePanel (profile creation form) immediately instead of showing the intermediate “Create Your Profile” empty state.",
-      "target": "frontend",
+      "text": "Update the backend gallery media data model so each uploaded gallery media item has a stable id that is returned by listGalleryMediaItems, and ensure existing stored gallery items continue to work after upgrade (add a conditional migration if state shape changes).",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-10"
+          "msg-12"
         ],
         "quotes": [
-          "nothing, profile creation form,  profile page"
+          "build it"
         ]
       },
       "acceptanceCriteria": [
-        "Given an authenticated user with no saved profile, visiting `/profiles/<callerPrincipal>?edit=true` renders the profile editor form (EditProfilePanel) directly.",
-        "The “Create Your Profile” empty state is only shown when `edit` is not set (or is false)."
+        "listGalleryMediaItems returns items that include a stable id suitable for delete operations.",
+        "Item ids remain stable across repeated list calls and are not based on array index ordering.",
+        "If the implementation changes persisted state shape, a conditional migration is added so existing gallery items remain accessible and deletable after upgrade."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Ensure that after successfully saving a newly created profile from the profile creation form, the app redirects the user to their profile page view (non-edit mode) so they can see the created profile.",
+      "text": "Add a React Query mutation hook to delete an uploaded gallery media item via the backend actor, and refresh the gallery list on success.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-10"
+          "msg-12"
         ],
         "quotes": [
-          "nothing, profile creation form,  profile page"
+          "build it"
         ]
       },
       "acceptanceCriteria": [
-        "After a successful save from the creation form, the route becomes `/profiles/<callerPrincipal>` (no `edit=true` in the URL).",
-        "The saved profile content is displayed on the profile page immediately after redirect (no manual refresh required)."
+        "A new hook exists (similar to existing gallery hooks) that calls the backend delete method and invalidates the ['galleryMediaItems'] query on success.",
+        "If the backend actor is not yet available, the hook errors consistently with the existing ACTOR_CONNECTING pattern used by other gallery mutations."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Expose delete controls in the Gallery UI for uploaded items: show a delete action only for items the current authenticated user is allowed to delete (author or admin), and require a confirmation step before deletion.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-10",
+          "msg-12"
+        ],
+        "quotes": [
+          "make where i can delete",
+          "build it"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Static gallery items and the storybook item do not display any delete action.",
+        "Uploaded items display a delete action only when the current user is permitted to delete that item.",
+        "Deleting prompts a confirmation (e.g., dialog) that clearly states the action is permanent.",
+        "On successful deletion, the item disappears from the grid without a full page refresh (React Query refetch/invalidation).",
+        "On deletion error, the UI shows an English error message and the item remains visible."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Add delete capability to the lightbox view for deletable uploaded items so users can delete while viewing an item; after deletion, the lightbox should close or move to the next valid item without breaking navigation.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-12"
+        ],
+        "quotes": [
+          "build it"
+        ]
+      },
+      "acceptanceCriteria": [
+        "When a deletable uploaded item is open in the lightbox, a delete action is available with confirmation.",
+        "After deletion, the lightbox does not get stuck on a missing item (it either closes or navigates to an adjacent remaining item safely).",
+        "Keyboard navigation (Esc/Arrow keys) continues to work after the feature is added."
       ]
     }
   ],
   "constraints": [
-    "Do not modify any files under frontend/src/components/ui or other paths listed in frontend.immutablePaths.",
-    "Keep the backend single-actor architecture (no additional canisters/services)."
+    "Backend must remain a single Motoko actor in backend/main.mo; do not introduce additional backend services.",
+    "Do not edit any files under frontend/src/components/ui or any paths listed as immutable in SYSTEM_CONTEXT.",
+    "All user-facing text must be in English."
   ],
   "nonGoals": [
-    "Adding new profile fields or changing the profile data model.",
-    "Changing the public profiles directory design beyond what is required to make the creation flow work.",
-    "Adding third-party authentication providers (Internet Identity only)."
+    "Do not implement editable or deletable gallery names (only delete individual uploaded media items).",
+    "Do not allow deleting static gallery items shipped with the app or the storybook gallery item.",
+    "Do not add real-time updates (no websockets/push)."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

@@ -31,6 +31,7 @@ export interface Event {
 export type ExternalBlob = Uint8Array;
 export interface FollowCounts { 'followers' : bigint, 'following' : bigint }
 export interface GalleryMediaItem {
+  'id' : bigint,
   'title' : [] | [string],
   'blob' : ExternalBlob,
   'createdAt' : Time,
@@ -158,7 +159,7 @@ export interface _SERVICE {
       [] | [string],
       [] | [string],
     ],
-    undefined
+    bigint
   >,
   'approveModerationRequest' : ActorMethod<[bigint], undefined>,
   'approveSupporter' : ActorMethod<[Principal, [] | [Time]], undefined>,
@@ -173,6 +174,7 @@ export interface _SERVICE {
     bigint
   >,
   'createPoll' : ActorMethod<[string, Array<PollOption>], bigint>,
+  'deleteGalleryMediaItem' : ActorMethod<[bigint], undefined>,
   'deletePost' : ActorMethod<[bigint], undefined>,
   'doesCallerFollow' : ActorMethod<[Principal], boolean>,
   'editPost' : ActorMethod<[bigint, PostEdit], undefined>,

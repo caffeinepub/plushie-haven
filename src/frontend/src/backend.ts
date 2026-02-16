@@ -94,6 +94,7 @@ export interface _CaffeineStorageRefillResult {
     topped_up_amount?: bigint;
 }
 export interface GalleryMediaItem {
+    id: bigint;
     title?: string;
     blob: ExternalBlob;
     createdAt: Time;
@@ -235,7 +236,7 @@ export interface backendInterface {
     _caffeineStorageRefillCashier(refillInformation: _CaffeineStorageRefillInformation | null): Promise<_CaffeineStorageRefillResult>;
     _caffeineStorageUpdateGatewayPrincipals(): Promise<void>;
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
-    addGalleryMediaItem(mediaType: Variant_video_image, blob: ExternalBlob, title: string | null, description: string | null): Promise<void>;
+    addGalleryMediaItem(mediaType: Variant_video_image, blob: ExternalBlob, title: string | null, description: string | null): Promise<bigint>;
     approveModerationRequest(id: bigint): Promise<void>;
     approveSupporter(supporter: Principal, validUntil: Time | null): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
@@ -243,6 +244,7 @@ export interface backendInterface {
     createEvent(authorName: string | null, title: string, description: string, location: string, startTime: Time, endTime: Time): Promise<bigint>;
     createModerationRequest(title: string, body: string, video: ExternalBlob | null): Promise<bigint>;
     createPoll(question: string, options: Array<PollOption>): Promise<bigint>;
+    deleteGalleryMediaItem(id: bigint): Promise<void>;
     deletePost(id: bigint): Promise<void>;
     doesCallerFollow(target: Principal): Promise<boolean>;
     editPost(id: bigint, postEdit: PostEdit): Promise<void>;
@@ -383,7 +385,7 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async addGalleryMediaItem(arg0: Variant_video_image, arg1: ExternalBlob, arg2: string | null, arg3: string | null): Promise<void> {
+    async addGalleryMediaItem(arg0: Variant_video_image, arg1: ExternalBlob, arg2: string | null, arg3: string | null): Promise<bigint> {
         if (this.processError) {
             try {
                 const result = await this.actor.addGalleryMediaItem(to_candid_variant_n8(this._uploadFile, this._downloadFile, arg0), await to_candid_ExternalBlob_n9(this._uploadFile, this._downloadFile, arg1), to_candid_opt_n10(this._uploadFile, this._downloadFile, arg2), to_candid_opt_n10(this._uploadFile, this._downloadFile, arg3));
@@ -492,6 +494,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.createPoll(arg0, arg1);
+            return result;
+        }
+    }
+    async deleteGalleryMediaItem(arg0: bigint): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.deleteGalleryMediaItem(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.deleteGalleryMediaItem(arg0);
             return result;
         }
     }
@@ -1281,6 +1297,7 @@ function from_candid_record_n50(_uploadFile: (file: ExternalBlob) => Promise<Uin
     };
 }
 async function from_candid_record_n56(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    id: bigint;
     title: [] | [string];
     blob: _ExternalBlob;
     createdAt: _Time;
@@ -1292,6 +1309,7 @@ async function from_candid_record_n56(_uploadFile: (file: ExternalBlob) => Promi
         image: null;
     };
 }): Promise<{
+    id: bigint;
     title?: string;
     blob: ExternalBlob;
     createdAt: Time;
@@ -1300,6 +1318,7 @@ async function from_candid_record_n56(_uploadFile: (file: ExternalBlob) => Promi
     mediaType: Variant_video_image;
 }> {
     return {
+        id: value.id,
         title: record_opt_to_undefined(from_candid_opt_n16(_uploadFile, _downloadFile, value.title)),
         blob: await from_candid_ExternalBlob_n24(_uploadFile, _downloadFile, value.blob),
         createdAt: value.createdAt,

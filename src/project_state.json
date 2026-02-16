@@ -1,36 +1,32 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Implement and fix the \"Create My Public Profile\" flow so the button opens a profile creation form and redirects to the user's public profile page after creation.",
-  "architectural_notes": [
-    "\"Create My Public Profile\" CTA should navigate to a profile creation form; on successful submit, redirect to the newly created public profile page."
-  ],
-  "known_issues": [
-    "\"Create My Public Profile\" button currently does nothing when clicked on the \"No Public Profiles Yet\" screen."
-  ],
-  "isFixRequest": true,
+  "summary": "New project",
+  "architectural_notes": [],
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-fix-the-create-my-public-profile-button-on-the-no-public-profiles-yet-empty-state-so-that-clicking-it-reliably-navigates-the-authenticated-user-to-their-own-profile-route-in-edit-mode-opening-the-profile-creation-form",
-      "title": "Fix the “Create My Public Profile” button on the “No Public Profiles Yet” empty state so that clicking it reliably navigates the authenticated user to their own profile route in edit mode (opening the profile creation form).",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-profile-page-logic-so-that-when-the-authenticated-user-navigates-to-their-own-profile-with-edit-true-and-no-profile-exists-yet-the-page-shows-the-editprofilepanel-profile-creation-form-immediately-instead-of-showing-the-intermediate-create-your-profile-empty-state",
-      "title": "Update the profile page logic so that when the authenticated user navigates to their own profile with `edit=true` and no profile exists yet, the page shows the EditProfilePanel (profile creation form) immediately instead of showing the intermediate “Create Your Profile” empty state.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-ensure-that-after-successfully-saving-a-newly-created-profile-from-the-profile-creation-form-the-app-redirects-the-user-to-their-profile-page-view-non-edit-mode-so-they-can-see-the-created-profile",
-      "title": "Ensure that after successfully saving a newly created profile from the profile creation form, the app redirects the user to their profile page view (non-edit mode) so they can see the created profile.",
+      "id": "feature-add-a-react-query-mutation-hook-to-delete-an-uploaded-gallery-media-item-via-the-backend-actor-and-refresh-the-gallery-list-on-success",
+      "title": "Add a React Query mutation hook to delete an uploaded gallery media item via the backend actor, and refresh the gallery list on success.",
       "reqIds": [
         "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-expose-delete-controls-in-the-gallery-ui-for-uploaded-items-show-a-delete-action-only-for-items-the-current-authenticated-user-is-allowed-to-delete-author-or-admin-and-require-a-confirmation-step-before-deletion",
+      "title": "Expose delete controls in the Gallery UI for uploaded items: show a delete action only for items the current authenticated user is allowed to delete (author or admin), and require a confirmation step before deletion.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-delete-capability-to-the-lightbox-view-for-deletable-uploaded-items-so-users-can-delete-while-viewing-an-item-after-deletion-the-lightbox-should-close-or-move-to-the-next-valid-item-without-breaking-navigation",
+      "title": "Add delete capability to the lightbox view for deletable uploaded items so users can delete while viewing an item; after deletion, the lightbox should close or move to the next valid item without breaking navigation.",
+      "reqIds": [
+        "REQ-5"
       ],
       "version": 1
     }
@@ -38,12 +34,28 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Fix \"Create My Public Profile\" button: open profile creation form and redirect to user's profile page after successful creation",
+      "summary": "Add ability to delete individual images inside the website Gallery.",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Add backend support for deleting a single uploaded gallery media item by a stable identifier, with authorization rules: the item’s original author may delete it, and admins may delete any item.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Update the backend gallery media data model so each uploaded gallery media item has a stable id that is returned by listGalleryMediaItems, and ensure existing stored gallery items continue to work after upgrade (add a conditional migration if state shape changes).",
+      "reqIds": [
+        "REQ-2"
+      ],
       "status": "pending"
     }
   ],
-  "projectName": "Fix “Create My Public Profile” button to open profile creation form and redirect to profile page",
+  "projectName": "Add deletion for individual uploaded gallery media items",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

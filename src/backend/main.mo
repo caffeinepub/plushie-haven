@@ -1,9 +1,9 @@
 import Time "mo:core/Time";
-import Map "mo:core/Map";
 import Nat "mo:core/Nat";
-import List "mo:core/List";
+import Map "mo:core/Map";
 import Array "mo:core/Array";
 import Text "mo:core/Text";
+import List "mo:core/List";
 import Runtime "mo:core/Runtime";
 import Principal "mo:core/Principal";
 import Iter "mo:core/Iter";
@@ -11,7 +11,9 @@ import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -202,6 +204,7 @@ actor {
   };
 
   public type GalleryMediaItem = {
+    id : Nat;
     author : Principal;
     mediaType : {
       #image;
@@ -213,14 +216,16 @@ actor {
     description : ?Text;
   };
 
-  let galleryMediaItems = List.empty<GalleryMediaItem>();
+  var nextGalleryMediaId = 0;
+  let galleryMediaItems = Map.empty<Nat, GalleryMediaItem>();
 
-  public shared ({ caller }) func addGalleryMediaItem(mediaType : { #image; #video }, blob : Storage.ExternalBlob, title : ?Text, description : ?Text) : async () {
+  public shared ({ caller }) func addGalleryMediaItem(mediaType : { #image; #video }, blob : Storage.ExternalBlob, title : ?Text, description : ?Text) : async Nat {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authenticated users can add media items");
     };
 
     let newItem : GalleryMediaItem = {
+      id = nextGalleryMediaId;
       author = caller;
       mediaType;
       createdAt = Time.now();
@@ -229,11 +234,34 @@ actor {
       description;
     };
 
-    galleryMediaItems.add(newItem);
+    galleryMediaItems.add(nextGalleryMediaId, newItem);
+
+    let mediaId = nextGalleryMediaId;
+    nextGalleryMediaId += 1;
+    mediaId;
   };
 
   public query ({ caller }) func listGalleryMediaItems() : async [GalleryMediaItem] {
-    galleryMediaItems.toArray();
+    galleryMediaItems.values().toArray();
+  };
+
+  public shared ({ caller }) func deleteGalleryMediaItem(id : Nat) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can delete media items");
+    };
+
+    let item = switch (galleryMediaItems.get(id)) {
+      case (null) { Runtime.trap("Gallery media item not found") };
+      case (?item) { item };
+    };
+
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      if (item.author != caller) {
+        Runtime.trap("Unauthorized: Only the author or an admin can delete this media item");
+      };
+    };
+
+    galleryMediaItems.remove(id);
   };
 
   let posts = Map.empty<Nat, Post>();

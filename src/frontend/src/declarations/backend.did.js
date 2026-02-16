@@ -125,6 +125,7 @@ export const SupporterProfile = IDL.Record({
   'validUntil' : IDL.Opt(Time),
 });
 export const GalleryMediaItem = IDL.Record({
+  'id' : IDL.Nat,
   'title' : IDL.Opt(IDL.Text),
   'blob' : ExternalBlob,
   'createdAt' : Time,
@@ -176,7 +177,7 @@ export const idlService = IDL.Service({
         IDL.Opt(IDL.Text),
         IDL.Opt(IDL.Text),
       ],
-      [],
+      [IDL.Nat],
       [],
     ),
   'approveModerationRequest' : IDL.Func([IDL.Nat], [], []),
@@ -198,6 +199,7 @@ export const idlService = IDL.Service({
       [],
     ),
   'createPoll' : IDL.Func([IDL.Text, IDL.Vec(PollOption)], [IDL.Nat], []),
+  'deleteGalleryMediaItem' : IDL.Func([IDL.Nat], [], []),
   'deletePost' : IDL.Func([IDL.Nat], [], []),
   'doesCallerFollow' : IDL.Func([IDL.Principal], [IDL.Bool], ['query']),
   'editPost' : IDL.Func([IDL.Nat, PostEdit], [], []),
@@ -387,6 +389,7 @@ export const idlFactory = ({ IDL }) => {
     'validUntil' : IDL.Opt(Time),
   });
   const GalleryMediaItem = IDL.Record({
+    'id' : IDL.Nat,
     'title' : IDL.Opt(IDL.Text),
     'blob' : ExternalBlob,
     'createdAt' : Time,
@@ -438,7 +441,7 @@ export const idlFactory = ({ IDL }) => {
           IDL.Opt(IDL.Text),
           IDL.Opt(IDL.Text),
         ],
-        [],
+        [IDL.Nat],
         [],
       ),
     'approveModerationRequest' : IDL.Func([IDL.Nat], [], []),
@@ -460,6 +463,7 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'createPoll' : IDL.Func([IDL.Text, IDL.Vec(PollOption)], [IDL.Nat], []),
+    'deleteGalleryMediaItem' : IDL.Func([IDL.Nat], [], []),
     'deletePost' : IDL.Func([IDL.Nat], [], []),
     'doesCallerFollow' : IDL.Func([IDL.Principal], [IDL.Bool], ['query']),
     'editPost' : IDL.Func([IDL.Nat, PostEdit], [], []),

@@ -2,51 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-create-my-public-profile-button-on-the-no-public-profiles-yet-empty-state-so-that-clicking-it-reliably-navigates-the-authenticated-user-to-their-own-profile-route-in-edit-mode-opening-the-profile-creation-form",
-      "featureTitle": "Fix the “Create My Public Profile” button on the “No Public Profiles Yet” empty state so that clicking it reliably navigates the authenticated user to their own profile route in edit mode (opening the profile creation form).",
+      "featureId": "feature-add-a-react-query-mutation-hook-to-delete-an-uploaded-gallery-media-item-via-the-backend-actor-and-refresh-the-gallery-list-on-success",
+      "featureTitle": "Add a React Query mutation hook to delete an uploaded gallery media item via the backend actor, and refresh the gallery list on success.",
       "files": [
-        "frontend/src/pages/ProfilesDirectoryPage.tsx"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0",
-        "blob-storage@4.0.0"
-      ],
-      "testIds": [
-        "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-update-the-profile-page-logic-so-that-when-the-authenticated-user-navigates-to-their-own-profile-with-edit-true-and-no-profile-exists-yet-the-page-shows-the-editprofilepanel-profile-creation-form-immediately-instead-of-showing-the-intermediate-create-your-profile-empty-state",
-      "featureTitle": "Update the profile page logic so that when the authenticated user navigates to their own profile with `edit=true` and no profile exists yet, the page shows the EditProfilePanel (profile creation form) immediately instead of showing the intermediate “Create Your Profile” empty state.",
-      "files": [
-        "frontend/src/pages/ProfilePage.tsx"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0",
-        "blob-storage@4.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-ensure-that-after-successfully-saving-a-newly-created-profile-from-the-profile-creation-form-the-app-redirects-the-user-to-their-profile-page-view-non-edit-mode-so-they-can-see-the-created-profile",
-      "featureTitle": "Ensure that after successfully saving a newly created profile from the profile creation form, the app redirects the user to their profile page view (non-edit mode) so they can see the created profile.",
-      "files": [
-        "frontend/src/components/profiles/EditProfilePanel.tsx",
-        "frontend/src/hooks/useProfileQueries.ts"
+        "frontend/src/hooks/useGalleryMediaQueries.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -59,6 +18,49 @@
       ],
       "testIds": [
         "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-expose-delete-controls-in-the-gallery-ui-for-uploaded-items-show-a-delete-action-only-for-items-the-current-authenticated-user-is-allowed-to-delete-author-or-admin-and-require-a-confirmation-step-before-deletion",
+      "featureTitle": "Expose delete controls in the Gallery UI for uploaded items: show a delete action only for items the current authenticated user is allowed to delete (author or admin), and require a confirmation step before deletion.",
+      "files": [
+        "frontend/src/pages/GalleryPage.tsx",
+        "frontend/src/utils/actorError.ts",
+        "frontend/src/utils/galleryMedia.ts"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-delete-capability-to-the-lightbox-view-for-deletable-uploaded-items-so-users-can-delete-while-viewing-an-item-after-deletion-the-lightbox-should-close-or-move-to-the-next-valid-item-without-breaking-navigation",
+      "featureTitle": "Add delete capability to the lightbox view for deletable uploaded items so users can delete while viewing an item; after deletion, the lightbox should close or move to the next valid item without breaking navigation.",
+      "files": [
+        "frontend/src/components/gallery/GalleryLightbox.tsx",
+        "frontend/src/pages/GalleryPage.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
       ],
       "confidence": "high"
     }

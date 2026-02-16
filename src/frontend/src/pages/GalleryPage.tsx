@@ -2,29 +2,46 @@ import { useState, useEffect, useRef } from 'react';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { X, Search, Heart, LogIn, Play, BookOpen } from 'lucide-react';
+import { X, Search, Heart, LogIn, Play, BookOpen, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { GalleryLightbox } from '@/components/gallery/GalleryLightbox';
 import { GalleryUploadDialog } from '@/components/gallery/GalleryUploadDialog';
 import { useGalleryFavorites } from '@/hooks/useGalleryFavorites';
-import { useListGalleryMediaItems } from '@/hooks/useGalleryMediaQueries';
+import { useListGalleryMediaItems, useDeleteGalleryMediaItem } from '@/hooks/useGalleryMediaQueries';
 import { useInternetIdentity } from '@/hooks/useInternetIdentity';
+import { useIsCallerAdmin } from '@/hooks/useQueries';
 import {
   mergeGalleryItems,
   filterBySearch,
   filterByFavorites,
   type UnifiedGalleryItem,
+  type UploadedGalleryItem,
 } from '@/utils/galleryMedia';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { normalizeActorError } from '@/utils/actorError';
+import { toast } from 'sonner';
 
 export default function GalleryPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [lastFocusedCardRef, setLastFocusedCardRef] = useState<HTMLElement | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<UploadedGalleryItem | null>(null);
   const cardRefs = useRef<Map<number, HTMLElement>>(new Map());
   const { isFavorite, toggleFavorite } = useGalleryFavorites();
   const { identity, login } = useInternetIdentity();
   const { data: uploadedItems = [], isLoading: isLoadingUploaded } = useListGalleryMediaItems();
+  const { data: isAdmin = false } = useIsCallerAdmin();
+  const deleteMutation = useDeleteGalleryMediaItem();
 
   const isAuthenticated = !!identity;
 
@@ -74,6 +91,72 @@ export default function GalleryPage() {
 
   const handleClearSearch = () => {
     setSearchQuery('');
+  };
+
+  // Check if current user can delete an item
+  const canDeleteItem = (item: UnifiedGalleryItem): boolean => {
+    if (item.type !== 'uploaded') return false;
+    if (!isAuthenticated) return false;
+    
+    const uploadedItem = item as UploadedGalleryItem;
+    const currentPrincipal = identity?.getPrincipal().toString();
+    const itemAuthor = uploadedItem.author.toString();
+    
+    return isAdmin || currentPrincipal === itemAuthor;
+  };
+
+  // Handle delete confirmation
+  const handleDeleteClick = (item: UploadedGalleryItem, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setItemToDelete(item);
+  };
+
+  // Execute delete
+  const handleConfirmDelete = async () => {
+    if (!itemToDelete) return;
+
+    try {
+      await deleteMutation.mutateAsync(itemToDelete.backendId);
+      toast.success('Item deleted successfully');
+      setItemToDelete(null);
+      
+      // If lightbox is open and showing the deleted item, close or navigate
+      if (selectedIndex !== null) {
+        const selectedItem = filteredItems[selectedIndex];
+        if (selectedItem.id === itemToDelete.id) {
+          // Close lightbox if this was the deleted item
+          handleClose();
+        }
+      }
+    } catch (error) {
+      const message = normalizeActorError(error);
+      toast.error(message);
+    }
+  };
+
+  // Handle delete from lightbox
+  const handleDeleteFromLightbox = async () => {
+    if (selectedIndex === null) return;
+    const selectedItem = filteredItems[selectedIndex];
+    
+    if (selectedItem.type !== 'uploaded') return;
+    
+    try {
+      await deleteMutation.mutateAsync((selectedItem as UploadedGalleryItem).backendId);
+      toast.success('Item deleted successfully');
+      
+      // Navigate to adjacent item or close if no items left
+      const newFilteredItems = filteredItems.filter(item => item.id !== selectedItem.id);
+      if (newFilteredItems.length === 0) {
+        handleClose();
+      } else if (selectedIndex >= newFilteredItems.length) {
+        setSelectedIndex(newFilteredItems.length - 1);
+      }
+      // If selectedIndex < newFilteredItems.length, it will naturally point to the next item
+    } catch (error) {
+      const message = normalizeActorError(error);
+      toast.error(message);
+    }
   };
 
   const selectedItem = selectedIndex !== null ? filteredItems[selectedIndex] : null;
@@ -153,79 +236,121 @@ export default function GalleryPage() {
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredItems.map((item, index) => (
-            <Card
-              key={item.id}
-              ref={(el) => {
-                if (el) cardRefs.current.set(index, el);
-              }}
-              className="group relative overflow-hidden border-2 shadow-soft transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
-              onClick={(e) => handleCardClick(index, e)}
-              onKeyDown={(e) => handleCardKeyDown(index, e)}
-              tabIndex={0}
-              role="button"
-              aria-label={`View ${item.title}`}
-            >
-              <div className="aspect-square overflow-hidden bg-muted relative">
-                {item.mediaType === 'video' ? (
-                  <>
-                    <video
-                      src={item.src}
-                      className="h-full w-full object-cover"
-                      muted
-                      playsInline
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
-                      <div className="bg-white/90 rounded-full p-3 shadow-lg">
-                        <Play className="h-8 w-8 text-primary" />
+          {filteredItems.map((item, index) => {
+            const canDelete = canDeleteItem(item);
+            
+            return (
+              <Card
+                key={item.id}
+                ref={(el) => {
+                  if (el) cardRefs.current.set(index, el);
+                }}
+                className="group relative overflow-hidden border-2 shadow-soft transition-all hover:shadow-lg hover:scale-[1.02] cursor-pointer focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+                onClick={(e) => handleCardClick(index, e)}
+                onKeyDown={(e) => handleCardKeyDown(index, e)}
+                tabIndex={0}
+                role="button"
+                aria-label={`View ${item.title}`}
+              >
+                <div className="aspect-square overflow-hidden bg-muted relative">
+                  {item.mediaType === 'video' ? (
+                    <>
+                      <video
+                        src={item.src}
+                        className="h-full w-full object-cover"
+                        muted
+                        playsInline
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
+                        <div className="bg-white/90 rounded-full p-3 shadow-lg">
+                          <Play className="h-8 w-8 text-primary" />
+                        </div>
                       </div>
-                    </div>
-                  </>
-                ) : item.mediaType === 'storybook' ? (
-                  <>
+                    </>
+                  ) : item.mediaType === 'storybook' ? (
+                    <>
+                      <img
+                        src={item.src}
+                        alt={item.description}
+                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/40 to-transparent">
+                        <div className="bg-white/95 rounded-full p-3 shadow-lg">
+                          <BookOpen className="h-8 w-8 text-primary" />
+                        </div>
+                      </div>
+                    </>
+                  ) : (
                     <img
                       src={item.src}
                       alt={item.description}
                       className="h-full w-full object-cover transition-transform group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/40 to-transparent">
-                      <div className="bg-white/95 rounded-full p-3 shadow-lg">
-                        <BookOpen className="h-8 w-8 text-primary" />
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <img
-                    src={item.src}
-                    alt={item.description}
-                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                  />
-                )}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-2 right-2 bg-white/90 hover:bg-white shadow-soft"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleFavorite(item.id);
-                  }}
-                  aria-label={isFavorite(item.id) ? 'Remove from favorites' : 'Add to favorites'}
-                >
-                  <Heart
-                    className={`h-5 w-5 ${
-                      isFavorite(item.id) ? 'fill-accent text-accent' : 'text-muted-foreground'
-                    }`}
-                  />
-                </Button>
-              </div>
-              <CardHeader>
-                <CardTitle className="text-lg">{item.title}</CardTitle>
-                <CardDescription>{item.description}</CardDescription>
-              </CardHeader>
-            </Card>
-          ))}
+                  )}
+                  
+                  {/* Action buttons */}
+                  <div className="absolute top-2 right-2 flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="bg-white/90 hover:bg-white shadow-soft"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(item.id);
+                      }}
+                      aria-label={isFavorite(item.id) ? 'Remove from favorites' : 'Add to favorites'}
+                    >
+                      <Heart
+                        className={`h-5 w-5 ${
+                          isFavorite(item.id) ? 'fill-accent text-accent' : 'text-muted-foreground'
+                        }`}
+                      />
+                    </Button>
+                    
+                    {canDelete && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="bg-white/90 hover:bg-destructive hover:text-destructive-foreground shadow-soft"
+                        onClick={(e) => handleDeleteClick(item as UploadedGalleryItem, e)}
+                        aria-label="Delete item"
+                      >
+                        <Trash2 className="h-5 w-5" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                <CardHeader>
+                  <CardTitle className="text-lg">{item.title}</CardTitle>
+                  <CardDescription>{item.description}</CardDescription>
+                </CardHeader>
+              </Card>
+            );
+          })}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!itemToDelete} onOpenChange={(open) => !open && setItemToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Gallery Item</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{itemToDelete?.title}"? This action is permanent and cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={deleteMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Lightbox */}
       {selectedItem && selectedIndex !== null && (
@@ -240,6 +365,9 @@ export default function GalleryPage() {
           totalCount={filteredItems.length}
           isFavorite={isFavorite(selectedItem.id)}
           onToggleFavorite={() => toggleFavorite(selectedItem.id)}
+          canDelete={canDeleteItem(selectedItem)}
+          onDelete={handleDeleteFromLightbox}
+          isDeleting={deleteMutation.isPending}
         />
       )}
     </div>

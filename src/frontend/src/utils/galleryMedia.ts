@@ -3,6 +3,7 @@
  */
 
 import type { GalleryMediaItem } from '../backend';
+import type { Principal } from '@icp-sdk/core/principal';
 import { teddyStorybook } from '../content/teddyStorybook';
 
 export interface StaticGalleryItem {
@@ -32,6 +33,8 @@ export interface UploadedGalleryItem {
   title: string;
   description: string;
   createdAt: bigint;
+  backendId: bigint;
+  author: Principal;
 }
 
 export type UnifiedGalleryItem = StaticGalleryItem | StorybookGalleryItem | UploadedGalleryItem;
@@ -106,9 +109,9 @@ export const storybookGalleryItem: StorybookGalleryItem = {
 /**
  * Convert backend GalleryMediaItem to UploadedGalleryItem
  */
-export function backendItemToUploadedItem(item: GalleryMediaItem, index: number): UploadedGalleryItem {
-  // Create a stable ID based on creation time and index
-  const id = `uploaded:${item.createdAt.toString()}-${index}`;
+export function backendItemToUploadedItem(item: GalleryMediaItem): UploadedGalleryItem {
+  // Use the backend ID as the stable identifier
+  const id = `uploaded:${item.id.toString()}`;
   
   return {
     id,
@@ -118,6 +121,8 @@ export function backendItemToUploadedItem(item: GalleryMediaItem, index: number)
     title: item.title || 'Untitled',
     description: item.description || '',
     createdAt: item.createdAt,
+    backendId: item.id,
+    author: item.author,
   };
 }
 
@@ -125,7 +130,7 @@ export function backendItemToUploadedItem(item: GalleryMediaItem, index: number)
  * Merge static, storybook, and uploaded items into a unified list
  */
 export function mergeGalleryItems(uploadedItems: GalleryMediaItem[]): UnifiedGalleryItem[] {
-  const uploaded = uploadedItems.map((item, index) => backendItemToUploadedItem(item, index));
+  const uploaded = uploadedItems.map((item) => backendItemToUploadedItem(item));
   
   // Combine static items, storybook, then uploaded items (newest first)
   return [...staticGalleryItems, storybookGalleryItem, ...uploaded.reverse()];

@@ -1,11 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Fix the public profile creation flow so the “Create My Public Profile” entry point works, the editor opens directly when requested, and users are redirected to their new profile after saving.
+**Goal:** Enable deletion of individual uploaded gallery media items with proper authorization, and expose safe delete controls in the gallery grid and lightbox.
 
 **Planned changes:**
-- Update the “Create My Public Profile” button in the empty profiles directory state to navigate authenticated users to `/profiles/<callerPrincipal>?edit=true`; keep sign-in CTA for unauthenticated users.
-- Adjust profile page routing/render logic so visiting `/profiles/<callerPrincipal>?edit=true` with no existing profile shows the EditProfilePanel (creation form) immediately, skipping the intermediate empty state.
-- After successfully saving a newly created profile, redirect to `/profiles/<callerPrincipal>` (non-edit mode) and show the saved profile content without requiring a manual refresh.
+- Add a backend canister method to delete a single uploaded gallery media item by a stable id, enforcing that only the item’s author or an admin can delete it (with auth and not-found errors).
+- Update the backend gallery media model so uploaded items have stable ids returned by `listGalleryMediaItems`, with a conditional migration to keep existing stored items working after upgrade.
+- Add a React Query mutation hook to delete a gallery media item via the backend actor and invalidate/refetch `['galleryMediaItems']` on success (including consistent `ACTOR_CONNECTING` handling).
+- Update the Gallery UI to show delete controls only for deletable uploaded items (never for static/storybook items), require confirmation, and show English errors on failure.
+- Add delete controls to the lightbox for deletable uploaded items, ensuring the lightbox closes or moves to a valid adjacent item after deletion while keeping keyboard navigation working.
 
-**User-visible outcome:** Clicking “Create My Public Profile” reliably opens the profile creation form for signed-in users, and after saving, the user is taken to their view-mode profile page with the newly created profile visible.
+**User-visible outcome:** Signed-in users can delete their own uploaded gallery items (and admins can delete any uploaded item) from the gallery grid or lightbox with confirmation; deleted items disappear from the gallery without a full page refresh.

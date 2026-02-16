@@ -1,12 +1,13 @@
-import Map "mo:core/Map";
+import Principal "mo:core/Principal";
 import Nat "mo:core/Nat";
+import Map "mo:core/Map";
 import Time "mo:core/Time";
 import List "mo:core/List";
-import Principal "mo:core/Principal";
 import Storage "blob-storage/Storage";
+import Array "mo:core/Array";
 
 module {
-  type SupporterRequest = {
+  public type SupporterRequest = {
     submittedAt : Time.Time;
     displayName : Text;
     message : Text;
@@ -14,18 +15,18 @@ module {
     validUntil : ?Time.Time;
   };
 
-  type SupporterProfile = {
+  public type SupporterProfile = {
     addedAt : Time.Time;
     displayName : Text;
     validUntil : ?Time.Time;
   };
 
-  type Link = {
+  public type Link = {
     url : Text;
     displayName : Text;
   };
 
-  type UserProfile = {
+  public type UserProfile = {
     displayName : Text;
     bio : Text;
     avatar : ?Storage.ExternalBlob;
@@ -34,7 +35,23 @@ module {
     publicDirectory : Bool;
   };
 
-  type Post = {
+  public type ModerationOutcome = {
+    #allow;
+    #block;
+    #manualReview;
+  };
+
+  public type ModeratedContent = {
+    id : Nat;
+    author : Principal;
+    title : Text;
+    body : Text;
+    video : ?Storage.ExternalBlob;
+    submittedAt : Time.Time;
+    moderationOutcome : ModerationOutcome;
+  };
+
+  public type Post = {
     id : Nat;
     author : Principal;
     authorName : ?Text;
@@ -44,7 +61,7 @@ module {
     video : ?Storage.ExternalBlob;
   };
 
-  type Event = {
+  public type Event = {
     id : Nat;
     author : Principal;
     authorName : ?Text;
@@ -56,12 +73,20 @@ module {
     createdAt : Time.Time;
   };
 
-  type FollowInfo = {
-    followers : List.List<Principal>;
-    following : List.List<Principal>;
+  public type GalleryMediaItem = {
+    id : Nat;
+    author : Principal;
+    mediaType : {
+      #image;
+      #video;
+    };
+    createdAt : Time.Time;
+    blob : Storage.ExternalBlob;
+    title : ?Text;
+    description : ?Text;
   };
 
-  type Comment = {
+  public type Comment = {
     postId : Nat;
     author : Principal;
     authorName : ?Text;
@@ -69,18 +94,12 @@ module {
     createdAt : Time.Time;
   };
 
-  type PostWithCounts = {
-    post : Post;
-    likeCount : Nat;
-    commentCount : Nat;
-  };
-
-  type PollOption = {
+  public type PollOption = {
     optionId : Nat;
     text : Text;
   };
 
-  type Poll = {
+  public type Poll = {
     pollId : Nat;
     question : Text;
     options : [PollOption];
@@ -89,7 +108,7 @@ module {
     isActive : Bool;
   };
 
-  type PollWithResults = {
+  public type PollWithResults = {
     pollId : Nat;
     question : Text;
     options : [PollOption];
@@ -99,57 +118,60 @@ module {
     results : [(Nat, Nat)];
   };
 
-  type ModerationOutcome = {
-    #allow;
-    #block;
-    #manualReview;
-  };
-
-  type ModeratedContent = {
-    id : Nat;
-    author : Principal;
-    title : Text;
-    body : Text;
-    video : ?Storage.ExternalBlob;
-    submittedAt : Time.Time;
-    moderationOutcome : ModerationOutcome;
-  };
-
   type OldActor = {
     supporterRequests : Map.Map<Principal, SupporterRequest>;
     supporters : Map.Map<Principal, SupporterProfile>;
     userProfiles : Map.Map<Principal, UserProfile>;
-    posts : Map.Map<Nat, Post>;
     nextPostId : Nat;
+    posts : Map.Map<Nat, Post>;
     events : Map.Map<Nat, Event>;
     nextEventId : Nat;
-    followData : Map.Map<Principal, FollowInfo>;
+    moderationQueue : Map.Map<Nat, ModeratedContent>;
+    comments : Map.Map<Nat, List.List<Comment>>;
     postLikes : Map.Map<Nat, List.List<Principal>>;
     profileLikes : Map.Map<Principal, List.List<Principal>>;
-    comments : Map.Map<Nat, List.List<Comment>>;
     polls : Map.Map<Nat, Poll>;
+    votes : Map.Map<Nat, List.List<(Principal, Nat)>>;
+    nextPollId : Nat;
+    galleryMediaItems : List.List<{
+      author : Principal;
+      mediaType : {
+        #image;
+        #video;
+      };
+      createdAt : Time.Time;
+      blob : Storage.ExternalBlob;
+      title : ?Text;
+      description : ?Text;
+    }>;
   };
 
   type NewActor = {
     supporterRequests : Map.Map<Principal, SupporterRequest>;
     supporters : Map.Map<Principal, SupporterProfile>;
     userProfiles : Map.Map<Principal, UserProfile>;
-    posts : Map.Map<Nat, Post>;
     nextPostId : Nat;
+    posts : Map.Map<Nat, Post>;
     events : Map.Map<Nat, Event>;
     nextEventId : Nat;
-    followData : Map.Map<Principal, FollowInfo>;
+    moderationQueue : Map.Map<Nat, ModeratedContent>;
+    comments : Map.Map<Nat, List.List<Comment>>;
     postLikes : Map.Map<Nat, List.List<Principal>>;
     profileLikes : Map.Map<Principal, List.List<Principal>>;
-    comments : Map.Map<Nat, List.List<Comment>>;
     polls : Map.Map<Nat, Poll>;
-    moderationQueue : Map.Map<Nat, ModeratedContent>;
+    votes : Map.Map<Nat, List.List<(Principal, Nat)>>;
+    nextPollId : Nat;
+    nextGalleryMediaId : Nat;
+    galleryMediaItems : Map.Map<Nat, GalleryMediaItem>;
   };
 
   public func run(old : OldActor) : NewActor {
+    let convertedGalleryItems = Map.fromIter<Nat, GalleryMediaItem>(old.galleryMediaItems.toArray().enumerate().map(func((index, oldItem)) { (index, { oldItem with id = index }) }));
+
     {
       old with
-      moderationQueue = Map.empty<Nat, ModeratedContent>();
+      nextGalleryMediaId = convertedGalleryItems.size();
+      galleryMediaItems = convertedGalleryItems;
     };
   };
 };

@@ -15,6 +15,7 @@ export class ExternalBlob {
     withUploadProgress(onProgress: (percentage: number) => void): ExternalBlob;
 }
 export interface GalleryMediaItem {
+    id: bigint;
     title?: string;
     blob: ExternalBlob;
     createdAt: Time;
@@ -142,7 +143,7 @@ export enum Variant_video_image {
     image = "image"
 }
 export interface backendInterface {
-    addGalleryMediaItem(mediaType: Variant_video_image, blob: ExternalBlob, title: string | null, description: string | null): Promise<void>;
+    addGalleryMediaItem(mediaType: Variant_video_image, blob: ExternalBlob, title: string | null, description: string | null): Promise<bigint>;
     approveModerationRequest(id: bigint): Promise<void>;
     approveSupporter(supporter: Principal, validUntil: Time | null): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
@@ -150,6 +151,7 @@ export interface backendInterface {
     createEvent(authorName: string | null, title: string, description: string, location: string, startTime: Time, endTime: Time): Promise<bigint>;
     createModerationRequest(title: string, body: string, video: ExternalBlob | null): Promise<bigint>;
     createPoll(question: string, options: Array<PollOption>): Promise<bigint>;
+    deleteGalleryMediaItem(id: bigint): Promise<void>;
     deletePost(id: bigint): Promise<void>;
     doesCallerFollow(target: Principal): Promise<boolean>;
     editPost(id: bigint, postEdit: PostEdit): Promise<void>;

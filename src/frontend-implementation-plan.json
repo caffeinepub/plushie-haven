@@ -1,56 +1,69 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix profile creation navigation and edit-mode flow",
+  "title": "Gallery: delete individual uploaded media items (UI + React Query)",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Make “Create My Public Profile” reliably navigate authenticated users to their own profile route in edit mode from the empty directory state.",
-      "acceptanceCriteria": [
-        "When the profiles directory is empty and the user is authenticated, clicking “Create My Public Profile” navigates to `/profiles/<callerPrincipal>?edit=true`.",
-        "If the user is not authenticated, the UI continues to show a sign-in call-to-action instead of attempting navigation.",
-        "No console errors occur when clicking the button."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/ProfilesDirectoryPage.tsx",
-          "operation": "modify",
-          "description": "Harden the empty-state CTA by (1) ensuring the directory page does not render the authenticated “Create My Public Profile” action until Internet Identity auth state is ready and the principal can be read safely, and (2) using a single, consistent navigation call that targets `/profiles/$principal` with `search: { edit: true }` using the caller principal string. Use the existing Internet Identity auth state (authorization component guidance) to gate navigation; verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Show the profile creation form immediately on the profile page when visiting own profile with `edit=true` and no profile exists.",
-      "acceptanceCriteria": [
-        "Given an authenticated user with no saved profile, visiting `/profiles/<callerPrincipal>?edit=true` renders the profile editor form (EditProfilePanel) directly.",
-        "The “Create Your Profile” empty state is only shown when `edit` is not set (or is false)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/ProfilePage.tsx",
-          "operation": "modify",
-          "description": "Update the edit-mode logic to be URL-driven and render-stable: when `search.edit` is true and the viewer is the authenticated owner, render `EditProfilePanel` immediately even if the profile query returns null (first-time creation). Only show the “Create Your Profile” empty state when the profile is missing AND `edit` is not set/false. Use the existing Internet Identity auth state (authorization component guidance) to determine `isOwnProfile`; verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
       "id": "REQ-3",
-      "summary": "After creating a profile successfully, redirect to the non-edit profile view and show the newly saved content without refresh.",
+      "summary": "Add a React Query mutation hook for deleting a single uploaded gallery media item and refreshing the gallery list.",
       "acceptanceCriteria": [
-        "After a successful save from the creation form, the route becomes `/profiles/<callerPrincipal>` (no `edit=true` in the URL).",
-        "The saved profile content is displayed on the profile page immediately after redirect (no manual refresh required)."
+        "A new hook exists (similar to existing gallery hooks) that calls the backend delete method and invalidates the ['galleryMediaItems'] query on success.",
+        "If the backend actor is not yet available, the hook errors consistently with the existing ACTOR_CONNECTING pattern used by other gallery mutations."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/profiles/EditProfilePanel.tsx",
+          "path": "frontend/src/hooks/useGalleryMediaQueries.ts",
           "operation": "modify",
-          "description": "After a successful save, ensure the app transitions to view mode and displays fresh data: refetch/refresh the relevant React Query caches (caller profile + profile page for caller principal) before invoking `onClose()` so that `ProfilePage` can immediately render the saved profile after navigation clears `edit=true`. Use the existing Internet Identity auth state (authorization component guidance) to resolve the caller principal for targeted refetching; verify the component's usage instructions before implementing."
+          "description": "Add a new `useDeleteGalleryMediaItem` React Query mutation that calls `actor.deleteGalleryMediaItem(id)` and invalidates `['galleryMediaItems']` on success; reuse the existing `requireActor` helper to preserve the ACTOR_CONNECTING behavior. (Uses authorization + actor availability patterns from the `authorization` component; verify the component's usage instructions before implementing.)"
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Show delete controls on uploaded gallery items (grid) only when the current user is allowed to delete, with confirmation and error handling.",
+      "acceptanceCriteria": [
+        "Static gallery items and the storybook item do not display any delete action.",
+        "Uploaded items display a delete action only when the current user is permitted to delete that item.",
+        "Deleting prompts a confirmation (e.g., dialog) that clearly states the action is permanent.",
+        "On successful deletion, the item disappears from the grid without a full page refresh (React Query refetch/invalidation).",
+        "On deletion error, the UI shows an English error message and the item remains visible."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/galleryMedia.ts",
+          "operation": "modify",
+          "description": "Update uploaded gallery item mapping to use the backend-provided stable identifier: derive the unified `id` from `GalleryMediaItem.id` (not array index/createdAt), and carry through fields needed for authorization checks (e.g., author principal, backend bigint id) while keeping static/storybook items unchanged and non-deletable. (Relies on blob URL display via `blob-storage` ExternalBlob direct URLs; verify the component's usage instructions before implementing.)"
         },
         {
-          "path": "frontend/src/hooks/useProfileQueries.ts",
+          "path": "frontend/src/pages/GalleryPage.tsx",
           "operation": "modify",
-          "description": "Strengthen post-save cache behavior to prevent stale null profile reads after creation: on successful `saveCallerUserProfile`, explicitly refresh or set query data for the caller’s profile page query key(s) in addition to invalidation so that `/profiles/<callerPrincipal>` renders populated data immediately after redirect. Verify the component's usage instructions for authorization before implementing."
+          "description": "Add per-card delete UI for uploaded items only: compute `canDelete` using the current authenticated principal from `useInternetIdentity` plus admin status (use existing admin-check query hook) and uploaded item author; render a delete action only when permitted; require an explicit confirmation that states deletion is permanent; call `useDeleteGalleryMediaItem` and show an English error message on failure (use `normalizeActorError`). Ensure static + storybook items never show delete. After successful deletion, rely on React Query invalidation to remove the item from the grid without a full refresh. (Uses the `authorization` component’s authentication/role patterns; verify the component's usage instructions before implementing.)"
+        },
+        {
+          "path": "frontend/src/utils/actorError.ts",
+          "operation": "modify",
+          "description": "Extend error normalization to include gallery deletion-related authorization/not-found cases (as emitted by backend traps) so the UI can show clear English messages for deletion failures (e.g., not authorized, must sign in, item not found), without exposing internal details."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Add delete capability to the gallery lightbox for deletable uploaded items and keep navigation/keyboard behavior intact after deletion.",
+      "acceptanceCriteria": [
+        "When a deletable uploaded item is open in the lightbox, a delete action is available with confirmation.",
+        "After deletion, the lightbox does not get stuck on a missing item (it either closes or navigates to an adjacent remaining item safely).",
+        "Keyboard navigation (Esc/Arrow keys) continues to work after the feature is added."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/gallery/GalleryLightbox.tsx",
+          "operation": "modify",
+          "description": "Add optional delete controls to the lightbox UI that only render for deletable uploaded items (as determined by the parent). Require a confirmation step with permanent-action wording. Keep existing Esc/Arrow key handlers unchanged and ensure delete UI does not interfere with keyboard navigation. (Uses `shadcn-ui` button primitives already present in the lightbox; verify the component's usage instructions before implementing.)"
+        },
+        {
+          "path": "frontend/src/pages/GalleryPage.tsx",
+          "operation": "modify",
+          "description": "Wire lightbox deletion: pass `canDelete` + `onDelete` into `GalleryLightbox` for uploaded items only, invoke the delete mutation, and on success ensure the lightbox never points at a missing item by safely updating `selectedIndex` (close if list becomes empty; otherwise clamp to a valid adjacent index) while relying on React Query invalidation to refresh items."
         }
       ]
     }

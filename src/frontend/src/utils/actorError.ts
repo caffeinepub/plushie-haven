@@ -98,6 +98,9 @@ export function normalizeActorError(error: unknown): string {
       if (message.includes('Only admins')) {
         return 'You need admin privileges to perform this action.';
       }
+      if (message.includes('Only the author or an admin')) {
+        return 'You can only delete your own items.';
+      }
       if (message.includes('Only the author')) {
         return 'You can only delete your own posts.';
       }
@@ -108,6 +111,11 @@ export function normalizeActorError(error: unknown): string {
         return 'Please sign in to perform this action.';
       }
       return 'You are not authorized to perform this action.';
+    }
+
+    // Handle gallery-specific errors
+    if (message.includes('Gallery media item not found')) {
+      return 'Gallery item not found.';
     }
 
     // Handle supporter-specific errors

@@ -1,7 +1,17 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { X, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { X, ChevronLeft, ChevronRight, Heart, Trash2 } from 'lucide-react';
 import type { UnifiedGalleryItem, StorybookGalleryItem } from '@/utils/galleryMedia';
 
 interface GalleryLightboxProps {
@@ -15,6 +25,9 @@ interface GalleryLightboxProps {
   totalCount: number;
   isFavorite: boolean;
   onToggleFavorite: () => void;
+  canDelete?: boolean;
+  onDelete?: () => void;
+  isDeleting?: boolean;
 }
 
 export function GalleryLightbox({
@@ -28,8 +41,12 @@ export function GalleryLightbox({
   totalCount,
   isFavorite,
   onToggleFavorite,
+  canDelete = false,
+  onDelete,
+  isDeleting = false,
 }: GalleryLightboxProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     // Focus the close button when lightbox opens
@@ -61,6 +78,15 @@ export function GalleryLightbox({
   const isVideo = item.mediaType === 'video';
   const isStorybook = item.mediaType === 'storybook';
 
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = () => {
+    setShowDeleteConfirm(false);
+    onDelete?.();
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
@@ -73,12 +99,15 @@ export function GalleryLightbox({
         className="relative w-full max-w-6xl max-h-[90vh] flex flex-col bg-white rounded-lg shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header with controls */}
-        <div className="flex items-center justify-between gap-4 p-4 border-b bg-white">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>
-              {currentIndex} / {totalCount}
-            </span>
+        {/* Header */}
+        <div className="flex items-center justify-between gap-4 p-4 border-b bg-background">
+          <div className="flex-1 min-w-0">
+            <h2 id="lightbox-title" className="text-xl font-semibold truncate">
+              {item.title}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {currentIndex} of {totalCount}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -89,6 +118,20 @@ export function GalleryLightbox({
             >
               <Heart className={`h-5 w-5 ${isFavorite ? 'fill-accent text-accent' : ''}`} />
             </Button>
+            
+            {canDelete && onDelete && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleDeleteClick}
+                disabled={isDeleting}
+                aria-label="Delete item"
+                className="hover:bg-destructive hover:text-destructive-foreground"
+              >
+                <Trash2 className="h-5 w-5" />
+              </Button>
+            )}
+            
             <Button
               ref={closeButtonRef}
               variant="ghost"
@@ -101,95 +144,85 @@ export function GalleryLightbox({
           </div>
         </div>
 
-        {/* Media container */}
-        <div className="flex-1 flex items-center justify-center p-4 sm:p-8 bg-muted/30 overflow-auto">
-          <div className="relative max-w-full max-h-full w-full">
-            {isStorybook ? (
-              <ScrollArea className="h-[60vh] sm:h-[70vh] w-full max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-8">
-                <div className="prose prose-lg max-w-none">
-                  <div className="flex items-center justify-center mb-8">
-                    <img
-                      src={item.src}
-                      alt={item.title}
-                      className="w-32 h-32 object-contain rounded-full border-4 border-primary/20"
-                    />
-                  </div>
-                  <h2 className="text-3xl font-bold text-center mb-6 text-primary">
-                    {item.title}
-                  </h2>
-                  <div className="text-lg leading-relaxed whitespace-pre-wrap text-foreground">
-                    {(item as StorybookGalleryItem).story}
-                  </div>
-                </div>
-              </ScrollArea>
-            ) : isVideo ? (
-              <video
-                src={item.src}
-                controls
-                className="max-w-full max-h-[60vh] sm:max-h-[70vh] w-auto h-auto rounded-lg shadow-lg mx-auto"
-                aria-label={item.description}
-              >
-                Your browser does not support the video tag.
-              </video>
-            ) : (
-              <img
-                src={item.src}
-                alt={item.description}
-                className="max-w-full max-h-[60vh] sm:max-h-[70vh] w-auto h-auto object-contain rounded-lg shadow-lg mx-auto"
-              />
-            )}
-          </div>
-        </div>
+        {/* Content */}
+        <div className="flex-1 overflow-hidden flex items-center justify-center bg-muted relative">
+          {isStorybook ? (
+            <ScrollArea className="h-full w-full p-8">
+              <div className="max-w-3xl mx-auto prose prose-lg">
+                <p className="whitespace-pre-wrap leading-relaxed text-foreground">
+                  {(item as StorybookGalleryItem).story}
+                </p>
+              </div>
+            </ScrollArea>
+          ) : isVideo ? (
+            <video
+              src={item.src}
+              controls
+              autoPlay
+              className="max-h-full max-w-full object-contain"
+            />
+          ) : (
+            <img
+              src={item.src}
+              alt={item.description}
+              className="max-h-full max-w-full object-contain"
+            />
+          )}
 
-        {/* Navigation controls - positioned over media on larger screens */}
-        <div className="hidden sm:block">
-          <Button
-            variant="secondary"
-            size="icon"
-            className="absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full shadow-lg disabled:opacity-50"
-            onClick={onPrevious}
-            disabled={!hasPrevious}
-            aria-label="Previous item"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </Button>
-          <Button
-            variant="secondary"
-            size="icon"
-            className="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full shadow-lg disabled:opacity-50"
-            onClick={onNext}
-            disabled={!hasNext}
-            aria-label="Next item"
-          >
-            <ChevronRight className="h-6 w-6" />
-          </Button>
-        </div>
-
-        {/* Footer with title, description, and mobile navigation */}
-        <div className="p-4 sm:p-6 border-t bg-white">
-          <h2 id="lightbox-title" className="text-xl sm:text-2xl font-bold mb-2">
-            {item.title}
-          </h2>
-          <p className="text-muted-foreground mb-4 sm:mb-0">{item.description}</p>
-
-          {/* Mobile navigation buttons */}
-          <div className="flex gap-2 mt-4 sm:hidden">
+          {/* Navigation Buttons */}
+          {hasPrevious && (
             <Button
-              variant="outline"
-              className="flex-1"
+              variant="ghost"
+              size="icon"
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg"
               onClick={onPrevious}
-              disabled={!hasPrevious}
+              aria-label="Previous item"
             >
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              Previous
+              <ChevronLeft className="h-6 w-6" />
             </Button>
-            <Button variant="outline" className="flex-1" onClick={onNext} disabled={!hasNext}>
-              Next
-              <ChevronRight className="h-4 w-4 ml-2" />
+          )}
+          {hasNext && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white shadow-lg"
+              onClick={onNext}
+              aria-label="Next item"
+            >
+              <ChevronRight className="h-6 w-6" />
             </Button>
-          </div>
+          )}
         </div>
+
+        {/* Footer */}
+        {!isStorybook && (
+          <div className="p-4 border-t bg-background">
+            <p className="text-sm text-muted-foreground">{item.description}</p>
+          </div>
+        )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Gallery Item</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{item.title}"? This action is permanent and cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -69,3 +69,21 @@ export function useAddGalleryMediaItem() {
     },
   });
 }
+
+/**
+ * Delete a gallery media item by ID
+ */
+export function useDeleteGalleryMediaItem() {
+  const { actor, isFetching } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: bigint) => {
+      const validActor = requireActor(actor, isFetching);
+      return validActor.deleteGalleryMediaItem(id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['galleryMediaItems'] });
+    },
+  });
+}
