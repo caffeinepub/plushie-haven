@@ -2,10 +2,54 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-a-react-query-mutation-hook-to-delete-an-uploaded-gallery-media-item-via-the-backend-actor-and-refresh-the-gallery-list-on-success",
-      "featureTitle": "Add a React Query mutation hook to delete an uploaded gallery media item via the backend actor, and refresh the gallery list on success.",
+      "featureId": "feature-add-a-new-dedicated-plushie-assistant-chat-page-that-users-can-access-from-the-main-navigation-implemented-as-an-on-device-scripted-chat-box-no-external-ai-integrations",
+      "featureTitle": "Add a new dedicated \"Plushie Assistant\" chat page that users can access from the main navigation, implemented as an on-device/scripted chat box (no external AI integrations).",
       "files": [
-        "frontend/src/hooks/useGalleryMediaQueries.ts"
+        "frontend/src/App.tsx",
+        "frontend/src/components/Nav.tsx",
+        "frontend/src/pages/PlushieAssistantPage.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-the-plushie-assistant-s-scripted-conversation-logic-so-it-can-1-answer-plushie-related-facts-care-questions-2-recommend-plushies-based-on-user-preferences-3-generate-short-plushie-stories-and-4-maintain-a-consistent-friendly-plushie-themed-personality",
+      "featureTitle": "Implement the plushie assistant’s scripted conversation logic so it can: (1) answer plushie-related facts/care questions, (2) recommend plushies based on user preferences, (3) generate short plushie stories, and (4) maintain a consistent friendly plushie-themed personality.",
+      "files": [
+        "frontend/src/pages/PlushieAssistantPage.tsx",
+        "frontend/src/utils/plushieAssistant.ts"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-basic-chat-ux-safeguards-and-state-handling-for-the-assistant-empty-input-prevention-simple-session-history-persistence-on-the-device-and-a-clear-chat-action",
+      "featureTitle": "Add basic chat UX safeguards and state handling for the assistant: empty-input prevention, simple session history persistence on the device, and a \"Clear chat\" action.",
+      "files": [
+        "frontend/src/hooks/useAssistantChat.ts",
+        "frontend/src/pages/PlushieAssistantPage.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -18,49 +62,6 @@
       ],
       "testIds": [
         "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-expose-delete-controls-in-the-gallery-ui-for-uploaded-items-show-a-delete-action-only-for-items-the-current-authenticated-user-is-allowed-to-delete-author-or-admin-and-require-a-confirmation-step-before-deletion",
-      "featureTitle": "Expose delete controls in the Gallery UI for uploaded items: show a delete action only for items the current authenticated user is allowed to delete (author or admin), and require a confirmation step before deletion.",
-      "files": [
-        "frontend/src/pages/GalleryPage.tsx",
-        "frontend/src/utils/actorError.ts",
-        "frontend/src/utils/galleryMedia.ts"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0",
-        "blob-storage@4.0.0"
-      ],
-      "testIds": [
-        "REQ-4"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-delete-capability-to-the-lightbox-view-for-deletable-uploaded-items-so-users-can-delete-while-viewing-an-item-after-deletion-the-lightbox-should-close-or-move-to-the-next-valid-item-without-breaking-navigation",
-      "featureTitle": "Add delete capability to the lightbox view for deletable uploaded items so users can delete while viewing an item; after deletion, the lightbox should close or move to the next valid item without breaking navigation.",
-      "files": [
-        "frontend/src/components/gallery/GalleryLightbox.tsx",
-        "frontend/src/pages/GalleryPage.tsx"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0",
-        "blob-storage@4.0.0"
-      ],
-      "testIds": [
-        "REQ-5"
       ],
       "confidence": "high"
     }

@@ -1,32 +1,35 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
-  "architectural_notes": [],
+  "summary": "Project now includes a plushie-focused AI assistant feature (chat box) using on-device/scripted logic (no external AI integrations).",
+  "architectural_notes": [
+    "Plushie assistant must use on-device/scripted logic only (no external AI integrations).",
+    "User interaction for plushie assistant is a chat box UI."
+  ],
   "known_issues": [],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-add-a-react-query-mutation-hook-to-delete-an-uploaded-gallery-media-item-via-the-backend-actor-and-refresh-the-gallery-list-on-success",
-      "title": "Add a React Query mutation hook to delete an uploaded gallery media item via the backend actor, and refresh the gallery list on success.",
+      "id": "feature-add-a-new-dedicated-plushie-assistant-chat-page-that-users-can-access-from-the-main-navigation-implemented-as-an-on-device-scripted-chat-box-no-external-ai-integrations",
+      "title": "Add a new dedicated \"Plushie Assistant\" chat page that users can access from the main navigation, implemented as an on-device/scripted chat box (no external AI integrations).",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-the-plushie-assistant-s-scripted-conversation-logic-so-it-can-1-answer-plushie-related-facts-care-questions-2-recommend-plushies-based-on-user-preferences-3-generate-short-plushie-stories-and-4-maintain-a-consistent-friendly-plushie-themed-personality",
+      "title": "Implement the plushie assistant’s scripted conversation logic so it can: (1) answer plushie-related facts/care questions, (2) recommend plushies based on user preferences, (3) generate short plushie stories, and (4) maintain a consistent friendly plushie-themed personality.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-basic-chat-ux-safeguards-and-state-handling-for-the-assistant-empty-input-prevention-simple-session-history-persistence-on-the-device-and-a-clear-chat-action",
+      "title": "Add basic chat UX safeguards and state handling for the assistant: empty-input prevention, simple session history persistence on the device, and a \"Clear chat\" action.",
       "reqIds": [
         "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-expose-delete-controls-in-the-gallery-ui-for-uploaded-items-show-a-delete-action-only-for-items-the-current-authenticated-user-is-allowed-to-delete-author-or-admin-and-require-a-confirmation-step-before-deletion",
-      "title": "Expose delete controls in the Gallery UI for uploaded items: show a delete action only for items the current authenticated user is allowed to delete (author or admin), and require a confirmation step before deletion.",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-delete-capability-to-the-lightbox-view-for-deletable-uploaded-items-so-users-can-delete-while-viewing-an-item-after-deletion-the-lightbox-should-close-or-move-to-the-next-valid-item-without-breaking-navigation",
-      "title": "Add delete capability to the lightbox view for deletable uploaded items so users can delete while viewing an item; after deletion, the lightbox should close or move to the next valid item without breaking navigation.",
-      "reqIds": [
-        "REQ-5"
       ],
       "version": 1
     }
@@ -34,28 +37,13 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Add ability to delete individual images inside the website Gallery.",
+      "summary": "Add plushie assistant bot via chat box that can answer plushie facts, recommend plushies, generate stories, and have a personality (on-device/scripted; no external AI integrations).",
       "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Add backend support for deleting a single uploaded gallery media item by a stable identifier, with authorization rules: the item’s original author may delete it, and admins may delete any item.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Update the backend gallery media data model so each uploaded gallery media item has a stable id that is returned by listGalleryMediaItems, and ensure existing stored gallery items continue to work after upgrade (add a conditional migration if state shape changes).",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "status": "pending"
+      "status": "in_progress"
     }
   ],
-  "projectName": "Add deletion for individual uploaded gallery media items",
+  "gameProjectType": "none",
+  "projectName": "Plushie Pal",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

@@ -13,6 +13,7 @@ const navLinks = [
   { href: '/brands', label: 'Brands' },
   { href: '/pacifier-brands', label: 'Pacifier Brands' },
   { href: '/profiles', label: 'Profiles' },
+  { href: '/assistant', label: 'Assistant' },
   { href: '/support', label: 'Support' },
 ];
 

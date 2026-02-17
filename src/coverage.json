@@ -1,87 +1,70 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-16T13:46:09.161Z",
+  "generatedAt": "2026-02-17T15:58:51.182Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 5,
+    "total": 3,
     "implemented": 3,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Add backend support for deleting a single uploaded gallery media item by a stable identifier, with authorization rules: the item’s original author may delete it, and admins may delete any item.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Add a new dedicated \"Plushie Assistant\" chat page that users can access from the main navigation, implemented as an on-device/scripted chat box (no external AI integrations).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/PlushieAssistantPage.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/components/Nav.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/PlushieAssistantPage.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/components/Nav.tsx"
+        ]
       },
       {
         "id": "REQ-2",
-        "summary": "Update the backend gallery media data model so each uploaded gallery media item has a stable id that is returned by listGalleryMediaItems, and ensure existing stored gallery items continue to work after upgrade (add a conditional migration if state shape changes).",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
+        "summary": "Implement the plushie assistant’s scripted conversation logic so it can: (1) answer plushie-related facts/care questions, (2) recommend plushies based on user preferences, (3) generate short plushie stories, and (4) maintain a consistent friendly plushie-themed personality.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/utils/plushieAssistant.ts",
+          "frontend/src/pages/PlushieAssistantPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/utils/plushieAssistant.ts",
+          "frontend/src/pages/PlushieAssistantPage.tsx"
+        ]
       },
       {
         "id": "REQ-3",
-        "summary": "Add a React Query mutation hook to delete an uploaded gallery media item via the backend actor, and refresh the gallery list on success.",
+        "summary": "Add basic chat UX safeguards and state handling for the assistant: empty-input prevention, simple session history persistence on the device, and a \"Clear chat\" action.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useGalleryMediaQueries.ts"
+          "frontend/src/hooks/useAssistantChat.ts",
+          "frontend/src/pages/PlushieAssistantPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useGalleryMediaQueries.ts"
-        ]
-      },
-      {
-        "id": "REQ-4",
-        "summary": "Expose delete controls in the Gallery UI for uploaded items: show a delete action only for items the current authenticated user is allowed to delete (author or admin), and require a confirmation step before deletion.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/utils/galleryMedia.ts",
-          "frontend/src/pages/GalleryPage.tsx",
-          "frontend/src/utils/actorError.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/utils/galleryMedia.ts",
-          "frontend/src/pages/GalleryPage.tsx",
-          "frontend/src/utils/actorError.ts"
-        ]
-      },
-      {
-        "id": "REQ-5",
-        "summary": "Add delete capability to the lightbox view for deletable uploaded items so users can delete while viewing an item; after deletion, the lightbox should close or move to the next valid item without breaking navigation.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/gallery/GalleryLightbox.tsx",
-          "frontend/src/pages/GalleryPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/gallery/GalleryLightbox.tsx",
-          "frontend/src/pages/GalleryPage.tsx"
+          "frontend/src/hooks/useAssistantChat.ts",
+          "frontend/src/pages/PlushieAssistantPage.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/components/gallery/GalleryLightbox.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useGalleryMediaQueries.ts",
-    "frontend/src/pages/GalleryPage.tsx",
-    "frontend/src/utils/actorError.ts",
-    "frontend/src/utils/galleryMedia.ts",
+    "frontend/src/App.tsx",
+    "frontend/src/components/Nav.tsx",
+    "frontend/src/config.ts",
+    "frontend/src/hooks/useAssistantChat.ts",
+    "frontend/src/pages/PlushieAssistantPage.tsx",
+    "frontend/src/utils/plushieAssistant.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

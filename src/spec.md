@@ -1,13 +1,14 @@
 # Specification
 
 ## Summary
-**Goal:** Enable deletion of individual uploaded gallery media items with proper authorization, and expose safe delete controls in the gallery grid and lightbox.
+**Goal:** Add a dedicated on-device, scripted “Plushie Assistant” chat experience to Plushie Pal.
 
 **Planned changes:**
-- Add a backend canister method to delete a single uploaded gallery media item by a stable id, enforcing that only the item’s author or an admin can delete it (with auth and not-found errors).
-- Update the backend gallery media model so uploaded items have stable ids returned by `listGalleryMediaItems`, with a conditional migration to keep existing stored items working after upgrade.
-- Add a React Query mutation hook to delete a gallery media item via the backend actor and invalidate/refetch `['galleryMediaItems']` on success (including consistent `ACTOR_CONNECTING` handling).
-- Update the Gallery UI to show delete controls only for deletable uploaded items (never for static/storybook items), require confirmation, and show English errors on failure.
-- Add delete controls to the lightbox for deletable uploaded items, ensuring the lightbox closes or moves to a valid adjacent item after deletion while keeping keyboard navigation working.
+- Add a new “Plushie Assistant” page/route (e.g., `/assistant`) registered in the TanStack Router route tree and linked from the main navigation.
+- Build a chat UI on the assistant page (message list, text input, send button) with Enter-to-send and English-only user-facing strings.
+- Implement scripted, on-device conversation logic supporting: plushie facts/care Q&A, plushie recommendations (asking at least 2 preference questions), short plushie story generation (~5+ sentences, optionally personalized), and friendly plushie-themed small talk/personality.
+- Add quick-action prompt chips/buttons for the main intents (e.g., care tips, recommend a plushie, tell a story).
+- Add basic chat UX/state handling: prevent empty submissions with an inline/toast message, persist chat history locally across reloads, provide a “Clear chat” button with confirmation, and ensure long messages wrap with a scrollable transcript that stays scrolled to the latest message.
+- Ensure the feature makes no external AI/network calls and requires no backend changes.
 
-**User-visible outcome:** Signed-in users can delete their own uploaded gallery items (and admins can delete any uploaded item) from the gallery grid or lightbox with confirmation; deleted items disappear from the gallery without a full page refresh.
+**User-visible outcome:** Users can open a new “Plushie Assistant” page from navigation, chat with a cozy plushie-themed scripted assistant for care tips, recommendations, and short stories, and keep/clear their chat history on the device.

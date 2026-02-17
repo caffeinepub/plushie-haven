@@ -15,6 +15,7 @@ import AdultPacifierBrandsPage from './pages/AdultPacifierBrandsPage';
 import SupportPage from './pages/SupportPage';
 import ProfilesDirectoryPage from './pages/ProfilesDirectoryPage';
 import ProfilePage from './pages/ProfilePage';
+import PlushieAssistantPage from './pages/PlushieAssistantPage';
 import { Toaster } from '@/components/ui/sonner';
 
 const rootRoute = createRootRoute({
@@ -92,6 +93,12 @@ const profileRoute = createRoute({
   },
 });
 
+const assistantRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/assistant',
+  component: PlushieAssistantPage,
+});
+
 const aboutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/about',
@@ -116,6 +123,7 @@ const routeTree = rootRoute.addChildren([
   supportRoute,
   profilesRoute,
   profileRoute,
+  assistantRoute,
   aboutRoute,
   contactRoute,
 ]);

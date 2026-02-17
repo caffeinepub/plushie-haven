@@ -1,69 +1,78 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Gallery: delete individual uploaded media items (UI + React Query)",
+  "title": "Plushie Pal — Scripted Plushie Assistant Chat (On-device)",
   "requirements": [
     {
+      "id": "REQ-1",
+      "summary": "Add a dedicated Plushie Assistant chat page and wire it into TanStack Router and main navigation (no external AI).",
+      "acceptanceCriteria": [
+        "A new route exists (e.g., \"/assistant\") and is registered in the TanStack Router route tree.",
+        "The main site navigation includes a new link labeled \"Assistant\" (or \"Plushie Assistant\") that navigates to the assistant page.",
+        "The assistant page renders a chat UI with: message list, a text input, and a send button; pressing Enter sends the message.",
+        "All user-facing strings on the assistant page are in English.",
+        "No network calls to external AI services are made from this feature."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/PlushieAssistantPage.tsx",
+          "operation": "create",
+          "description": "Create the new \"Plushie Assistant\" page with a scripted/on-device chat UI (message transcript, input, Send button, Enter-to-send). Use shadcn/ui primitives (e.g., Card, Button, Input/Textarea, Separator) to match existing styling conventions. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Register the new \"/assistant\" route in the TanStack Router route tree and import/render the new PlushieAssistantPage component."
+        },
+        {
+          "path": "frontend/src/components/Nav.tsx",
+          "operation": "modify",
+          "description": "Add a new navigation link labeled \"Assistant\" (or \"Plushie Assistant\") pointing to \"/assistant\" in both desktop and mobile navigation lists."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Implement scripted plushie-themed conversation logic (facts/care, recommendations, short stories, consistent personality) with quick-action intent chips.",
+      "acceptanceCriteria": [
+        "The assistant supports at least these intents: facts/care Q&A, recommendations, story generation, and general friendly chat/personality responses.",
+        "The assistant offers quick-action prompt chips/buttons for the main intents (e.g., \"Care tips\", \"Recommend a plushie\", \"Tell me a story\").",
+        "Recommendations ask at least 2 preference questions (e.g., size, texture, animal type, budget) before suggesting options.",
+        "Story generation produces a coherent short story (at least ~5 sentences) with plushie-themed tone and optionally asks for a character name/theme to personalize it.",
+        "The assistant personality remains consistent across responses (warm, cozy, plushie-themed), without claiming to be a real AI model or using external data."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/plushieAssistant.ts",
+          "operation": "create",
+          "description": "Implement on-device scripted conversation logic: intent detection/routing (facts/care, recommendations, story, friendly chat), a lightweight session state machine for multi-turn flows (recommendation preferences + story personalization), and deterministic response generation with a consistent plushie-themed personality. Ensure the module makes no network calls."
+        },
+        {
+          "path": "frontend/src/pages/PlushieAssistantPage.tsx",
+          "operation": "modify",
+          "description": "Connect the UI to the scripted logic (no external AI): render quick-action prompt chips/buttons for the main intents, route user input through plushieAssistant logic, and display assistant responses in a chat transcript using existing shadcn/ui components. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
       "id": "REQ-3",
-      "summary": "Add a React Query mutation hook for deleting a single uploaded gallery media item and refreshing the gallery list.",
+      "summary": "Add chat UX safeguards: block empty input with English feedback, persist chat history in localStorage, provide Clear chat with confirmation, and handle long transcripts smoothly.",
       "acceptanceCriteria": [
-        "A new hook exists (similar to existing gallery hooks) that calls the backend delete method and invalidates the ['galleryMediaItems'] query on success.",
-        "If the backend actor is not yet available, the hook errors consistently with the existing ACTOR_CONNECTING pattern used by other gallery mutations."
+        "Sending an empty/whitespace-only message is blocked with an inline validation message or toast in English.",
+        "Chat history persists across page reloads using on-device storage (e.g., localStorage) and can be cleared by a \"Clear chat\" button with a confirmation step.",
+        "The UI handles long messages gracefully (wrapping, scrollable transcript) and keeps the latest message visible after sending.",
+        "No backend schema changes or backend calls are required for chat history persistence."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useGalleryMediaQueries.ts",
-          "operation": "modify",
-          "description": "Add a new `useDeleteGalleryMediaItem` React Query mutation that calls `actor.deleteGalleryMediaItem(id)` and invalidates `['galleryMediaItems']` on success; reuse the existing `requireActor` helper to preserve the ACTOR_CONNECTING behavior. (Uses authorization + actor availability patterns from the `authorization` component; verify the component's usage instructions before implementing.)"
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Show delete controls on uploaded gallery items (grid) only when the current user is allowed to delete, with confirmation and error handling.",
-      "acceptanceCriteria": [
-        "Static gallery items and the storybook item do not display any delete action.",
-        "Uploaded items display a delete action only when the current user is permitted to delete that item.",
-        "Deleting prompts a confirmation (e.g., dialog) that clearly states the action is permanent.",
-        "On successful deletion, the item disappears from the grid without a full page refresh (React Query refetch/invalidation).",
-        "On deletion error, the UI shows an English error message and the item remains visible."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/utils/galleryMedia.ts",
-          "operation": "modify",
-          "description": "Update uploaded gallery item mapping to use the backend-provided stable identifier: derive the unified `id` from `GalleryMediaItem.id` (not array index/createdAt), and carry through fields needed for authorization checks (e.g., author principal, backend bigint id) while keeping static/storybook items unchanged and non-deletable. (Relies on blob URL display via `blob-storage` ExternalBlob direct URLs; verify the component's usage instructions before implementing.)"
+          "path": "frontend/src/hooks/useAssistantChat.ts",
+          "operation": "create",
+          "description": "Create a hook to manage assistant chat state on-device: message list, session state for scripted flows, localStorage hydration/persistence, helpers to send messages, and a clear-history method. Ensure persistence is strictly local (no backend calls)."
         },
         {
-          "path": "frontend/src/pages/GalleryPage.tsx",
+          "path": "frontend/src/pages/PlushieAssistantPage.tsx",
           "operation": "modify",
-          "description": "Add per-card delete UI for uploaded items only: compute `canDelete` using the current authenticated principal from `useInternetIdentity` plus admin status (use existing admin-check query hook) and uploaded item author; render a delete action only when permitted; require an explicit confirmation that states deletion is permanent; call `useDeleteGalleryMediaItem` and show an English error message on failure (use `normalizeActorError`). Ensure static + storybook items never show delete. After successful deletion, rely on React Query invalidation to remove the item from the grid without a full refresh. (Uses the `authorization` component’s authentication/role patterns; verify the component's usage instructions before implementing.)"
-        },
-        {
-          "path": "frontend/src/utils/actorError.ts",
-          "operation": "modify",
-          "description": "Extend error normalization to include gallery deletion-related authorization/not-found cases (as emitted by backend traps) so the UI can show clear English messages for deletion failures (e.g., not authorized, must sign in, item not found), without exposing internal details."
-        }
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "summary": "Add delete capability to the gallery lightbox for deletable uploaded items and keep navigation/keyboard behavior intact after deletion.",
-      "acceptanceCriteria": [
-        "When a deletable uploaded item is open in the lightbox, a delete action is available with confirmation.",
-        "After deletion, the lightbox does not get stuck on a missing item (it either closes or navigates to an adjacent remaining item safely).",
-        "Keyboard navigation (Esc/Arrow keys) continues to work after the feature is added."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/gallery/GalleryLightbox.tsx",
-          "operation": "modify",
-          "description": "Add optional delete controls to the lightbox UI that only render for deletable uploaded items (as determined by the parent). Require a confirmation step with permanent-action wording. Keep existing Esc/Arrow key handlers unchanged and ensure delete UI does not interfere with keyboard navigation. (Uses `shadcn-ui` button primitives already present in the lightbox; verify the component's usage instructions before implementing.)"
-        },
-        {
-          "path": "frontend/src/pages/GalleryPage.tsx",
-          "operation": "modify",
-          "description": "Wire lightbox deletion: pass `canDelete` + `onDelete` into `GalleryLightbox` for uploaded items only, invoke the delete mutation, and on success ensure the lightbox never points at a missing item by safely updating `selectedIndex` (close if list becomes empty; otherwise clamp to a valid adjacent index) while relying on React Query invalidation to refresh items."
+          "description": "Add UX safeguards and state handling: prevent empty/whitespace send with an English toast/inline message (use existing sonner toast pattern), add a \"Clear chat\" action with a confirmation step (native confirm or existing dialog patterns), make transcript scrollable with wrapped long messages, and auto-scroll to latest message after sending. Use shadcn/ui components for buttons/layout where applicable. Verify the component's usage instructions before implementing."
         }
       ]
     }

@@ -1,128 +1,84 @@
 {
   "kind": "build_request",
-  "title": "Add deletion for individual uploaded gallery media items",
+  "title": "Add plushie assistant chat bot (scripted, on-device)",
+  "projectName": "Plushie Pal",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Add backend support for deleting a single uploaded gallery media item by a stable identifier, with authorization rules: the item’s original author may delete it, and admins may delete any item.",
-      "target": "backend",
+      "text": "Add a new dedicated \"Plushie Assistant\" chat page that users can access from the main navigation, implemented as an on-device/scripted chat box (no external AI integrations).",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-10",
-          "msg-11"
+          "msg-1"
         ],
         "quotes": [
-          "make where i can delete",
-          "individual images inside the gallery?"
+          "ADD AI ASSISTANT BOT FOR PLUSHIES",
+          "CHAT BOX"
         ]
       },
       "acceptanceCriteria": [
-        "A new canister method exists to delete one gallery media item by id.",
-        "If the caller is not authenticated, the method traps with an authorization error.",
-        "If the caller is authenticated but is neither the item author nor an admin, the method traps with an authorization error.",
-        "If the item id does not exist, the method traps with a not-found error.",
-        "After deletion, subsequent list calls do not return the deleted item."
+        "A new route exists (e.g., \"/assistant\") and is registered in the TanStack Router route tree.",
+        "The main site navigation includes a new link labeled \"Assistant\" (or \"Plushie Assistant\") that navigates to the assistant page.",
+        "The assistant page renders a chat UI with: message list, a text input, and a send button; pressing Enter sends the message.",
+        "All user-facing strings on the assistant page are in English.",
+        "No network calls to external AI services are made from this feature."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Update the backend gallery media data model so each uploaded gallery media item has a stable id that is returned by listGalleryMediaItems, and ensure existing stored gallery items continue to work after upgrade (add a conditional migration if state shape changes).",
-      "target": "backend",
+      "text": "Implement the plushie assistant’s scripted conversation logic so it can: (1) answer plushie-related facts/care questions, (2) recommend plushies based on user preferences, (3) generate short plushie stories, and (4) maintain a consistent friendly plushie-themed personality.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-12"
+          "msg-1"
         ],
         "quotes": [
-          "build it"
+          "ALL",
+          "YES"
         ]
       },
       "acceptanceCriteria": [
-        "listGalleryMediaItems returns items that include a stable id suitable for delete operations.",
-        "Item ids remain stable across repeated list calls and are not based on array index ordering.",
-        "If the implementation changes persisted state shape, a conditional migration is added so existing gallery items remain accessible and deletable after upgrade."
+        "The assistant supports at least these intents: facts/care Q&A, recommendations, story generation, and general friendly chat/personality responses.",
+        "The assistant offers quick-action prompt chips/buttons for the main intents (e.g., \"Care tips\", \"Recommend a plushie\", \"Tell me a story\").",
+        "Recommendations ask at least 2 preference questions (e.g., size, texture, animal type, budget) before suggesting options.",
+        "Story generation produces a coherent short story (at least ~5 sentences) with plushie-themed tone and optionally asks for a character name/theme to personalize it.",
+        "The assistant personality remains consistent across responses (warm, cozy, plushie-themed), without claiming to be a real AI model or using external data."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Add a React Query mutation hook to delete an uploaded gallery media item via the backend actor, and refresh the gallery list on success.",
+      "text": "Add basic chat UX safeguards and state handling for the assistant: empty-input prevention, simple session history persistence on the device, and a \"Clear chat\" action.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-12"
+          "msg-1"
         ],
         "quotes": [
-          "build it"
+          "YES, YES, CHAT BOX"
         ]
       },
       "acceptanceCriteria": [
-        "A new hook exists (similar to existing gallery hooks) that calls the backend delete method and invalidates the ['galleryMediaItems'] query on success.",
-        "If the backend actor is not yet available, the hook errors consistently with the existing ACTOR_CONNECTING pattern used by other gallery mutations."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Expose delete controls in the Gallery UI for uploaded items: show a delete action only for items the current authenticated user is allowed to delete (author or admin), and require a confirmation step before deletion.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-10",
-          "msg-12"
-        ],
-        "quotes": [
-          "make where i can delete",
-          "build it"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Static gallery items and the storybook item do not display any delete action.",
-        "Uploaded items display a delete action only when the current user is permitted to delete that item.",
-        "Deleting prompts a confirmation (e.g., dialog) that clearly states the action is permanent.",
-        "On successful deletion, the item disappears from the grid without a full page refresh (React Query refetch/invalidation).",
-        "On deletion error, the UI shows an English error message and the item remains visible."
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Add delete capability to the lightbox view for deletable uploaded items so users can delete while viewing an item; after deletion, the lightbox should close or move to the next valid item without breaking navigation.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-12"
-        ],
-        "quotes": [
-          "build it"
-        ]
-      },
-      "acceptanceCriteria": [
-        "When a deletable uploaded item is open in the lightbox, a delete action is available with confirmation.",
-        "After deletion, the lightbox does not get stuck on a missing item (it either closes or navigates to an adjacent remaining item safely).",
-        "Keyboard navigation (Esc/Arrow keys) continues to work after the feature is added."
+        "Sending an empty/whitespace-only message is blocked with an inline validation message or toast in English.",
+        "Chat history persists across page reloads using on-device storage (e.g., localStorage) and can be cleared by a \"Clear chat\" button with a confirmation step.",
+        "The UI handles long messages gracefully (wrapping, scrollable transcript) and keeps the latest message visible after sending.",
+        "No backend schema changes or backend calls are required for chat history persistence."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo; do not introduce additional backend services.",
-    "Do not edit any files under frontend/src/components/ui or any paths listed as immutable in SYSTEM_CONTEXT.",
-    "All user-facing text must be in English."
+    "Do not integrate external AI services or LLM APIs; the assistant must be implemented using scripted/on-device logic only.",
+    "Do not edit files under frontend/src/components/ui or other frontend immutablePaths listed in SYSTEM_CONTEXT; compose existing UI components instead.",
+    "Respect the existing routing setup (TanStack Router) and existing Tailwind/shadcn UI conventions."
   ],
   "nonGoals": [
-    "Do not implement editable or deletable gallery names (only delete individual uploaded media items).",
-    "Do not allow deleting static gallery items shipped with the app or the storybook gallery item.",
-    "Do not add real-time updates (no websockets/push)."
+    "Voice input/output for the assistant.",
+    "Real-time messaging via WebSockets or live agent chat.",
+    "Training or fine-tuning an AI model, or using third-party AI providers.",
+    "Storing assistant chat logs on the backend or associating them with user identities (unless explicitly requested later)."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }
