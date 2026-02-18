@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import type { Post, Event, Comment, PostWithCounts, Poll, PollWithResults, PollOption, backendInterface, PostEdit, ExternalBlob, ModeratedContent } from '../backend';
+import type { Post, Event, Comment, PostWithCounts, Poll, PollWithResults, PollOption, backendInterface, PostEdit, ModeratedContent } from '../backend';
+import { ExternalBlob } from '../backend';
 
 /**
  * Helper to ensure actor is available before mutation.
@@ -68,11 +69,19 @@ export function useCreatePost() {
     }) => {
       const validActor = requireActor(actor, isFetching);
       
-      // Use createModerationRequest instead of createPost
+      // Convert image bytes to ExternalBlob if provided
+      let imageBlob: ExternalBlob | null = null;
+      if (imageBytes && imageBytes.length > 0) {
+        // Cast to Uint8Array<ArrayBuffer> to match ExternalBlob.fromBytes signature
+        imageBlob = ExternalBlob.fromBytes(imageBytes as Uint8Array<ArrayBuffer>);
+      }
+      
+      // Use createModerationRequest with both video and image
       return validActor.createModerationRequest(
         title,
         body,
-        video || null
+        video || null,
+        imageBlob
       );
     },
     onSuccess: () => {
@@ -122,6 +131,7 @@ export function useEditPost() {
         title,
         body,
         video: undefined,
+        image: undefined,
       };
       
       return validActor.editPost(id, postEdit);

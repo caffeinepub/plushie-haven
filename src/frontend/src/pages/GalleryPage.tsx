@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { X, Search, Heart, LogIn, Play, BookOpen, Trash2 } from 'lucide-react';
+import { X, Search, Heart, LogIn, Play, BookOpen, Trash2, AlertCircle, RefreshCw } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +30,8 @@ import {
 } from '@/utils/galleryMedia';
 import { normalizeActorError } from '@/utils/actorError';
 import { toast } from 'sonner';
-import LoadingState from '@/components/LoadingState';
+
+const CONNECTION_WARNING_GRACE_PERIOD = 4000; // 4 seconds
 
 export default function GalleryPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,21 +39,33 @@ export default function GalleryPage() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [lastFocusedCardRef, setLastFocusedCardRef] = useState<HTMLElement | null>(null);
   const [itemToDelete, setItemToDelete] = useState<UploadedGalleryItem | null>(null);
+  const [showConnectionWarning, setShowConnectionWarning] = useState(false);
   const cardRefs = useRef<Map<number, HTMLElement>>(new Map());
   const { isFavorite, toggleFavorite } = useGalleryFavorites();
   const { identity, login } = useInternetIdentity();
   const { actor, isFetching: actorFetching } = useActor();
-  const { data: uploadedItems = [], isLoading: isLoadingUploaded, isFetched } = useListGalleryMediaItems();
+  const { data: uploadedItems = [], isLoading: isLoadingUploaded } = useListGalleryMediaItems();
   const { data: isAdmin = false } = useIsCallerAdmin();
   const deleteMutation = useDeleteGalleryMediaItem();
 
   const isAuthenticated = !!identity;
+  const isActorUnavailable = actorFetching && !actor;
 
-  // Determine overall loading state
-  const isConnecting = actorFetching && !actor;
-  const isLoading = isConnecting || (isLoadingUploaded && !isFetched);
+  // Grace period timer for connection warning
+  useEffect(() => {
+    if (isActorUnavailable) {
+      const timer = setTimeout(() => {
+        setShowConnectionWarning(true);
+      }, CONNECTION_WARNING_GRACE_PERIOD);
 
-  // Merge static, storybook, and uploaded items
+      return () => clearTimeout(timer);
+    } else {
+      // Actor became available, hide warning
+      setShowConnectionWarning(false);
+    }
+  }, [isActorUnavailable]);
+
+  // Merge static, storybook, and uploaded items (always render at least static items)
   const allItems = mergeGalleryItems(uploadedItems);
 
   // Filter items based on search and favorites
@@ -100,10 +113,14 @@ export default function GalleryPage() {
     setSearchQuery('');
   };
 
+  const handleRetryConnection = () => {
+    window.location.reload();
+  };
+
   // Check if current user can delete an item
   const canDeleteItem = (item: UnifiedGalleryItem): boolean => {
     if (item.type !== 'uploaded') return false;
-    if (!isAuthenticated) return false;
+    if (!isAuthenticated || !actor) return false;
     
     const uploadedItem = item as UploadedGalleryItem;
     const currentPrincipal = identity?.getPrincipal().toString();
@@ -115,12 +132,26 @@ export default function GalleryPage() {
   // Handle delete confirmation
   const handleDeleteClick = (item: UploadedGalleryItem, event: React.MouseEvent) => {
     event.stopPropagation();
+    
+    // Check if actor is available before opening dialog
+    if (!actor) {
+      toast.error('Cannot delete items while connecting to server. Please wait or refresh the page.');
+      return;
+    }
+    
     setItemToDelete(item);
   };
 
   // Execute delete
   const handleConfirmDelete = async () => {
     if (!itemToDelete) return;
+
+    // Double-check actor availability
+    if (!actor) {
+      toast.error('Cannot delete items while connecting to server. Please wait or refresh the page.');
+      setItemToDelete(null);
+      return;
+    }
 
     try {
       await deleteMutation.mutateAsync(itemToDelete.backendId);
@@ -148,6 +179,12 @@ export default function GalleryPage() {
     const selectedItem = filteredItems[selectedIndex];
     
     if (selectedItem.type !== 'uploaded') return;
+
+    // Check if actor is available
+    if (!actor) {
+      toast.error('Cannot delete items while connecting to server. Please wait or refresh the page.');
+      return;
+    }
     
     try {
       await deleteMutation.mutateAsync((selectedItem as UploadedGalleryItem).backendId);
@@ -178,6 +215,27 @@ export default function GalleryPage() {
           Explore beautiful plushie collections, displays, and adorable setups from our community.
         </p>
       </div>
+
+      {/* Connection Warning */}
+      {showConnectionWarning && isActorUnavailable && (
+        <Alert className="mb-6 border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
+          <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-500" />
+          <AlertDescription className="flex items-center justify-between gap-4">
+            <span className="text-amber-900 dark:text-amber-100">
+              Connection to server is taking longer than expected. You can browse the gallery, but uploads and deletes may be unavailable.
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleRetryConnection}
+              className="gap-2 shrink-0 border-amber-600 text-amber-900 hover:bg-amber-100 dark:border-amber-500 dark:text-amber-100 dark:hover:bg-amber-900/30"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Retry
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Upload prompt for anonymous users */}
       {!isAuthenticated && (
@@ -226,21 +284,24 @@ export default function GalleryPage() {
             {showFavoritesOnly ? 'Show All' : 'Favorites Only'}
           </Button>
 
-          <GalleryUploadDialog disabled={!isAuthenticated || isConnecting} />
+          <GalleryUploadDialog 
+            disabled={!isAuthenticated || isActorUnavailable}
+            isConnecting={isActorUnavailable}
+          />
         </div>
       </div>
 
-      {/* Gallery Grid */}
-      {isLoading ? (
-        <div className="py-12">
-          <LoadingState message={isConnecting ? 'Connecting to server...' : 'Loading gallery...'} />
-        </div>
-      ) : filteredItems.length === 0 ? (
+      {/* Gallery Grid - Always render, never block on loading */}
+      {filteredItems.length === 0 ? (
         <div className="py-12 text-center">
           <p className="text-lg text-muted-foreground">
             {showFavoritesOnly
               ? 'No favorites yet. Click the heart icon on any item to add it to your favorites!'
-              : 'No items match your search.'}
+              : searchQuery
+              ? 'No items match your search.'
+              : isLoadingUploaded
+              ? 'Loading gallery items...'
+              : 'No gallery items available.'}
           </p>
         </div>
       ) : (
@@ -323,6 +384,7 @@ export default function GalleryPage() {
                         className="bg-white/90 hover:bg-destructive hover:text-destructive-foreground shadow-soft"
                         onClick={(e) => handleDeleteClick(item as UploadedGalleryItem, e)}
                         aria-label="Delete item"
+                        disabled={!actor}
                       >
                         <Trash2 className="h-5 w-5" />
                       </Button>

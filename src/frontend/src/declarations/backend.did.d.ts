@@ -49,6 +49,7 @@ export interface ModeratedContent {
   'body' : string,
   'submittedAt' : Time,
   'author' : Principal,
+  'image' : [] | [ExternalBlob],
 }
 export type ModerationOutcome = { 'allow' : null } |
   { 'manualReview' : null } |
@@ -79,12 +80,14 @@ export interface Post {
   'createdAt' : Time,
   'authorName' : [] | [string],
   'author' : Principal,
+  'image' : [] | [ExternalBlob],
 }
 export interface PostEdit {
   'title' : string,
   'video' : [] | [ExternalBlob],
   'body' : string,
   'authorName' : [] | [string],
+  'image' : [] | [ExternalBlob],
 }
 export interface PostWithCounts {
   'likeCount' : bigint,
@@ -170,7 +173,7 @@ export interface _SERVICE {
     bigint
   >,
   'createModerationRequest' : ActorMethod<
-    [string, string, [] | [ExternalBlob]],
+    [string, string, [] | [ExternalBlob], [] | [ExternalBlob]],
     bigint
   >,
   'createPoll' : ActorMethod<[string, Array<PollOption>], bigint>,

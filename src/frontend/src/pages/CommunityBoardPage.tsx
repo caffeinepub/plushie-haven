@@ -430,6 +430,10 @@ export default function CommunityBoardPage() {
                     <LinkifiedText text={post.body} />
                   </div>
 
+                  {post.image && (
+                    <PostImageAttachment image={post.image} />
+                  )}
+
                   {post.video && (
                     <PostVideoAttachment video={post.video} />
                   )}

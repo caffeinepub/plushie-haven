@@ -1,30 +1,26 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Build a member image gallery where logged-in users can upload, view, and delete their own images.",
-  "architectural_notes": [],
-  "known_issues": [],
-  "isFixRequest": false,
+  "summary": "Implementing fix for community board post uploads by adding image upload support end-to-end (frontend + backend).",
+  "architectural_notes": [
+    "Add image attachment support to backend types (Post/ModeratedContent) using a blob/storage field; extend createModerationRequest/approveModerationRequest to persist and publish image; update frontend useCreatePost to send image bytes/contentType and UI to render attachment."
+  ],
+  "known_issues": [
+    "Community board upload currently fails because backend createModerationRequest does not accept/store image data; frontend reads image bytes but does not send them."
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-frontend-provide-a-gallery-page-that-lists-gallery-media-items-and-allows-authenticated-members-to-upload-new-media-image-or-video-with-optional-title-and-description",
-      "title": "Frontend: Provide a gallery page that lists gallery media items and allows authenticated members to upload new media (image or video) with optional title and description.",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-frontend-allow-members-to-delete-their-own-uploaded-gallery-media-items-from-both-the-gallery-grid-and-the-lightbox-view-with-a-confirmation-dialog-and-clear-success-error-feedback",
-      "title": "Frontend: Allow members to delete their own uploaded gallery media items from both the gallery grid and the lightbox view, with a confirmation dialog and clear success/error feedback.",
+      "id": "feature-fix-the-community-board-create-post-mutation-to-actually-send-the-selected-image-to-the-backend-update-usecreatepost-in-frontend-src-hooks-usequeries-ts-to-construct-an-externalblob-from-the-selected-image-bytes-and-call-the-updated-createmoderationrequest-with-the-image-argument",
+      "title": "Fix the Community Board create-post mutation to actually send the selected image to the backend: update `useCreatePost` (in `frontend/src/hooks/useQueries.ts`) to construct an `ExternalBlob` from the selected image bytes and call the updated `createModerationRequest` with the `image` argument.",
       "reqIds": [
         "REQ-4"
       ],
       "version": 1
     },
     {
-      "id": "feature-frontend-backend-integration-ensure-the-gallery-list-and-delete-upload-mutations-are-wired-through-react-query-so-the-gallery-view-remains-consistent-after-changes-upload-delete-and-handles-actor-availability-authentication-transitions-gracefully",
-      "title": "Frontend/Backend integration: Ensure the gallery list and delete/upload mutations are wired through React Query so the gallery view remains consistent after changes (upload/delete) and handles actor availability/authentication transitions gracefully.",
+      "id": "feature-render-approved-post-image-attachments-in-the-community-board-feed-by-displaying-postimageattachment-when-a-post-includes-an-image-field",
+      "title": "Render approved post image attachments in the Community Board feed by displaying `PostImageAttachment` when a post includes an image field.",
       "reqIds": [
         "REQ-5"
       ],
@@ -34,13 +30,13 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Member image gallery: logged-in users can upload, view, and delete their own images",
+      "summary": "Fix community board uploads by adding image support in backend (storage/blob fields, moderation flow) and updating frontend to send and display image attachments",
       "reqIds": [],
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "id": "AR-2",
-      "summary": "Backend: Ensure authenticated members can add gallery media items (image or video) with optional title/description, and store the item's author so ownership can be enforced later.",
+      "summary": "Update the backend data model to support an optional image attachment on community board posts and moderation requests by adding an `image : ?Storage.ExternalBlob` field to `ModeratedContent`, `Post`, and (if applicable for editing) `PostEdit`.",
       "reqIds": [
         "REQ-1"
       ],
@@ -48,15 +44,22 @@
     },
     {
       "id": "AR-3",
-      "summary": "Backend: Enforce deletion permissions so that only the original author of a gallery media item (or an admin) can delete it.",
+      "summary": "Extend the backend moderation submission flow so community board image attachments are accepted and stored: update `createModerationRequest` to accept an additional `image : ?Storage.ExternalBlob` parameter (alongside `video`) and persist it on the moderation request.",
       "reqIds": [
         "REQ-2"
       ],
       "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Extend the backend moderation approval flow so approved posts retain image attachments: update `approveModerationRequest` to copy the moderation request’s `image` field into the created `Post`.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "status": "pending"
     }
   ],
-  "gameProjectType": "none",
-  "projectName": "Member Gallery",
+  "projectName": "Community Board",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Upload, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAddGalleryMediaItem } from '@/hooks/useGalleryMediaQueries';
 import { ExternalBlob } from '@/backend';
 import {
@@ -29,9 +30,10 @@ import { toast } from 'sonner';
 
 interface GalleryUploadDialogProps {
   disabled?: boolean;
+  isConnecting?: boolean;
 }
 
-export function GalleryUploadDialog({ disabled }: GalleryUploadDialogProps) {
+export function GalleryUploadDialog({ disabled, isConnecting }: GalleryUploadDialogProps) {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
@@ -145,14 +147,29 @@ export function GalleryUploadDialog({ disabled }: GalleryUploadDialogProps) {
   const isUploading = addMediaMutation.isPending;
   const acceptedTypes = [...ACCEPTED_IMAGE_TYPES, ...ACCEPTED_VIDEO_TYPES].join(',');
 
+  const uploadButton = (
+    <Button disabled={disabled} className="gap-2">
+      <Upload className="h-4 w-4" />
+      Upload
+    </Button>
+  );
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button disabled={disabled} className="gap-2">
-          <Upload className="h-4 w-4" />
-          Upload
-        </Button>
-      </DialogTrigger>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DialogTrigger asChild>
+              {uploadButton}
+            </DialogTrigger>
+          </TooltipTrigger>
+          {isConnecting && (
+            <TooltipContent>
+              <p>Connecting to server... Please wait.</p>
+            </TooltipContent>
+          )}
+        </Tooltip>
+      </TooltipProvider>
       <DialogContent className="sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>

@@ -178,6 +178,7 @@ export interface Post {
     createdAt: Time;
     authorName?: string;
     author: Principal;
+    image?: ExternalBlob;
 }
 export interface PollOption {
     optionId: bigint;
@@ -195,6 +196,7 @@ export interface ModeratedContent {
     body: string;
     submittedAt: Time;
     author: Principal;
+    image?: ExternalBlob;
 }
 export interface Link {
     url: string;
@@ -205,6 +207,7 @@ export interface PostEdit {
     video?: ExternalBlob;
     body: string;
     authorName?: string;
+    image?: ExternalBlob;
 }
 export interface UserProfile {
     bio: string;
@@ -242,7 +245,7 @@ export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     createComment(postId: bigint, authorName: string | null, content: string): Promise<Comment>;
     createEvent(authorName: string | null, title: string, description: string, location: string, startTime: Time, endTime: Time): Promise<bigint>;
-    createModerationRequest(title: string, body: string, video: ExternalBlob | null): Promise<bigint>;
+    createModerationRequest(title: string, body: string, video: ExternalBlob | null, image: ExternalBlob | null): Promise<bigint>;
     createPoll(question: string, options: Array<PollOption>): Promise<bigint>;
     deleteGalleryMediaItem(id: bigint): Promise<void>;
     deletePost(id: bigint): Promise<void>;
@@ -469,17 +472,17 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async createModerationRequest(arg0: string, arg1: string, arg2: ExternalBlob | null): Promise<bigint> {
+    async createModerationRequest(arg0: string, arg1: string, arg2: ExternalBlob | null, arg3: ExternalBlob | null): Promise<bigint> {
         if (this.processError) {
             try {
-                const result = await this.actor.createModerationRequest(arg0, arg1, await to_candid_opt_n17(this._uploadFile, this._downloadFile, arg2));
+                const result = await this.actor.createModerationRequest(arg0, arg1, await to_candid_opt_n17(this._uploadFile, this._downloadFile, arg2), await to_candid_opt_n17(this._uploadFile, this._downloadFile, arg3));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.createModerationRequest(arg0, arg1, await to_candid_opt_n17(this._uploadFile, this._downloadFile, arg2));
+            const result = await this.actor.createModerationRequest(arg0, arg1, await to_candid_opt_n17(this._uploadFile, this._downloadFile, arg2), await to_candid_opt_n17(this._uploadFile, this._downloadFile, arg3));
             return result;
         }
     }
@@ -1187,6 +1190,7 @@ async function from_candid_record_n34(_uploadFile: (file: ExternalBlob) => Promi
     body: string;
     submittedAt: _Time;
     author: Principal;
+    image: [] | [_ExternalBlob];
 }): Promise<{
     id: bigint;
     title: string;
@@ -1195,6 +1199,7 @@ async function from_candid_record_n34(_uploadFile: (file: ExternalBlob) => Promi
     body: string;
     submittedAt: Time;
     author: Principal;
+    image?: ExternalBlob;
 }> {
     return {
         id: value.id,
@@ -1203,7 +1208,8 @@ async function from_candid_record_n34(_uploadFile: (file: ExternalBlob) => Promi
         video: record_opt_to_undefined(await from_candid_opt_n25(_uploadFile, _downloadFile, value.video)),
         body: value.body,
         submittedAt: value.submittedAt,
-        author: value.author
+        author: value.author,
+        image: record_opt_to_undefined(await from_candid_opt_n25(_uploadFile, _downloadFile, value.image))
     };
 }
 async function from_candid_record_n38(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
@@ -1214,6 +1220,7 @@ async function from_candid_record_n38(_uploadFile: (file: ExternalBlob) => Promi
     createdAt: _Time;
     authorName: [] | [string];
     author: Principal;
+    image: [] | [_ExternalBlob];
 }): Promise<{
     id: bigint;
     title: string;
@@ -1222,6 +1229,7 @@ async function from_candid_record_n38(_uploadFile: (file: ExternalBlob) => Promi
     createdAt: Time;
     authorName?: string;
     author: Principal;
+    image?: ExternalBlob;
 }> {
     return {
         id: value.id,
@@ -1230,7 +1238,8 @@ async function from_candid_record_n38(_uploadFile: (file: ExternalBlob) => Promi
         body: value.body,
         createdAt: value.createdAt,
         authorName: record_opt_to_undefined(from_candid_opt_n16(_uploadFile, _downloadFile, value.authorName)),
-        author: value.author
+        author: value.author,
+        image: record_opt_to_undefined(await from_candid_opt_n25(_uploadFile, _downloadFile, value.image))
     };
 }
 async function from_candid_record_n41(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
@@ -1441,17 +1450,20 @@ async function to_candid_record_n19(_uploadFile: (file: ExternalBlob) => Promise
     video?: ExternalBlob;
     body: string;
     authorName?: string;
+    image?: ExternalBlob;
 }): Promise<{
     title: string;
     video: [] | [_ExternalBlob];
     body: string;
     authorName: [] | [string];
+    image: [] | [_ExternalBlob];
 }> {
     return {
         title: value.title,
         video: value.video ? candid_some(await to_candid_ExternalBlob_n9(_uploadFile, _downloadFile, value.video)) : candid_none(),
         body: value.body,
-        authorName: value.authorName ? candid_some(value.authorName) : candid_none()
+        authorName: value.authorName ? candid_some(value.authorName) : candid_none(),
+        image: value.image ? candid_some(await to_candid_ExternalBlob_n9(_uploadFile, _downloadFile, value.image)) : candid_none()
     };
 }
 function to_candid_record_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {

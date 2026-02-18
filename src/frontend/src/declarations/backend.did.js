@@ -42,6 +42,7 @@ export const PostEdit = IDL.Record({
   'video' : IDL.Opt(ExternalBlob),
   'body' : IDL.Text,
   'authorName' : IDL.Opt(IDL.Text),
+  'image' : IDL.Opt(ExternalBlob),
 });
 export const Link = IDL.Record({ 'url' : IDL.Text, 'displayName' : IDL.Text });
 export const UserProfile = IDL.Record({
@@ -80,6 +81,7 @@ export const ModeratedContent = IDL.Record({
   'body' : IDL.Text,
   'submittedAt' : Time,
   'author' : IDL.Principal,
+  'image' : IDL.Opt(ExternalBlob),
 });
 export const Poll = IDL.Record({
   'question' : IDL.Text,
@@ -106,6 +108,7 @@ export const Post = IDL.Record({
   'createdAt' : Time,
   'authorName' : IDL.Opt(IDL.Text),
   'author' : IDL.Principal,
+  'image' : IDL.Opt(ExternalBlob),
 });
 export const PostWithCounts = IDL.Record({
   'likeCount' : IDL.Nat,
@@ -194,7 +197,7 @@ export const idlService = IDL.Service({
       [],
     ),
   'createModerationRequest' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Opt(ExternalBlob)],
+      [IDL.Text, IDL.Text, IDL.Opt(ExternalBlob), IDL.Opt(ExternalBlob)],
       [IDL.Nat],
       [],
     ),
@@ -306,6 +309,7 @@ export const idlFactory = ({ IDL }) => {
     'video' : IDL.Opt(ExternalBlob),
     'body' : IDL.Text,
     'authorName' : IDL.Opt(IDL.Text),
+    'image' : IDL.Opt(ExternalBlob),
   });
   const Link = IDL.Record({ 'url' : IDL.Text, 'displayName' : IDL.Text });
   const UserProfile = IDL.Record({
@@ -344,6 +348,7 @@ export const idlFactory = ({ IDL }) => {
     'body' : IDL.Text,
     'submittedAt' : Time,
     'author' : IDL.Principal,
+    'image' : IDL.Opt(ExternalBlob),
   });
   const Poll = IDL.Record({
     'question' : IDL.Text,
@@ -370,6 +375,7 @@ export const idlFactory = ({ IDL }) => {
     'createdAt' : Time,
     'authorName' : IDL.Opt(IDL.Text),
     'author' : IDL.Principal,
+    'image' : IDL.Opt(ExternalBlob),
   });
   const PostWithCounts = IDL.Record({
     'likeCount' : IDL.Nat,
@@ -458,7 +464,7 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'createModerationRequest' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Opt(ExternalBlob)],
+        [IDL.Text, IDL.Text, IDL.Opt(ExternalBlob), IDL.Opt(ExternalBlob)],
         [IDL.Nat],
         [],
       ),

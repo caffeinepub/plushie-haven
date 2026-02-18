@@ -1,112 +1,109 @@
 {
   "kind": "build_request",
-  "title": "Member Gallery: Upload and Delete Own Media",
-  "projectName": "Member Gallery",
+  "title": "Fix Community Board image uploads end-to-end (moderation flow + display)",
+  "projectName": "Community Board",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Backend: Ensure authenticated members can add gallery media items (image or video) with optional title/description, and store the item's author so ownership can be enforced later.",
+      "text": "Update the backend data model to support an optional image attachment on community board posts and moderation requests by adding an `image : ?Storage.ExternalBlob` field to `ModeratedContent`, `Post`, and (if applicable for editing) `PostEdit`.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6",
+          "msg-8"
         ],
         "quotes": [
-          "make the gallery where members can delete their images",
-          "both"
+          "There is **zero support for images** in the current backend.",
+          "If you want images to upload, I need to patch both frontend and backend."
         ]
       },
       "acceptanceCriteria": [
-        "When an authenticated user calls the backend method to add a gallery media item, the item is created successfully and is associated with the caller as author.",
-        "When an anonymous user calls the backend method to add a gallery media item, the backend rejects the request with an authorization error.",
-        "The backend stores optional title and description values (nullable/optional) for each uploaded item."
+        "Motoko types `ModeratedContent` and `Post` include an optional `image` field of type `?Storage.ExternalBlob`.",
+        "Backend compiles and Candid interface exposes the new field in returned Post data."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Backend: Enforce deletion permissions so that only the original author of a gallery media item (or an admin) can delete it.",
+      "text": "Extend the backend moderation submission flow so community board image attachments are accepted and stored: update `createModerationRequest` to accept an additional `image : ?Storage.ExternalBlob` parameter (alongside `video`) and persist it on the moderation request.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6",
+          "msg-8"
         ],
         "quotes": [
-          "make the gallery where members can delete their images"
+          "Your backend’s createModerationRequest also only accepts:\n(title, body, video)",
+          "Add image as Storage.ExternalBlob in backend Post and ModeratedContent"
         ]
       },
       "acceptanceCriteria": [
-        "If a non-admin authenticated user attempts to delete a gallery media item they did not create, the backend rejects the request with an authorization error.",
-        "If the author deletes their own gallery media item, the item is removed from backend state.",
-        "If an admin deletes any gallery media item, the item is removed from backend state.",
-        "If a user attempts to delete a non-existent gallery media item ID, the backend returns a clear not-found error."
+        "`createModerationRequest` accepts `image` and `video` (both optional) and stores them in the queued `ModeratedContent`.",
+        "Submitting a post with an image does not trap and results in a moderation queue item that contains the image blob."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Frontend: Provide a gallery page that lists gallery media items and allows authenticated members to upload new media (image or video) with optional title and description.",
-      "target": "frontend",
+      "text": "Extend the backend moderation approval flow so approved posts retain image attachments: update `approveModerationRequest` to copy the moderation request’s `image` field into the created `Post`.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-8"
         ],
         "quotes": [
-          "both"
+          "Update approveModerationRequest to include image"
         ]
       },
       "acceptanceCriteria": [
-        "When signed in, the user can open an upload dialog, select a supported image or video file, optionally enter a title and description, and successfully upload it.",
-        "Upload UI validates file type/size and shows a clear error message when an unsupported file is selected.",
-        "After a successful upload, the gallery list refreshes to include the newly uploaded item without requiring a full page reload."
+        "After approval, `listPosts` / `getPostsWithCounts` returns posts where `post.image` is present when the original moderation request included an image."
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Frontend: Allow members to delete their own uploaded gallery media items from both the gallery grid and the lightbox view, with a confirmation dialog and clear success/error feedback.",
+      "text": "Fix the Community Board create-post mutation to actually send the selected image to the backend: update `useCreatePost` (in `frontend/src/hooks/useQueries.ts`) to construct an `ExternalBlob` from the selected image bytes and call the updated `createModerationRequest` with the `image` argument.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-6",
+          "msg-7"
         ],
         "quotes": [
-          "make the gallery where members can delete their images"
+          "But your mutation ignores them completely:",
+          "useCreatePost() calls only:\n\ncreateModerationRequest(title, body, video)"
         ]
       },
       "acceptanceCriteria": [
-        "For an uploaded item authored by the signed-in user (or when the user is an admin), a delete control is visible in the gallery grid and in the lightbox.",
-        "For uploaded items not authored by the signed-in non-admin user, no delete control is shown.",
-        "Deleting an item requires a confirmation step and, on confirmation, calls the backend delete method and removes the item from the UI after completion.",
-        "If deletion fails (e.g., unauthorized), the UI shows an English error message derived from the backend error and the item remains visible."
+        "When an image is selected in `CommunityBoardPage`, the create-post mutation sends it to the backend (not ignored).",
+        "Creating a post without an image continues to work (sends `null`/`undefined` appropriately)."
       ]
     },
     {
       "id": "REQ-5",
-      "text": "Frontend/Backend integration: Ensure the gallery list and delete/upload mutations are wired through React Query so the gallery view remains consistent after changes (upload/delete) and handles actor availability/authentication transitions gracefully.",
-      "target": "both",
+      "text": "Render approved post image attachments in the Community Board feed by displaying `PostImageAttachment` when a post includes an image field.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-8"
         ],
         "quotes": [
-          "both"
+          "Update UI to show image attachment"
         ]
       },
       "acceptanceCriteria": [
-        "Gallery list requests are performed via React Query and render a loading state while fetching.",
-        "Upload and delete actions invalidate/refetch the gallery list query upon success so the UI reflects backend state.",
-        "If the backend actor is not yet available (e.g., during authentication/actor initialization), mutations fail gracefully with an English error message instead of crashing the page."
+        "In `CommunityBoardPage`, posts that include an image render an inline image attachment using `PostImageAttachment`.",
+        "Posts without an image render exactly as before (no broken image UI)."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo; do not introduce additional backend services.",
-    "Do not edit any files under frontend/immutablePaths (e.g., frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui).",
-    "All user-facing text added/changed by this work must be in English."
+    "Backend must remain a single Motoko actor with all logic in `backend/main.mo`.",
+    "Do not modify any files under `frontend/src/components/ui` or any other paths listed in `frontend.immutablePaths`.",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Implementing third-party authentication providers (only Internet Identity is supported).",
-    "Adding real-time updates (WebSockets/push).",
-    "Adding external database storage beyond the current canister state and blob storage mechanisms."
+    "Adding image uploads to the Gallery feature (this change is only for Community Board posts).",
+    "Implementing third-party storage, external databases, or non-Internet-Computer backends.",
+    "Adding new authentication providers beyond Internet Identity."
   ],
   "imageRequirements": {
     "required": [],

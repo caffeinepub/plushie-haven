@@ -2,31 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-frontend-provide-a-gallery-page-that-lists-gallery-media-items-and-allows-authenticated-members-to-upload-new-media-image-or-video-with-optional-title-and-description",
-      "featureTitle": "Frontend: Provide a gallery page that lists gallery media items and allows authenticated members to upload new media (image or video) with optional title and description.",
+      "featureId": "feature-fix-the-community-board-create-post-mutation-to-actually-send-the-selected-image-to-the-backend-update-usecreatepost-in-frontend-src-hooks-usequeries-ts-to-construct-an-externalblob-from-the-selected-image-bytes-and-call-the-updated-createmoderationrequest-with-the-image-argument",
+      "featureTitle": "Fix the Community Board create-post mutation to actually send the selected image to the backend: update `useCreatePost` (in `frontend/src/hooks/useQueries.ts`) to construct an `ExternalBlob` from the selected image bytes and call the updated `createModerationRequest` with the `image` argument.",
       "files": [
-        "frontend/src/components/gallery/GalleryUploadDialog.tsx",
-        "frontend/src/pages/GalleryPage.tsx"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0",
-        "blob-storage@4.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-frontend-allow-members-to-delete-their-own-uploaded-gallery-media-items-from-both-the-gallery-grid-and-the-lightbox-view-with-a-confirmation-dialog-and-clear-success-error-feedback",
-      "featureTitle": "Frontend: Allow members to delete their own uploaded gallery media items from both the gallery grid and the lightbox view, with a confirmation dialog and clear success/error feedback.",
-      "files": [
-        "frontend/src/pages/GalleryPage.tsx"
+        "frontend/src/hooks/useQueries.ts"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -43,12 +22,11 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-frontend-backend-integration-ensure-the-gallery-list-and-delete-upload-mutations-are-wired-through-react-query-so-the-gallery-view-remains-consistent-after-changes-upload-delete-and-handles-actor-availability-authentication-transitions-gracefully",
-      "featureTitle": "Frontend/Backend integration: Ensure the gallery list and delete/upload mutations are wired through React Query so the gallery view remains consistent after changes (upload/delete) and handles actor availability/authentication transitions gracefully.",
+      "featureId": "feature-render-approved-post-image-attachments-in-the-community-board-feed-by-displaying-postimageattachment-when-a-post-includes-an-image-field",
+      "featureTitle": "Render approved post image attachments in the Community Board feed by displaying `PostImageAttachment` when a post includes an image field.",
       "files": [
-        "frontend/src/components/gallery/GalleryUploadDialog.tsx",
-        "frontend/src/hooks/useGalleryMediaQueries.ts",
-        "frontend/src/pages/GalleryPage.tsx"
+        "frontend/src/components/community/PostImageAttachment.tsx",
+        "frontend/src/pages/CommunityBoardPage.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",

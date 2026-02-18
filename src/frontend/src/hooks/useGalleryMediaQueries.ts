@@ -20,7 +20,8 @@ function requireActor(actor: any, isFetching: boolean): any {
 }
 
 /**
- * Fetch all uploaded gallery media items
+ * Fetch all uploaded gallery media items.
+ * Returns empty array when actor is unavailable to allow non-blocking gallery browsing.
  */
 export function useListGalleryMediaItems() {
   const { actor, isFetching } = useActor();
@@ -28,6 +29,7 @@ export function useListGalleryMediaItems() {
   return useQuery<GalleryMediaItem[]>({
     queryKey: ['galleryMediaItems'],
     queryFn: async () => {
+      // Return empty array if actor not available (non-blocking)
       if (!actor) return [];
       return actor.listGalleryMediaItems();
     },

@@ -1,74 +1,40 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Member Gallery: Upload and Delete Own Media (Frontend)",
+  "title": "Community Board: Fix image upload submission + feed rendering",
   "requirements": [
     {
-      "id": "REQ-3",
-      "summary": "Implement gallery browsing UI with authenticated upload flow (image/video) including optional title/description and client-side validation.",
-      "acceptanceCriteria": [
-        "When signed in, the user can open an upload dialog, select a supported image or video file, optionally enter a title and description, and successfully upload it.",
-        "Upload UI validates file type/size and shows a clear error message when an unsupported file is selected.",
-        "After a successful upload, the gallery list refreshes to include the newly uploaded item without requiring a full page reload."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/gallery/GalleryUploadDialog.tsx",
-          "operation": "modify",
-          "description": "Harden the upload dialog UX: keep existing image/video validation, but normalize all backend/actor errors to English using normalizeActorError (including ACTOR_CONNECTING), and ensure progress + success/failure feedback is clear. Use the blob-storage ExternalBlob capabilities for upload (Verify the component's usage instructions before implementing). Use shadcn-ui Dialog/Alert/Button primitives consistently (Verify the component's usage instructions before implementing)."
-        },
-        {
-          "path": "frontend/src/pages/GalleryPage.tsx",
-          "operation": "modify",
-          "description": "Ensure the gallery page provides a clear loading/connecting state while gallery items are being fetched and while the backend actor is initializing; keep the upload entry point disabled for anonymous users and ensure all user-facing text remains English. Use existing shadcn-ui components already present on the page (Verify the component's usage instructions before implementing)."
-        }
-      ]
-    },
-    {
       "id": "REQ-4",
-      "summary": "Allow authenticated members to delete their own uploaded gallery items from grid and lightbox with confirmation and success/error feedback.",
+      "summary": "Send selected Community Board image bytes to backend by constructing an ExternalBlob and passing it into createModerationRequest.",
       "acceptanceCriteria": [
-        "For an uploaded item authored by the signed-in user (or when the user is an admin), a delete control is visible in the gallery grid and in the lightbox.",
-        "For uploaded items not authored by the signed-in non-admin user, no delete control is shown.",
-        "Deleting an item requires a confirmation step and, on confirmation, calls the backend delete method and removes the item from the UI after completion.",
-        "If deletion fails (e.g., unauthorized), the UI shows an English error message derived from the backend error and the item remains visible."
+        "When an image is selected in CommunityBoardPage, the create-post mutation sends it to the backend (not ignored).",
+        "Creating a post without an image continues to work (sends null/undefined appropriately)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/GalleryPage.tsx",
+          "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Refine delete behavior and permission gating: ensure canDelete checks remain correct for author/admin, ensure delete actions from both the grid confirmation dialog and the lightbox confirmation path provide consistent toast success/error messages using normalizeActorError, and ensure the UI state remains consistent (no accidental removal on failure). Use shadcn-ui AlertDialog/Button and sonner toast as the feedback mechanism (Verify the component's usage instructions before implementing)."
-        },
-        {
-          "path": "frontend/src/components/gallery/GalleryLightbox.tsx",
-          "operation": "modify",
-          "description": "Confirm the lightbox delete control is only rendered when canDelete is true and always requires a confirmation dialog; ensure the control is disabled while deleting and uses English labels. Use shadcn-ui AlertDialog/Button primitives (Verify the component's usage instructions before implementing)."
+          "description": "Update useCreatePost to construct an image blob using the blob-storage ExternalBlob helper (ExternalBlob.fromBytes(...)) and call createModerationRequest(title, body, video, image). Ensure null is passed when no imageBytes are provided. Verify the component's usage instructions before implementing."
         }
       ]
     },
     {
       "id": "REQ-5",
-      "summary": "Wire gallery list + upload/delete mutations through React Query with invalidation and graceful handling when the backend actor is unavailable or transitioning.",
+      "summary": "Display approved post image attachments in the Community Board feed using PostImageAttachment when post.image is present.",
       "acceptanceCriteria": [
-        "Gallery list requests are performed via React Query and render a loading state while fetching.",
-        "Upload and delete actions invalidate/refetch the gallery list query upon success so the UI reflects backend state.",
-        "If the backend actor is not yet available (e.g., during authentication/actor initialization), mutations fail gracefully with an English error message instead of crashing the page."
+        "In CommunityBoardPage, posts that include an image render an inline image attachment using PostImageAttachment.",
+        "Posts without an image render exactly as before (no broken image UI)."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useGalleryMediaQueries.ts",
+          "path": "frontend/src/components/community/PostImageAttachment.tsx",
           "operation": "modify",
-          "description": "Strengthen React Query behavior for gallery: keep query + mutation invalidation, but ensure actor availability/transition handling is consistent (e.g., predictable enabled/retry settings and ACTOR_CONNECTING surfacing) so callers can render loading/connecting states and display English errors without crashes."
+          "description": "Update PostImageAttachment to accept the backend-provided image ExternalBlob and render it using its direct URL (ExternalBlob.getDirectURL()) so images stream/cache correctly via blob-storage. Keep null-safe behavior (render nothing if missing). Verify the component's usage instructions before implementing."
         },
         {
-          "path": "frontend/src/pages/GalleryPage.tsx",
+          "path": "frontend/src/pages/CommunityBoardPage.tsx",
           "operation": "modify",
-          "description": "Align gallery page states with React Query + actor transitions: render an explicit loading/connecting UI while queries are fetching/initializing, and ensure upload/delete failures caused by missing actor are handled gracefully with English messages (normalizeActorError) rather than unhandled promise errors."
-        },
-        {
-          "path": "frontend/src/components/gallery/GalleryUploadDialog.tsx",
-          "operation": "modify",
-          "description": "Ensure upload mutation failures from missing/initializing actor are caught and displayed as English messages (via normalizeActorError), and that successful uploads rely on React Query invalidation/refetch rather than manual page reload. Use blob-storage ExternalBlob upload flow (Verify the component's usage instructions before implementing)."
+          "description": "Wire PostImageAttachment into the posts feed by conditionally rendering it when post.image is present (alongside existing video attachment rendering), ensuring layout remains unchanged for posts without images."
         }
       ]
     }

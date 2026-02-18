@@ -11,9 +11,9 @@ import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
+import Migration "migration";
 
-
-
+(with migration = Migration.run)
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -170,6 +170,7 @@ actor {
     title : Text;
     body : Text;
     video : ?Storage.ExternalBlob;
+    image : ?Storage.ExternalBlob;
     submittedAt : Time.Time;
     moderationOutcome : ModerationOutcome;
   };
@@ -182,6 +183,7 @@ actor {
     body : Text;
     createdAt : Time.Time;
     video : ?Storage.ExternalBlob;
+    image : ?Storage.ExternalBlob;
   };
 
   public type PostEdit = {
@@ -189,6 +191,7 @@ actor {
     title : Text;
     body : Text;
     video : ?Storage.ExternalBlob;
+    image : ?Storage.ExternalBlob;
   };
 
   public type Event = {
@@ -272,7 +275,7 @@ actor {
 
   let moderationQueue = Map.empty<Nat, ModeratedContent>();
 
-  public shared ({ caller }) func createModerationRequest(title : Text, body : Text, video : ?Storage.ExternalBlob) : async Nat {
+  public shared ({ caller }) func createModerationRequest(title : Text, body : Text, video : ?Storage.ExternalBlob, image : ?Storage.ExternalBlob) : async Nat {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only authenticated users can create moderation requests");
     };
@@ -284,6 +287,7 @@ actor {
       body;
       submittedAt = Time.now();
       video;
+      image;
       moderationOutcome = #manualReview;
     };
 
@@ -311,6 +315,7 @@ actor {
       body = moderationRequest.body;
       createdAt = Time.now();
       video = moderationRequest.video;
+      image = moderationRequest.image;
     };
 
     posts.add(moderationRequest.id, newPost);
@@ -381,6 +386,7 @@ actor {
       title = postEdit.title;
       body = postEdit.body;
       video = postEdit.video;
+      image = postEdit.image;
     };
     posts.add(id, updatedPost);
   };

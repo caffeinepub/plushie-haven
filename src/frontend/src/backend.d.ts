@@ -92,6 +92,7 @@ export interface Post {
     createdAt: Time;
     authorName?: string;
     author: Principal;
+    image?: ExternalBlob;
 }
 export interface PollOption {
     optionId: bigint;
@@ -109,6 +110,7 @@ export interface ModeratedContent {
     body: string;
     submittedAt: Time;
     author: Principal;
+    image?: ExternalBlob;
 }
 export interface Link {
     url: string;
@@ -119,6 +121,7 @@ export interface PostEdit {
     video?: ExternalBlob;
     body: string;
     authorName?: string;
+    image?: ExternalBlob;
 }
 export interface UserProfile {
     bio: string;
@@ -149,7 +152,7 @@ export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     createComment(postId: bigint, authorName: string | null, content: string): Promise<Comment>;
     createEvent(authorName: string | null, title: string, description: string, location: string, startTime: Time, endTime: Time): Promise<bigint>;
-    createModerationRequest(title: string, body: string, video: ExternalBlob | null): Promise<bigint>;
+    createModerationRequest(title: string, body: string, video: ExternalBlob | null, image: ExternalBlob | null): Promise<bigint>;
     createPoll(question: string, options: Array<PollOption>): Promise<bigint>;
     deleteGalleryMediaItem(id: bigint): Promise<void>;
     deletePost(id: bigint): Promise<void>;

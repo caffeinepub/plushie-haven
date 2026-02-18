@@ -1,33 +1,16 @@
-import { useEffect, useState } from 'react';
+import type { ExternalBlob } from '../../backend';
 
 interface PostImageAttachmentProps {
-  image?: { bytes: number[]; contentType: string } | null;
+  image?: ExternalBlob | null;
 }
 
 export function PostImageAttachment({ image }: PostImageAttachmentProps) {
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!image) {
-      setImageUrl(null);
-      return;
-    }
-
-    // Convert bytes array to Uint8Array and then to Blob
-    const uint8Array = new Uint8Array(image.bytes);
-    const blob = new Blob([uint8Array], { type: image.contentType });
-    const url = URL.createObjectURL(blob);
-    setImageUrl(url);
-
-    // Cleanup on unmount
-    return () => {
-      URL.revokeObjectURL(url);
-    };
-  }, [image]);
-
-  if (!image || !imageUrl) {
+  if (!image) {
     return null;
   }
+
+  // Use ExternalBlob's direct URL for streaming and caching
+  const imageUrl = image.getDirectURL();
 
   return (
     <div className="w-full overflow-hidden rounded-lg">
