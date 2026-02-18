@@ -1,14 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Add a dedicated on-device, scripted “Plushie Assistant” chat experience to Plushie Pal.
+**Goal:** Let authenticated members upload gallery media (images/videos) with optional metadata and delete only their own items (or any item if admin), with UI kept in sync via React Query.
 
 **Planned changes:**
-- Add a new “Plushie Assistant” page/route (e.g., `/assistant`) registered in the TanStack Router route tree and linked from the main navigation.
-- Build a chat UI on the assistant page (message list, text input, send button) with Enter-to-send and English-only user-facing strings.
-- Implement scripted, on-device conversation logic supporting: plushie facts/care Q&A, plushie recommendations (asking at least 2 preference questions), short plushie story generation (~5+ sentences, optionally personalized), and friendly plushie-themed small talk/personality.
-- Add quick-action prompt chips/buttons for the main intents (e.g., care tips, recommend a plushie, tell a story).
-- Add basic chat UX/state handling: prevent empty submissions with an inline/toast message, persist chat history locally across reloads, provide a “Clear chat” button with confirmation, and ensure long messages wrap with a scrollable transcript that stays scrolled to the latest message.
-- Ensure the feature makes no external AI/network calls and requires no backend changes.
+- Backend: Add an authenticated method to create gallery media items (image/video) with optional title/description and persist the caller as the item’s author.
+- Backend: Add/enforce delete permissions so only the item’s author (or an admin) can delete; return clear unauthorized/not-found errors.
+- Frontend: Build a gallery page that lists media and provides an upload flow with file type/size validation and clear errors.
+- Frontend: Show delete controls only for items the signed-in user can delete (own items or admin), including in both grid and lightbox, with confirmation + success/error feedback.
+- Frontend/Backend integration: Use React Query for listing and for upload/delete mutations, including loading states, query invalidation/refetch, and graceful handling when the actor/auth isn’t ready.
 
-**User-visible outcome:** Users can open a new “Plushie Assistant” page from navigation, chat with a cozy plushie-themed scripted assistant for care tips, recommendations, and short stories, and keep/clear their chat history on the device.
+**User-visible outcome:** Signed-in members can upload images/videos to the gallery with optional title/description, see the gallery update without a full reload, and delete their own uploads (admins can delete any), with clear confirmation and error messages.

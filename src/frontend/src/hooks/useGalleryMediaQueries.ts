@@ -5,6 +5,7 @@ import { Variant_video_image as MediaType } from '../backend';
 
 /**
  * Helper to ensure actor is available before mutation.
+ * Throws ACTOR_CONNECTING error if actor is not yet ready.
  */
 function requireActor(actor: any, isFetching: boolean): any {
   if (isFetching && !actor) {
@@ -31,6 +32,7 @@ export function useListGalleryMediaItems() {
       return actor.listGalleryMediaItems();
     },
     enabled: !!actor && !isFetching,
+    retry: 1,
   });
 }
 
@@ -65,6 +67,7 @@ export function useAddGalleryMediaItem() {
       );
     },
     onSuccess: () => {
+      // Invalidate and refetch gallery items to show the new upload
       queryClient.invalidateQueries({ queryKey: ['galleryMediaItems'] });
     },
   });
@@ -83,6 +86,7 @@ export function useDeleteGalleryMediaItem() {
       return validActor.deleteGalleryMediaItem(id);
     },
     onSuccess: () => {
+      // Invalidate and refetch gallery items to remove the deleted item
       queryClient.invalidateQueries({ queryKey: ['galleryMediaItems'] });
     },
   });

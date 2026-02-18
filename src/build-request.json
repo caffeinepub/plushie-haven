@@ -1,84 +1,125 @@
 {
   "kind": "build_request",
-  "title": "Add plushie assistant chat bot (scripted, on-device)",
-  "projectName": "Plushie Pal",
+  "title": "Member Gallery: Upload and Delete Own Media",
+  "projectName": "Member Gallery",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Add a new dedicated \"Plushie Assistant\" chat page that users can access from the main navigation, implemented as an on-device/scripted chat box (no external AI integrations).",
-      "target": "frontend",
+      "text": "Backend: Ensure authenticated members can add gallery media items (image or video) with optional title/description, and store the item's author so ownership can be enforced later.",
+      "target": "backend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "ADD AI ASSISTANT BOT FOR PLUSHIES",
-          "CHAT BOX"
+          "make the gallery where members can delete their images",
+          "both"
         ]
       },
       "acceptanceCriteria": [
-        "A new route exists (e.g., \"/assistant\") and is registered in the TanStack Router route tree.",
-        "The main site navigation includes a new link labeled \"Assistant\" (or \"Plushie Assistant\") that navigates to the assistant page.",
-        "The assistant page renders a chat UI with: message list, a text input, and a send button; pressing Enter sends the message.",
-        "All user-facing strings on the assistant page are in English.",
-        "No network calls to external AI services are made from this feature."
+        "When an authenticated user calls the backend method to add a gallery media item, the item is created successfully and is associated with the caller as author.",
+        "When an anonymous user calls the backend method to add a gallery media item, the backend rejects the request with an authorization error.",
+        "The backend stores optional title and description values (nullable/optional) for each uploaded item."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Implement the plushie assistant’s scripted conversation logic so it can: (1) answer plushie-related facts/care questions, (2) recommend plushies based on user preferences, (3) generate short plushie stories, and (4) maintain a consistent friendly plushie-themed personality.",
-      "target": "frontend",
+      "text": "Backend: Enforce deletion permissions so that only the original author of a gallery media item (or an admin) can delete it.",
+      "target": "backend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "ALL",
-          "YES"
+          "make the gallery where members can delete their images"
         ]
       },
       "acceptanceCriteria": [
-        "The assistant supports at least these intents: facts/care Q&A, recommendations, story generation, and general friendly chat/personality responses.",
-        "The assistant offers quick-action prompt chips/buttons for the main intents (e.g., \"Care tips\", \"Recommend a plushie\", \"Tell me a story\").",
-        "Recommendations ask at least 2 preference questions (e.g., size, texture, animal type, budget) before suggesting options.",
-        "Story generation produces a coherent short story (at least ~5 sentences) with plushie-themed tone and optionally asks for a character name/theme to personalize it.",
-        "The assistant personality remains consistent across responses (warm, cozy, plushie-themed), without claiming to be a real AI model or using external data."
+        "If a non-admin authenticated user attempts to delete a gallery media item they did not create, the backend rejects the request with an authorization error.",
+        "If the author deletes their own gallery media item, the item is removed from backend state.",
+        "If an admin deletes any gallery media item, the item is removed from backend state.",
+        "If a user attempts to delete a non-existent gallery media item ID, the backend returns a clear not-found error."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Add basic chat UX safeguards and state handling for the assistant: empty-input prevention, simple session history persistence on the device, and a \"Clear chat\" action.",
+      "text": "Frontend: Provide a gallery page that lists gallery media items and allows authenticated members to upload new media (image or video) with optional title and description.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "YES, YES, CHAT BOX"
+          "both"
         ]
       },
       "acceptanceCriteria": [
-        "Sending an empty/whitespace-only message is blocked with an inline validation message or toast in English.",
-        "Chat history persists across page reloads using on-device storage (e.g., localStorage) and can be cleared by a \"Clear chat\" button with a confirmation step.",
-        "The UI handles long messages gracefully (wrapping, scrollable transcript) and keeps the latest message visible after sending.",
-        "No backend schema changes or backend calls are required for chat history persistence."
+        "When signed in, the user can open an upload dialog, select a supported image or video file, optionally enter a title and description, and successfully upload it.",
+        "Upload UI validates file type/size and shows a clear error message when an unsupported file is selected.",
+        "After a successful upload, the gallery list refreshes to include the newly uploaded item without requiring a full page reload."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Frontend: Allow members to delete their own uploaded gallery media items from both the gallery grid and the lightbox view, with a confirmation dialog and clear success/error feedback.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "make the gallery where members can delete their images"
+        ]
+      },
+      "acceptanceCriteria": [
+        "For an uploaded item authored by the signed-in user (or when the user is an admin), a delete control is visible in the gallery grid and in the lightbox.",
+        "For uploaded items not authored by the signed-in non-admin user, no delete control is shown.",
+        "Deleting an item requires a confirmation step and, on confirmation, calls the backend delete method and removes the item from the UI after completion.",
+        "If deletion fails (e.g., unauthorized), the UI shows an English error message derived from the backend error and the item remains visible."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Frontend/Backend integration: Ensure the gallery list and delete/upload mutations are wired through React Query so the gallery view remains consistent after changes (upload/delete) and handles actor availability/authentication transitions gracefully.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "both"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Gallery list requests are performed via React Query and render a loading state while fetching.",
+        "Upload and delete actions invalidate/refetch the gallery list query upon success so the UI reflects backend state.",
+        "If the backend actor is not yet available (e.g., during authentication/actor initialization), mutations fail gracefully with an English error message instead of crashing the page."
       ]
     }
   ],
   "constraints": [
-    "Do not integrate external AI services or LLM APIs; the assistant must be implemented using scripted/on-device logic only.",
-    "Do not edit files under frontend/src/components/ui or other frontend immutablePaths listed in SYSTEM_CONTEXT; compose existing UI components instead.",
-    "Respect the existing routing setup (TanStack Router) and existing Tailwind/shadcn UI conventions."
+    "Backend must remain a single Motoko actor in backend/main.mo; do not introduce additional backend services.",
+    "Do not edit any files under frontend/immutablePaths (e.g., frontend/src/hooks/useInternetIdentity.ts(x), frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui).",
+    "All user-facing text added/changed by this work must be in English."
   ],
   "nonGoals": [
-    "Voice input/output for the assistant.",
-    "Real-time messaging via WebSockets or live agent chat.",
-    "Training or fine-tuning an AI model, or using third-party AI providers.",
-    "Storing assistant chat logs on the backend or associating them with user identities (unless explicitly requested later)."
+    "Implementing third-party authentication providers (only Internet Identity is supported).",
+    "Adding real-time updates (WebSockets/push).",
+    "Adding external database storage beyond the current canister state and blob storage mechanisms."
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
+  },
+  "userProfileUpdate": {
+    "goalsToAdd": [],
+    "goalsToRemove": [],
+    "preferencesToAdd": [],
+    "preferencesToRemove": [],
+    "miscToAdd": [],
+    "miscToRemove": [],
+    "fieldsToSet": {},
+    "fieldsToDelete": []
   }
 }

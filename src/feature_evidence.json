@@ -2,54 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-a-new-dedicated-plushie-assistant-chat-page-that-users-can-access-from-the-main-navigation-implemented-as-an-on-device-scripted-chat-box-no-external-ai-integrations",
-      "featureTitle": "Add a new dedicated \"Plushie Assistant\" chat page that users can access from the main navigation, implemented as an on-device/scripted chat box (no external AI integrations).",
+      "featureId": "feature-frontend-provide-a-gallery-page-that-lists-gallery-media-items-and-allows-authenticated-members-to-upload-new-media-image-or-video-with-optional-title-and-description",
+      "featureTitle": "Frontend: Provide a gallery page that lists gallery media items and allows authenticated members to upload new media (image or video) with optional title and description.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/Nav.tsx",
-        "frontend/src/pages/PlushieAssistantPage.tsx"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0",
-        "blob-storage@4.0.0"
-      ],
-      "testIds": [
-        "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-the-plushie-assistant-s-scripted-conversation-logic-so-it-can-1-answer-plushie-related-facts-care-questions-2-recommend-plushies-based-on-user-preferences-3-generate-short-plushie-stories-and-4-maintain-a-consistent-friendly-plushie-themed-personality",
-      "featureTitle": "Implement the plushie assistant’s scripted conversation logic so it can: (1) answer plushie-related facts/care questions, (2) recommend plushies based on user preferences, (3) generate short plushie stories, and (4) maintain a consistent friendly plushie-themed personality.",
-      "files": [
-        "frontend/src/pages/PlushieAssistantPage.tsx",
-        "frontend/src/utils/plushieAssistant.ts"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0",
-        "blob-storage@4.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-basic-chat-ux-safeguards-and-state-handling-for-the-assistant-empty-input-prevention-simple-session-history-persistence-on-the-device-and-a-clear-chat-action",
-      "featureTitle": "Add basic chat UX safeguards and state handling for the assistant: empty-input prevention, simple session history persistence on the device, and a \"Clear chat\" action.",
-      "files": [
-        "frontend/src/hooks/useAssistantChat.ts",
-        "frontend/src/pages/PlushieAssistantPage.tsx"
+        "frontend/src/components/gallery/GalleryUploadDialog.tsx",
+        "frontend/src/pages/GalleryPage.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -62,6 +19,48 @@
       ],
       "testIds": [
         "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-frontend-allow-members-to-delete-their-own-uploaded-gallery-media-items-from-both-the-gallery-grid-and-the-lightbox-view-with-a-confirmation-dialog-and-clear-success-error-feedback",
+      "featureTitle": "Frontend: Allow members to delete their own uploaded gallery media items from both the gallery grid and the lightbox view, with a confirmation dialog and clear success/error feedback.",
+      "files": [
+        "frontend/src/pages/GalleryPage.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-frontend-backend-integration-ensure-the-gallery-list-and-delete-upload-mutations-are-wired-through-react-query-so-the-gallery-view-remains-consistent-after-changes-upload-delete-and-handles-actor-availability-authentication-transitions-gracefully",
+      "featureTitle": "Frontend/Backend integration: Ensure the gallery list and delete/upload mutations are wired through React Query so the gallery view remains consistent after changes (upload/delete) and handles actor availability/authentication transitions gracefully.",
+      "files": [
+        "frontend/src/components/gallery/GalleryUploadDialog.tsx",
+        "frontend/src/hooks/useGalleryMediaQueries.ts",
+        "frontend/src/pages/GalleryPage.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "authorization@4.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
       ],
       "confidence": "high"
     }

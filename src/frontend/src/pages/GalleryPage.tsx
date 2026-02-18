@@ -13,12 +13,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { GalleryLightbox } from '@/components/gallery/GalleryLightbox';
 import { GalleryUploadDialog } from '@/components/gallery/GalleryUploadDialog';
 import { useGalleryFavorites } from '@/hooks/useGalleryFavorites';
 import { useListGalleryMediaItems, useDeleteGalleryMediaItem } from '@/hooks/useGalleryMediaQueries';
 import { useInternetIdentity } from '@/hooks/useInternetIdentity';
 import { useIsCallerAdmin } from '@/hooks/useQueries';
+import { useActor } from '@/hooks/useActor';
 import {
   mergeGalleryItems,
   filterBySearch,
@@ -26,9 +28,9 @@ import {
   type UnifiedGalleryItem,
   type UploadedGalleryItem,
 } from '@/utils/galleryMedia';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { normalizeActorError } from '@/utils/actorError';
 import { toast } from 'sonner';
+import LoadingState from '@/components/LoadingState';
 
 export default function GalleryPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -39,11 +41,16 @@ export default function GalleryPage() {
   const cardRefs = useRef<Map<number, HTMLElement>>(new Map());
   const { isFavorite, toggleFavorite } = useGalleryFavorites();
   const { identity, login } = useInternetIdentity();
-  const { data: uploadedItems = [], isLoading: isLoadingUploaded } = useListGalleryMediaItems();
+  const { actor, isFetching: actorFetching } = useActor();
+  const { data: uploadedItems = [], isLoading: isLoadingUploaded, isFetched } = useListGalleryMediaItems();
   const { data: isAdmin = false } = useIsCallerAdmin();
   const deleteMutation = useDeleteGalleryMediaItem();
 
   const isAuthenticated = !!identity;
+
+  // Determine overall loading state
+  const isConnecting = actorFetching && !actor;
+  const isLoading = isConnecting || (isLoadingUploaded && !isFetched);
 
   // Merge static, storybook, and uploaded items
   const allItems = mergeGalleryItems(uploadedItems);
@@ -131,6 +138,7 @@ export default function GalleryPage() {
     } catch (error) {
       const message = normalizeActorError(error);
       toast.error(message);
+      // Keep dialog open on error so user can see the error and try again
     }
   };
 
@@ -156,6 +164,7 @@ export default function GalleryPage() {
     } catch (error) {
       const message = normalizeActorError(error);
       toast.error(message);
+      // Don't close lightbox on error
     }
   };
 
@@ -217,14 +226,14 @@ export default function GalleryPage() {
             {showFavoritesOnly ? 'Show All' : 'Favorites Only'}
           </Button>
 
-          <GalleryUploadDialog disabled={!isAuthenticated} />
+          <GalleryUploadDialog disabled={!isAuthenticated || isConnecting} />
         </div>
       </div>
 
       {/* Gallery Grid */}
-      {isLoadingUploaded ? (
-        <div className="py-12 text-center">
-          <p className="text-lg text-muted-foreground">Loading gallery...</p>
+      {isLoading ? (
+        <div className="py-12">
+          <LoadingState message={isConnecting ? 'Connecting to server...' : 'Loading gallery...'} />
         </div>
       ) : filteredItems.length === 0 ? (
         <div className="py-12 text-center">

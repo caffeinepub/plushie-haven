@@ -18,13 +18,14 @@ import { useAddGalleryMediaItem } from '@/hooks/useGalleryMediaQueries';
 import { ExternalBlob } from '@/backend';
 import {
   validateImageFiles,
-  getAcceptedImageTypesString,
   ACCEPTED_IMAGE_TYPES,
 } from '@/utils/imageAttachment';
 import {
   validateVideoFile,
   ACCEPTED_VIDEO_TYPES,
 } from '@/utils/videoAttachment';
+import { normalizeActorError } from '@/utils/actorError';
+import { toast } from 'sonner';
 
 interface GalleryUploadDialogProps {
   disabled?: boolean;
@@ -112,20 +113,25 @@ export function GalleryUploadDialog({ disabled }: GalleryUploadDialogProps) {
         description: description.trim() || undefined,
       });
 
+      // Show success message
+      toast.success('Upload successful! Your item has been added to the gallery.');
+
       // Reset form and close dialog
       setFile(null);
       setTitle('');
       setDescription('');
       setUploadProgress(0);
       setOpen(false);
-    } catch (err: any) {
-      console.error('Upload error:', err);
-      setError(err.message || 'Failed to upload media. Please try again.');
+    } catch (err) {
+      // Normalize all backend errors including ACTOR_CONNECTING
+      const message = normalizeActorError(err);
+      setError(message);
+      setUploadProgress(0);
     }
   };
 
   const handleOpenChange = (newOpen: boolean) => {
-    if (!newOpen) {
+    if (!newOpen && !addMediaMutation.isPending) {
       // Reset form when closing
       setFile(null);
       setTitle('');
@@ -144,7 +150,7 @@ export function GalleryUploadDialog({ disabled }: GalleryUploadDialogProps) {
       <DialogTrigger asChild>
         <Button disabled={disabled} className="gap-2">
           <Upload className="h-4 w-4" />
-          Upload Media
+          Upload
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
@@ -152,19 +158,18 @@ export function GalleryUploadDialog({ disabled }: GalleryUploadDialogProps) {
           <DialogHeader>
             <DialogTitle>Upload to Gallery</DialogTitle>
             <DialogDescription>
-              Share your plushie photos or videos with the community. Supported formats: images
-              (PNG, JPEG, WebP) and videos (MP4, WebM, OGG, MOV).
+              Share your plushie photos or videos with the community. Images and videos up to 100MB are supported.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 py-4">
+          <div className="space-y-4 py-4">
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
-            <div className="grid gap-2">
+            <div className="space-y-2">
               <Label htmlFor="file">File *</Label>
               <Input
                 id="file"
@@ -174,32 +179,37 @@ export function GalleryUploadDialog({ disabled }: GalleryUploadDialogProps) {
                 disabled={isUploading}
                 required
               />
-              {file && (
-                <p className="text-sm text-muted-foreground">
-                  Selected: {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                </p>
-              )}
+              <p className="text-xs text-muted-foreground">
+                Supported formats: PNG, JPEG, WebP, MP4, WebM, OGG, MOV (max 100MB)
+              </p>
             </div>
 
-            <div className="grid gap-2">
+            {file && (
+              <div className="text-sm text-muted-foreground">
+                Selected: {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
+              </div>
+            )}
+
+            <div className="space-y-2">
               <Label htmlFor="title">Title (optional)</Label>
               <Input
                 id="title"
+                type="text"
+                placeholder="Give your upload a title..."
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Give your media a title"
                 disabled={isUploading}
                 maxLength={100}
               />
             </div>
 
-            <div className="grid gap-2">
+            <div className="space-y-2">
               <Label htmlFor="description">Description (optional)</Label>
               <Textarea
                 id="description"
+                placeholder="Add a description..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Add a description"
                 disabled={isUploading}
                 maxLength={500}
                 rows={3}
@@ -208,7 +218,7 @@ export function GalleryUploadDialog({ disabled }: GalleryUploadDialogProps) {
 
             {isUploading && uploadProgress > 0 && (
               <div className="space-y-2">
-                <div className="flex justify-between text-sm text-muted-foreground">
+                <div className="flex justify-between text-sm">
                   <span>Uploading...</span>
                   <span>{uploadProgress}%</span>
                 </div>
