@@ -113,6 +113,15 @@ export function normalizeActorError(error: unknown): string {
       return 'You are not authorized to perform this action.';
     }
 
+    // Handle role-specific errors
+    if (message.includes('requires Admin role') || message.includes('Admin access required')) {
+      return 'This action requires admin privileges.';
+    }
+
+    if (message.includes('requires Moderator role')) {
+      return 'This action requires moderator privileges.';
+    }
+
     // Handle gallery-specific errors
     if (message.includes('Gallery media item not found')) {
       return 'Gallery item not found.';

@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-community-board-create-post-mutation-to-actually-send-the-selected-image-to-the-backend-update-usecreatepost-in-frontend-src-hooks-usequeries-ts-to-construct-an-externalblob-from-the-selected-image-bytes-and-call-the-updated-createmoderationrequest-with-the-image-argument",
-      "featureTitle": "Fix the Community Board create-post mutation to actually send the selected image to the backend: update `useCreatePost` (in `frontend/src/hooks/useQueries.ts`) to construct an `ExternalBlob` from the selected image bytes and call the updated `createModerationRequest` with the `image` argument.",
+      "featureId": "feature-remove-the-community-section-from-the-homepage-component-including-any-navigation-links-hero-text-or-call-to-action-buttons-that-reference-the-community-board",
+      "featureTitle": "Remove the community section from the HomePage component, including any navigation links, hero text, or call-to-action buttons that reference the community board",
       "files": [
-        "frontend/src/hooks/useQueries.ts"
+        "frontend/src/pages/HomePage.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -17,16 +17,15 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-4"
+        "REQ-1"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-render-approved-post-image-attachments-in-the-community-board-feed-by-displaying-postimageattachment-when-a-post-includes-an-image-field",
-      "featureTitle": "Render approved post image attachments in the Community Board feed by displaying `PostImageAttachment` when a post includes an image field.",
+      "featureId": "feature-remove-the-gallery-section-from-the-homepage-component-including-any-navigation-links-hero-text-or-call-to-action-buttons-that-reference-the-gallery",
+      "featureTitle": "Remove the gallery section from the HomePage component, including any navigation links, hero text, or call-to-action buttons that reference the gallery",
       "files": [
-        "frontend/src/components/community/PostImageAttachment.tsx",
-        "frontend/src/pages/CommunityBoardPage.tsx"
+        "frontend/src/pages/HomePage.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -38,7 +37,7 @@
         "blob-storage@4.0.0"
       ],
       "testIds": [
-        "REQ-5"
+        "REQ-2"
       ],
       "confidence": "high"
     }

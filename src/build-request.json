@@ -1,122 +1,62 @@
 {
   "kind": "build_request",
-  "title": "Fix Community Board image uploads end-to-end (moderation flow + display)",
-  "projectName": "Community Board",
+  "title": "Remove community and gallery sections from homepage",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Update the backend data model to support an optional image attachment on community board posts and moderation requests by adding an `image : ?Storage.ExternalBlob` field to `ModeratedContent`, `Post`, and (if applicable for editing) `PostEdit`.",
-      "target": "backend",
+      "text": "Remove the community section from the HomePage component, including any navigation links, hero text, or call-to-action buttons that reference the community board",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6",
-          "msg-8"
+          "msg-3",
+          "msg-4"
         ],
         "quotes": [
-          "There is **zero support for images** in the current backend.",
-          "If you want images to upload, I need to patch both frontend and backend."
+          "remove community and gallery",
+          "on the hompage"
         ]
       },
       "acceptanceCriteria": [
-        "Motoko types `ModeratedContent` and `Post` include an optional `image` field of type `?Storage.ExternalBlob`.",
-        "Backend compiles and Candid interface exposes the new field in returned Post data."
+        "No community-related content appears on the homepage",
+        "Navigation does not include community links from the homepage hero section",
+        "Page renders without community references"
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Extend the backend moderation submission flow so community board image attachments are accepted and stored: update `createModerationRequest` to accept an additional `image : ?Storage.ExternalBlob` parameter (alongside `video`) and persist it on the moderation request.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-6",
-          "msg-8"
-        ],
-        "quotes": [
-          "Your backend’s createModerationRequest also only accepts:\n(title, body, video)",
-          "Add image as Storage.ExternalBlob in backend Post and ModeratedContent"
-        ]
-      },
-      "acceptanceCriteria": [
-        "`createModerationRequest` accepts `image` and `video` (both optional) and stores them in the queued `ModeratedContent`.",
-        "Submitting a post with an image does not trap and results in a moderation queue item that contains the image blob."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Extend the backend moderation approval flow so approved posts retain image attachments: update `approveModerationRequest` to copy the moderation request’s `image` field into the created `Post`.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-8"
-        ],
-        "quotes": [
-          "Update approveModerationRequest to include image"
-        ]
-      },
-      "acceptanceCriteria": [
-        "After approval, `listPosts` / `getPostsWithCounts` returns posts where `post.image` is present when the original moderation request included an image."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Fix the Community Board create-post mutation to actually send the selected image to the backend: update `useCreatePost` (in `frontend/src/hooks/useQueries.ts`) to construct an `ExternalBlob` from the selected image bytes and call the updated `createModerationRequest` with the `image` argument.",
+      "text": "Remove the gallery section from the HomePage component, including any navigation links, hero text, or call-to-action buttons that reference the gallery",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-6",
-          "msg-7"
+          "msg-3",
+          "msg-4"
         ],
         "quotes": [
-          "But your mutation ignores them completely:",
-          "useCreatePost() calls only:\n\ncreateModerationRequest(title, body, video)"
+          "remove community and gallery",
+          "on the hompage"
         ]
       },
       "acceptanceCriteria": [
-        "When an image is selected in `CommunityBoardPage`, the create-post mutation sends it to the backend (not ignored).",
-        "Creating a post without an image continues to work (sends `null`/`undefined` appropriately)."
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Render approved post image attachments in the Community Board feed by displaying `PostImageAttachment` when a post includes an image field.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-8"
-        ],
-        "quotes": [
-          "Update UI to show image attachment"
-        ]
-      },
-      "acceptanceCriteria": [
-        "In `CommunityBoardPage`, posts that include an image render an inline image attachment using `PostImageAttachment`.",
-        "Posts without an image render exactly as before (no broken image UI)."
+        "No gallery-related content appears on the homepage",
+        "Navigation does not include gallery links from the homepage hero section",
+        "Page renders without gallery references"
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor with all logic in `backend/main.mo`.",
-    "Do not modify any files under `frontend/src/components/ui` or any other paths listed in `frontend.immutablePaths`.",
-    "Use English for any user-facing text."
+    "Only modify the HomePage component; do not remove the Community Board or Gallery pages themselves",
+    "Preserve the existing hero section structure and other homepage content",
+    "Do not modify navigation components outside of the homepage"
   ],
   "nonGoals": [
-    "Adding image uploads to the Gallery feature (this change is only for Community Board posts).",
-    "Implementing third-party storage, external databases, or non-Internet-Computer backends.",
-    "Adding new authentication providers beyond Internet Identity."
+    "Removing the Community Board page (/community route)",
+    "Removing the Gallery page (/gallery route)",
+    "Removing community or gallery links from the main navigation menu",
+    "Deleting backend functionality for community or gallery features"
   ],
   "imageRequirements": {
     "required": [],
     "edits": []
-  },
-  "userProfileUpdate": {
-    "goalsToAdd": [],
-    "goalsToRemove": [],
-    "preferencesToAdd": [],
-    "preferencesToRemove": [],
-    "miscToAdd": [],
-    "miscToRemove": [],
-    "fieldsToSet": {},
-    "fieldsToDelete": []
   }
 }

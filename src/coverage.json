@@ -1,76 +1,45 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-18T14:17:52.056Z",
+  "generatedAt": "2026-02-19T06:15:20.491Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 5,
+    "total": 2,
     "implemented": 2,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Update the backend data model to support an optional image attachment on community board posts and moderation requests by adding an `image : ?Storage.ExternalBlob` field to `ModeratedContent`, `Post`, and (if applicable for editing) `PostEdit`.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-2",
-        "summary": "Extend the backend moderation submission flow so community board image attachments are accepted and stored: update `createModerationRequest` to accept an additional `image : ?Storage.ExternalBlob` parameter (alongside `video`) and persist it on the moderation request.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Extend the backend moderation approval flow so approved posts retain image attachments: update `approveModerationRequest` to copy the moderation request’s `image` field into the created `Post`.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-4",
-        "summary": "Fix the Community Board create-post mutation to actually send the selected image to the backend: update `useCreatePost` (in `frontend/src/hooks/useQueries.ts`) to construct an `ExternalBlob` from the selected image bytes and call the updated `createModerationRequest` with the `image` argument.",
+        "summary": "Remove the community section from the HomePage component, including any navigation links, hero text, or call-to-action buttons that reference the community board",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts"
+          "frontend/src/pages/HomePage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts"
+          "frontend/src/pages/HomePage.tsx"
         ]
       },
       {
-        "id": "REQ-5",
-        "summary": "Render approved post image attachments in the Community Board feed by displaying `PostImageAttachment` when a post includes an image field.",
+        "id": "REQ-2",
+        "summary": "Remove the gallery section from the HomePage component, including any navigation links, hero text, or call-to-action buttons that reference the gallery",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/community/PostImageAttachment.tsx",
-          "frontend/src/pages/CommunityBoardPage.tsx"
+          "frontend/src/pages/HomePage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/components/community/PostImageAttachment.tsx",
-          "frontend/src/pages/CommunityBoardPage.tsx"
+          "frontend/src/pages/HomePage.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/components/community/PostImageAttachment.tsx",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/CommunityBoardPage.tsx",
+    "frontend/src/pages/HomePage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

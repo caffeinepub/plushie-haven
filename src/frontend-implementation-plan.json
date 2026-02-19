@@ -1,40 +1,37 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Community Board: Fix image upload submission + feed rendering",
+  "title": "Remove community and gallery sections from homepage",
   "requirements": [
     {
-      "id": "REQ-4",
-      "summary": "Send selected Community Board image bytes to backend by constructing an ExternalBlob and passing it into createModerationRequest.",
+      "id": "REQ-1",
+      "summary": "Remove the community section from the HomePage component, including any navigation links, hero text, or call-to-action buttons that reference the community board",
       "acceptanceCriteria": [
-        "When an image is selected in CommunityBoardPage, the create-post mutation sends it to the backend (not ignored).",
-        "Creating a post without an image continues to work (sends null/undefined appropriately)."
+        "No community-related content appears on the homepage",
+        "Navigation does not include community links from the homepage hero section",
+        "Page renders without community references"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/pages/HomePage.tsx",
           "operation": "modify",
-          "description": "Update useCreatePost to construct an image blob using the blob-storage ExternalBlob helper (ExternalBlob.fromBytes(...)) and call createModerationRequest(title, body, video, image). Ensure null is passed when no imageBytes are provided. Verify the component's usage instructions before implementing."
+          "description": "Remove all community-related content from the HomePage component. This includes removing any buttons, links, or text that reference the community board (/community route). Preserve the hero section structure and other homepage content such as the logo, main heading, and any other sections that are not community-related. Ensure the page renders correctly after the removal."
         }
       ]
     },
     {
-      "id": "REQ-5",
-      "summary": "Display approved post image attachments in the Community Board feed using PostImageAttachment when post.image is present.",
+      "id": "REQ-2",
+      "summary": "Remove the gallery section from the HomePage component, including any navigation links, hero text, or call-to-action buttons that reference the gallery",
       "acceptanceCriteria": [
-        "In CommunityBoardPage, posts that include an image render an inline image attachment using PostImageAttachment.",
-        "Posts without an image render exactly as before (no broken image UI)."
+        "No gallery-related content appears on the homepage",
+        "Navigation does not include gallery links from the homepage hero section",
+        "Page renders without gallery references"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/community/PostImageAttachment.tsx",
+          "path": "frontend/src/pages/HomePage.tsx",
           "operation": "modify",
-          "description": "Update PostImageAttachment to accept the backend-provided image ExternalBlob and render it using its direct URL (ExternalBlob.getDirectURL()) so images stream/cache correctly via blob-storage. Keep null-safe behavior (render nothing if missing). Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/pages/CommunityBoardPage.tsx",
-          "operation": "modify",
-          "description": "Wire PostImageAttachment into the posts feed by conditionally rendering it when post.image is present (alongside existing video attachment rendering), ensuring layout remains unchanged for posts without images."
+          "description": "Remove all gallery-related content from the HomePage component. This includes removing any buttons, links, or text that reference the gallery (/gallery route). Preserve the hero section structure and other homepage content such as the logo, main heading, and any other sections that are not gallery-related. Ensure the page renders correctly after the removal. Note: This operation should be combined with REQ-1's modifications in a single edit to the HomePage component."
         }
       ]
     }

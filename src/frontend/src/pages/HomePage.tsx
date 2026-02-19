@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart, Users, Calendar, BookOpen } from 'lucide-react';
+import { Calendar, BookOpen } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 
@@ -35,11 +35,6 @@ export default function HomePage() {
               <div className="flex flex-wrap gap-3">
                 <Link to="/articles">
                   <Button size="lg">Explore Articles</Button>
-                </Link>
-                <Link to="/community">
-                  <Button size="lg" variant="outline">
-                    Join Community
-                  </Button>
                 </Link>
               </div>
             </div>
@@ -141,7 +136,7 @@ export default function HomePage() {
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
           <Card className="border-2 transition-shadow hover:shadow-lg">
             <CardHeader>
               <BookOpen className="mb-2 h-10 w-10 text-primary" />
@@ -154,40 +149,6 @@ export default function HomePage() {
               <Link to="/articles">
                 <Button variant="ghost" className="w-full">
                   Read Articles
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 transition-shadow hover:shadow-lg">
-            <CardHeader>
-              <Users className="mb-2 h-10 w-10 text-primary" />
-              <CardTitle>Community Board</CardTitle>
-              <CardDescription>
-                Share stories, ask questions, and connect with fellow plushie lovers.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Link to="/community">
-                <Button variant="ghost" className="w-full">
-                  Join Discussion
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 transition-shadow hover:shadow-lg">
-            <CardHeader>
-              <Heart className="mb-2 h-10 w-10 text-primary" />
-              <CardTitle>Gallery</CardTitle>
-              <CardDescription>
-                Browse beautiful collections and get inspiration for your own displays.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Link to="/gallery">
-                <Button variant="ghost" className="w-full">
-                  View Gallery
                 </Button>
               </Link>
             </CardContent>
@@ -209,19 +170,6 @@ export default function HomePage() {
               </Link>
             </CardContent>
           </Card>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="border-t bg-muted/30 py-16 md:py-24">
-        <div className="container text-center">
-          <h2 className="mb-4 text-3xl font-bold tracking-tight md:text-4xl">Ready to Join Our Community?</h2>
-          <p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">
-            Sign in to share your stories, create posts, and become part of the Plushie Haven family.
-          </p>
-          <Link to="/community">
-            <Button size="lg">Get Started</Button>
-          </Link>
         </div>
       </section>
     </div>

@@ -1,28 +1,24 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Implementing fix for community board post uploads by adding image upload support end-to-end (frontend + backend).",
-  "architectural_notes": [
-    "Add image attachment support to backend types (Post/ModeratedContent) using a blob/storage field; extend createModerationRequest/approveModerationRequest to persist and publish image; update frontend useCreatePost to send image bytes/contentType and UI to render attachment."
-  ],
-  "known_issues": [
-    "Community board upload currently fails because backend createModerationRequest does not accept/store image data; frontend reads image bytes but does not send them."
-  ],
-  "isFixRequest": true,
+  "summary": "New project",
+  "architectural_notes": [],
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-fix-the-community-board-create-post-mutation-to-actually-send-the-selected-image-to-the-backend-update-usecreatepost-in-frontend-src-hooks-usequeries-ts-to-construct-an-externalblob-from-the-selected-image-bytes-and-call-the-updated-createmoderationrequest-with-the-image-argument",
-      "title": "Fix the Community Board create-post mutation to actually send the selected image to the backend: update `useCreatePost` (in `frontend/src/hooks/useQueries.ts`) to construct an `ExternalBlob` from the selected image bytes and call the updated `createModerationRequest` with the `image` argument.",
+      "id": "feature-remove-the-community-section-from-the-homepage-component-including-any-navigation-links-hero-text-or-call-to-action-buttons-that-reference-the-community-board",
+      "title": "Remove the community section from the HomePage component, including any navigation links, hero text, or call-to-action buttons that reference the community board",
       "reqIds": [
-        "REQ-4"
+        "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-render-approved-post-image-attachments-in-the-community-board-feed-by-displaying-postimageattachment-when-a-post-includes-an-image-field",
-      "title": "Render approved post image attachments in the Community Board feed by displaying `PostImageAttachment` when a post includes an image field.",
+      "id": "feature-remove-the-gallery-section-from-the-homepage-component-including-any-navigation-links-hero-text-or-call-to-action-buttons-that-reference-the-gallery",
+      "title": "Remove the gallery section from the HomePage component, including any navigation links, hero text, or call-to-action buttons that reference the gallery",
       "reqIds": [
-        "REQ-5"
+        "REQ-2"
       ],
       "version": 1
     }
@@ -30,36 +26,12 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Fix community board uploads by adding image support in backend (storage/blob fields, moderation flow) and updating frontend to send and display image attachments",
+      "summary": "Remove community and gallery sections from homepage",
       "reqIds": [],
-      "status": "in_progress"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Update the backend data model to support an optional image attachment on community board posts and moderation requests by adding an `image : ?Storage.ExternalBlob` field to `ModeratedContent`, `Post`, and (if applicable for editing) `PostEdit`.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Extend the backend moderation submission flow so community board image attachments are accepted and stored: update `createModerationRequest` to accept an additional `image : ?Storage.ExternalBlob` parameter (alongside `video`) and persist it on the moderation request.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "Extend the backend moderation approval flow so approved posts retain image attachments: update `approveModerationRequest` to copy the moderation request’s `image` field into the created `Post`.",
-      "reqIds": [
-        "REQ-3"
-      ],
       "status": "pending"
     }
   ],
-  "projectName": "Community Board",
+  "projectName": "Remove community and gallery sections from homepage",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

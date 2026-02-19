@@ -11,9 +11,7 @@ import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 import Storage "blob-storage/Storage";
 import MixinStorage "blob-storage/Mixin";
-import Migration "migration";
 
-(with migration = Migration.run)
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -258,10 +256,8 @@ actor {
       case (?item) { item };
     };
 
-    if (not AccessControl.isAdmin(accessControlState, caller)) {
-      if (item.author != caller) {
-        Runtime.trap("Unauthorized: Only the author or an admin can delete this media item");
-      };
+    if (item.author != caller and not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only the author or an admin can delete this media item");
     };
 
     galleryMediaItems.remove(id);
@@ -350,7 +346,7 @@ actor {
 
   public shared ({ caller }) func deletePost(id : Nat) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only authenticated users and admins can delete posts");
+      Runtime.trap("Unauthorized: Only authenticated users can delete posts");
     };
 
     let post = switch (posts.get(id)) {
@@ -358,27 +354,25 @@ actor {
       case (?post) { post };
     };
 
-    if (not AccessControl.isAdmin(accessControlState, caller)) {
-      if (post.author != caller) {
-        Runtime.trap("Unauthorized: Only the author or an admin can delete this post");
-      };
+    if (post.author != caller and not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only the author or an admin can delete this post");
     };
 
     posts.remove(id);
   };
 
   public shared ({ caller }) func editPost(id : Nat, postEdit : PostEdit) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can edit posts");
-    };
-
-    if (postEdit.title.trim(#char ' ').size() == 0) { Runtime.trap("Title cannot be empty") };
-    if (postEdit.body.trim(#char ' ').size() == 0) { Runtime.trap("Body cannot be empty") };
-
     let existingPost = switch (posts.get(id)) {
       case (null) { Runtime.trap("Post not found") };
       case (?post) { post };
     };
+
+    if (existingPost.author != caller and not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only the author or an admin can edit this post");
+    };
+
+    if (postEdit.title.trim(#char ' ').size() == 0) { Runtime.trap("Title cannot be empty") };
+    if (postEdit.body.trim(#char ' ').size() == 0) { Runtime.trap("Body cannot be empty") };
 
     let updatedPost : Post = {
       existingPost with
@@ -511,6 +505,10 @@ actor {
   };
 
   public query ({ caller }) func doesCallerFollow(target : Principal) : async Bool {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can check follow status");
+    };
+
     switch (followData.get(caller)) {
       case (null) { false };
       case (?info) {
@@ -581,6 +579,10 @@ actor {
   };
 
   public query ({ caller }) func isPostLikedByCaller(postId : Nat) : async Bool {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can check like status");
+    };
+
     switch (postLikes.get(postId)) {
       case (null) { false };
       case (?likes) {
@@ -629,6 +631,10 @@ actor {
   };
 
   public query ({ caller }) func isProfileLikedByCaller(profile : Principal) : async Bool {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can check like status");
+    };
+
     switch (profileLikes.get(profile)) {
       case (null) { false };
       case (?likes) {

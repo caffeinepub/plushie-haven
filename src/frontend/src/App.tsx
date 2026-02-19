@@ -1,7 +1,11 @@
 import { RouterProvider, createRouter, createRoute, createRootRoute } from '@tanstack/react-router';
 import { ThemeProvider } from 'next-themes';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 import Layout from './components/Layout';
 import AgeGate from './components/AgeGate';
+import SessionTimeoutWarning from './components/SessionTimeoutWarning';
 import HomePage from './pages/HomePage';
 import ArticlesPage from './pages/ArticlesPage';
 import ArticleDetailPage from './pages/ArticleDetailPage';
@@ -16,7 +20,16 @@ import SupportPage from './pages/SupportPage';
 import ProfilesDirectoryPage from './pages/ProfilesDirectoryPage';
 import ProfilePage from './pages/ProfilePage';
 import PlushieAssistantPage from './pages/PlushieAssistantPage';
+import AdminUserManagementPage from './pages/AdminUserManagementPage';
+import ModerationDashboardPage from './pages/ModerationDashboardPage';
+import AnalyticsDashboardPage from './pages/AnalyticsDashboardPage';
+import SystemSettingsPage from './pages/SystemSettingsPage';
+import AuditLogPage from './pages/AuditLogPage';
+import RoleGuard from './components/auth/RoleGuard';
+import { UserRole } from './backend';
 import { Toaster } from '@/components/ui/sonner';
+import { useSessionTimeout } from './hooks/useSessionTimeout';
+import { useInternetIdentity } from './hooks/useInternetIdentity';
 
 const rootRoute = createRootRoute({
   component: Layout,
@@ -111,6 +124,57 @@ const contactRoute = createRoute({
   component: ContactPage,
 });
 
+// Admin routes with role guards
+const adminUserManagementRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/users',
+  component: () => (
+    <RoleGuard requiredRole={UserRole.admin}>
+      <AdminUserManagementPage />
+    </RoleGuard>
+  ),
+});
+
+const moderationDashboardRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/moderation',
+  component: () => (
+    <RoleGuard requiredRole={UserRole.user}>
+      <ModerationDashboardPage />
+    </RoleGuard>
+  ),
+});
+
+const analyticsDashboardRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/analytics',
+  component: () => (
+    <RoleGuard requiredRole={UserRole.admin}>
+      <AnalyticsDashboardPage />
+    </RoleGuard>
+  ),
+});
+
+const systemSettingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/settings',
+  component: () => (
+    <RoleGuard requiredRole={UserRole.admin}>
+      <SystemSettingsPage />
+    </RoleGuard>
+  ),
+});
+
+const auditLogRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/audit-logs',
+  component: () => (
+    <RoleGuard requiredRole={UserRole.admin}>
+      <AuditLogPage />
+    </RoleGuard>
+  ),
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   articlesRoute,
@@ -126,6 +190,11 @@ const routeTree = rootRoute.addChildren([
   assistantRoute,
   aboutRoute,
   contactRoute,
+  adminUserManagementRoute,
+  moderationDashboardRoute,
+  analyticsDashboardRoute,
+  systemSettingsRoute,
+  auditLogRoute,
 ]);
 
 const router = createRouter({ routeTree });
@@ -136,12 +205,44 @@ declare module '@tanstack/react-router' {
   }
 }
 
+function AppContent() {
+  const queryClient = useQueryClient();
+  const { identity } = useInternetIdentity();
+  const { showWarning } = useSessionTimeout();
+
+  // Handle session expiration
+  useEffect(() => {
+    const checkSession = () => {
+      const lastActivity = sessionStorage.getItem('lastActivity');
+      if (lastActivity) {
+        const elapsed = Date.now() - parseInt(lastActivity, 10);
+        const timeout = 30 * 60 * 1000; // 30 minutes
+        
+        if (elapsed > timeout && identity && !identity.getPrincipal().isAnonymous()) {
+          // Session expired
+          queryClient.clear();
+          toast.error('Your session has expired. Please log in again.');
+        }
+      }
+    };
+
+    checkSession();
+  }, [identity, queryClient]);
+
+  return (
+    <>
+      <RouterProvider router={router} />
+      <SessionTimeoutWarning />
+      <Toaster />
+    </>
+  );
+}
+
 export default function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
       <AgeGate>
-        <RouterProvider router={router} />
-        <Toaster />
+        <AppContent />
       </AgeGate>
     </ThemeProvider>
   );
