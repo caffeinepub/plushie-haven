@@ -1,11 +1,19 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-21T10:25:36.523Z",
-  "summary": "The diff fully implements REQ-1. The Nav.tsx component was modified to add an external link to https://reflect-and-create.lovable.app/ that opens in a new tab with proper security attributes (target='_blank' and rel='noopener noreferrer'). The link is visible in both desktop and mobile navigation layouts, using a Button component with 'Reflect & Create' label and an ExternalLink icon. No missing requirements or hallucinated features were identified.",
+  "generatedAt": "2026-02-21T19:15:42.494Z",
+  "summary": "The diff fully implements REQ-1. A navigation link to the Figma design site was added to Nav.tsx, opening in a new tab with proper security attributes. The link appears in both desktop and mobile navigation views alongside existing links, following the same pattern as the 'Reflect & Create' external link.",
   "missing_requirements": [],
-  "hallucinated_features": [],
-  "confidence": 0.95,
+  "hallucinated_features": [
+    {
+      "description": "The Figma link was labeled 'Design Inspiration' rather than using a neutral label like 'Figma' or 'Design'",
+      "reason": "The BuildRequest does not specify what label text to use for the navigation link. The implementation chose 'Design Inspiration' which adds semantic meaning not requested in the requirements.",
+      "evidence": [
+        "frontend/src/components/Nav.tsx"
+      ]
+    }
+  ],
+  "confidence": 0.92,
   "changed_files": [
     "frontend-file-summaries.txt",
     "frontend/src/components/Nav.tsx",

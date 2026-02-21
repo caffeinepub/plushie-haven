@@ -2,8 +2,8 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-add-a-navigation-link-or-button-that-opens-https-reflect-and-create-lovable-app-in-a-new-tab",
-      "featureTitle": "Add a navigation link or button that opens https://reflect-and-create.lovable.app/ in a new tab",
+      "featureId": "feature-add-a-navigation-link-to-https-formal-trend-62662413-figma-site-in-the-nav-component-that-opens-in-a-new-tab",
+      "featureTitle": "Add a navigation link to https://formal-trend-62662413.figma.site in the Nav component that opens in a new tab",
       "files": [
         "frontend/src/components/Nav.tsx"
       ],

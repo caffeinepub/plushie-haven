@@ -66,6 +66,23 @@ export default function Nav() {
           </Button>
         </a>
         
+        {/* External link to Figma Design */}
+        <a
+          href="https://formal-trend-62662413.figma.site"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex"
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            className="font-medium rounded-full shadow-xs hover:shadow-soft transition-all gap-1"
+          >
+            Design Inspiration
+            <ExternalLink className="h-3 w-3" />
+          </Button>
+        </a>
+        
         {/* Admin dropdown for desktop */}
         {isAdmin && (
           <div className="relative group">
@@ -137,6 +154,22 @@ export default function Nav() {
                 className="w-full justify-start font-medium rounded-full shadow-xs hover:shadow-soft transition-all gap-2"
               >
                 Reflect & Create
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+            </a>
+            
+            {/* External link to Figma Design for mobile */}
+            <a
+              href="https://formal-trend-62662413.figma.site"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setOpen(false)}
+            >
+              <Button
+                variant="ghost"
+                className="w-full justify-start font-medium rounded-full shadow-xs hover:shadow-soft transition-all gap-2"
+              >
+                Design Inspiration
                 <ExternalLink className="h-4 w-4" />
               </Button>
             </a>

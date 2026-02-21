@@ -1,37 +1,37 @@
 {
   "kind": "build_request",
-  "title": "Add link to external Lovable app",
+  "title": "Add Figma design link to navigation",
   "projectName": "Plushie Haven",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Add a navigation link or button that opens https://reflect-and-create.lovable.app/ in a new tab",
+      "text": "Add a navigation link to https://formal-trend-62662413.figma.site in the Nav component that opens in a new tab",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-last"
+          "msg-latest"
         ],
         "quotes": [
-          "CAN YOU JUST PUT THE LINK",
-          "https://reflect-and-create.lovable.app/"
+          "https://formal-trend-62662413.figma.site add this link"
         ]
       },
       "acceptanceCriteria": [
-        "A clickable link or button is visible in the application interface",
-        "Clicking the link opens https://reflect-and-create.lovable.app/ in a new browser tab",
-        "The link uses target='_blank' and rel='noopener noreferrer' for security"
+        "The link appears in the main navigation menu alongside existing links",
+        "Clicking the link opens https://formal-trend-62662413.figma.site in a new browser tab",
+        "The link is visible on both desktop and mobile navigation views"
       ]
     }
   ],
   "constraints": [
-    "Must preserve existing navigation structure and layout",
-    "Must not modify read-only UI component sources in frontend/src/components/ui"
+    "Do not modify frontend/src/components/ui components",
+    "Maintain existing navigation structure and styling patterns",
+    "Follow the existing pattern used for the Reflect & Create external link in Nav.tsx"
   ],
   "nonGoals": [
-    "Embedding the external application via iframe",
-    "Recreating the Lovable app functionality within this project",
-    "Integrating with the external application's API"
+    "Changing the overall navigation layout or design",
+    "Adding authentication requirements to the link",
+    "Modifying other navigation links"
   ],
   "imageRequirements": {
     "required": [],

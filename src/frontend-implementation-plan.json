@@ -1,21 +1,21 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Add link to external Lovable app",
+  "title": "Add Figma design link to navigation",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Add a navigation link that opens https://reflect-and-create.lovable.app/ in a new tab",
+      "summary": "Add a navigation link to the Figma design site that opens in a new tab",
       "acceptanceCriteria": [
-        "A clickable link or button is visible in the application interface",
-        "Clicking the link opens https://reflect-and-create.lovable.app/ in a new browser tab",
-        "The link uses target='_blank' and rel='noopener noreferrer' for security"
+        "The link appears in the main navigation menu alongside existing links",
+        "Clicking the link opens https://formal-trend-62662413.figma.site in a new browser tab",
+        "The link is visible on both desktop and mobile navigation views"
       ],
       "file_operations": [
         {
           "path": "frontend/src/components/Nav.tsx",
           "operation": "modify",
-          "description": "Add a navigation link labeled 'Reflect & Create' to both the desktop and mobile navigation menus. The link should point to https://reflect-and-create.lovable.app/ with target='_blank' and rel='noopener noreferrer' attributes. Place the link after existing main navigation items but before the admin dropdown menu to maintain the existing navigation structure."
+          "description": "Add a new navigation link to https://formal-trend-62662413.figma.site following the same pattern as the existing 'Reflect & Create' external link. The link should appear in both the desktop navigation list and mobile sheet navigation, positioned after existing navigation items. Use target='_blank' and rel='noopener noreferrer' for security. Style consistently with the existing external link pattern, using appropriate visual indicators (such as ExternalLink icon) to show it opens in a new tab. Ensure the link text is descriptive (e.g., 'Design Inspiration' or 'Figma Design') and maintains the navigation's existing styling patterns."
         }
       ]
     }

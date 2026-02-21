@@ -1,7 +1,7 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-21T10:25:36.526Z",
+  "generatedAt": "2026-02-21T19:15:42.497Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
@@ -12,7 +12,7 @@
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Add a navigation link or button that opens https://reflect-and-create.lovable.app/ in a new tab",
+        "summary": "Add a navigation link to https://formal-trend-62662413.figma.site in the Nav component that opens in a new tab",
         "status": "implemented",
         "plannedFiles": [
           "frontend/src/components/Nav.tsx"

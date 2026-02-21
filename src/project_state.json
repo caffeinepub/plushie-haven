@@ -1,14 +1,14 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Caffeine app with external link integration",
+  "summary": "New project",
   "architectural_notes": [],
   "known_issues": [],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-add-a-navigation-link-or-button-that-opens-https-reflect-and-create-lovable-app-in-a-new-tab",
-      "title": "Add a navigation link or button that opens https://reflect-and-create.lovable.app/ in a new tab",
+      "id": "feature-add-a-navigation-link-to-https-formal-trend-62662413-figma-site-in-the-nav-component-that-opens-in-a-new-tab",
+      "title": "Add a navigation link to https://formal-trend-62662413.figma.site in the Nav component that opens in a new tab",
       "reqIds": [
         "REQ-1"
       ],
@@ -18,7 +18,7 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Add link to external Lovable app (https://reflect-and-create.lovable.app/)",
+      "summary": "Add link to https://formal-trend-62662413.figma.site",
       "reqIds": [],
       "status": "pending"
     }
