@@ -9,8 +9,6 @@ import SessionTimeoutWarning from './components/SessionTimeoutWarning';
 import HomePage from './pages/HomePage';
 import ArticlesPage from './pages/ArticlesPage';
 import ArticleDetailPage from './pages/ArticleDetailPage';
-import GalleryPage from './pages/GalleryPage';
-import CommunityBoardPage from './pages/CommunityBoardPage';
 import EventsPage from './pages/EventsPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
@@ -21,7 +19,6 @@ import ProfilesDirectoryPage from './pages/ProfilesDirectoryPage';
 import ProfilePage from './pages/ProfilePage';
 import PlushieAssistantPage from './pages/PlushieAssistantPage';
 import AdminUserManagementPage from './pages/AdminUserManagementPage';
-import ModerationDashboardPage from './pages/ModerationDashboardPage';
 import AnalyticsDashboardPage from './pages/AnalyticsDashboardPage';
 import SystemSettingsPage from './pages/SystemSettingsPage';
 import AuditLogPage from './pages/AuditLogPage';
@@ -51,18 +48,6 @@ const articleDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/articles/$slug',
   component: ArticleDetailPage,
-});
-
-const galleryRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/gallery',
-  component: GalleryPage,
-});
-
-const communityRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/community',
-  component: CommunityBoardPage,
 });
 
 const eventsRoute = createRoute({
@@ -135,16 +120,6 @@ const adminUserManagementRoute = createRoute({
   ),
 });
 
-const moderationDashboardRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/admin/moderation',
-  component: () => (
-    <RoleGuard requiredRole={UserRole.user}>
-      <ModerationDashboardPage />
-    </RoleGuard>
-  ),
-});
-
 const analyticsDashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/analytics',
@@ -179,8 +154,6 @@ const routeTree = rootRoute.addChildren([
   indexRoute,
   articlesRoute,
   articleDetailRoute,
-  galleryRoute,
-  communityRoute,
   eventsRoute,
   brandsRoute,
   pacifierBrandsRoute,
@@ -191,7 +164,6 @@ const routeTree = rootRoute.addChildren([
   aboutRoute,
   contactRoute,
   adminUserManagementRoute,
-  moderationDashboardRoute,
   analyticsDashboardRoute,
   systemSettingsRoute,
   auditLogRoute,

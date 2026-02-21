@@ -1,37 +1,21 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Remove community and gallery sections from homepage",
+  "title": "Add link to external Lovable app",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Remove the community section from the HomePage component, including any navigation links, hero text, or call-to-action buttons that reference the community board",
+      "summary": "Add a navigation link that opens https://reflect-and-create.lovable.app/ in a new tab",
       "acceptanceCriteria": [
-        "No community-related content appears on the homepage",
-        "Navigation does not include community links from the homepage hero section",
-        "Page renders without community references"
+        "A clickable link or button is visible in the application interface",
+        "Clicking the link opens https://reflect-and-create.lovable.app/ in a new browser tab",
+        "The link uses target='_blank' and rel='noopener noreferrer' for security"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/HomePage.tsx",
+          "path": "frontend/src/components/Nav.tsx",
           "operation": "modify",
-          "description": "Remove all community-related content from the HomePage component. This includes removing any buttons, links, or text that reference the community board (/community route). Preserve the hero section structure and other homepage content such as the logo, main heading, and any other sections that are not community-related. Ensure the page renders correctly after the removal."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Remove the gallery section from the HomePage component, including any navigation links, hero text, or call-to-action buttons that reference the gallery",
-      "acceptanceCriteria": [
-        "No gallery-related content appears on the homepage",
-        "Navigation does not include gallery links from the homepage hero section",
-        "Page renders without gallery references"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/HomePage.tsx",
-          "operation": "modify",
-          "description": "Remove all gallery-related content from the HomePage component. This includes removing any buttons, links, or text that reference the gallery (/gallery route). Preserve the hero section structure and other homepage content such as the logo, main heading, and any other sections that are not gallery-related. Ensure the page renders correctly after the removal. Note: This operation should be combined with REQ-1's modifications in a single edit to the HomePage component."
+          "description": "Add a navigation link labeled 'Reflect & Create' to both the desktop and mobile navigation menus. The link should point to https://reflect-and-create.lovable.app/ with target='_blank' and rel='noopener noreferrer' attributes. Place the link after existing main navigation items but before the admin dropdown menu to maintain the existing navigation structure."
         }
       ]
     }

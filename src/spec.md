@@ -1,10 +1,10 @@
 # Specification
 
 ## Summary
-**Goal:** Remove community and gallery sections from the homepage.
+**Goal:** Add a navigation link that opens an external Lovable application in a new tab.
 
 **Planned changes:**
-- Remove community section content, navigation links, and call-to-action buttons from the HomePage component
-- Remove gallery section content, navigation links, and call-to-action buttons from the HomePage component
+- Add a clickable link or button in the navigation that opens https://reflect-and-create.lovable.app/
+- Ensure the link opens in a new tab with proper security attributes
 
-**User-visible outcome:** The homepage no longer displays community or gallery sections, while these pages remain accessible through the main navigation menu.
+**User-visible outcome:** Users can click a link in the navigation to open the "Reflect and Create" Lovable app in a new browser tab.

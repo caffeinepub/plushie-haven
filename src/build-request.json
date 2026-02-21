@@ -1,59 +1,37 @@
 {
   "kind": "build_request",
-  "title": "Remove community and gallery sections from homepage",
+  "title": "Add link to external Lovable app",
+  "projectName": "Plushie Haven",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Remove the community section from the HomePage component, including any navigation links, hero text, or call-to-action buttons that reference the community board",
+      "text": "Add a navigation link or button that opens https://reflect-and-create.lovable.app/ in a new tab",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-3",
-          "msg-4"
+          "msg-last"
         ],
         "quotes": [
-          "remove community and gallery",
-          "on the hompage"
+          "CAN YOU JUST PUT THE LINK",
+          "https://reflect-and-create.lovable.app/"
         ]
       },
       "acceptanceCriteria": [
-        "No community-related content appears on the homepage",
-        "Navigation does not include community links from the homepage hero section",
-        "Page renders without community references"
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Remove the gallery section from the HomePage component, including any navigation links, hero text, or call-to-action buttons that reference the gallery",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-3",
-          "msg-4"
-        ],
-        "quotes": [
-          "remove community and gallery",
-          "on the hompage"
-        ]
-      },
-      "acceptanceCriteria": [
-        "No gallery-related content appears on the homepage",
-        "Navigation does not include gallery links from the homepage hero section",
-        "Page renders without gallery references"
+        "A clickable link or button is visible in the application interface",
+        "Clicking the link opens https://reflect-and-create.lovable.app/ in a new browser tab",
+        "The link uses target='_blank' and rel='noopener noreferrer' for security"
       ]
     }
   ],
   "constraints": [
-    "Only modify the HomePage component; do not remove the Community Board or Gallery pages themselves",
-    "Preserve the existing hero section structure and other homepage content",
-    "Do not modify navigation components outside of the homepage"
+    "Must preserve existing navigation structure and layout",
+    "Must not modify read-only UI component sources in frontend/src/components/ui"
   ],
   "nonGoals": [
-    "Removing the Community Board page (/community route)",
-    "Removing the Gallery page (/gallery route)",
-    "Removing community or gallery links from the main navigation menu",
-    "Deleting backend functionality for community or gallery features"
+    "Embedding the external application via iframe",
+    "Recreating the Lovable app functionality within this project",
+    "Integrating with the external application's API"
   ],
   "imageRequirements": {
     "required": [],

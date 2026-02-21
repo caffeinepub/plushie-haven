@@ -10,90 +10,9 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
-export interface Comment {
-  'content' : string,
-  'createdAt' : Time,
-  'authorName' : [] | [string],
-  'author' : Principal,
-  'postId' : bigint,
-}
-export interface Event {
-  'id' : bigint,
-  'startTime' : Time,
-  'title' : string,
-  'endTime' : Time,
-  'createdAt' : Time,
-  'authorName' : [] | [string],
-  'description' : string,
-  'author' : Principal,
-  'location' : string,
-}
 export type ExternalBlob = Uint8Array;
 export interface FollowCounts { 'followers' : bigint, 'following' : bigint }
-export interface GalleryMediaItem {
-  'id' : bigint,
-  'title' : [] | [string],
-  'blob' : ExternalBlob,
-  'createdAt' : Time,
-  'description' : [] | [string],
-  'author' : Principal,
-  'mediaType' : { 'video' : null } |
-    { 'image' : null },
-}
 export interface Link { 'url' : string, 'displayName' : string }
-export interface ModeratedContent {
-  'id' : bigint,
-  'title' : string,
-  'moderationOutcome' : ModerationOutcome,
-  'video' : [] | [ExternalBlob],
-  'body' : string,
-  'submittedAt' : Time,
-  'author' : Principal,
-  'image' : [] | [ExternalBlob],
-}
-export type ModerationOutcome = { 'allow' : null } |
-  { 'manualReview' : null } |
-  { 'block' : null };
-export interface Poll {
-  'question' : string,
-  'createdAt' : Time,
-  'createdBy' : Principal,
-  'isActive' : boolean,
-  'options' : Array<PollOption>,
-  'pollId' : bigint,
-}
-export interface PollOption { 'optionId' : bigint, 'text' : string }
-export interface PollWithResults {
-  'question' : string,
-  'createdAt' : Time,
-  'createdBy' : Principal,
-  'results' : Array<[bigint, bigint]>,
-  'isActive' : boolean,
-  'options' : Array<PollOption>,
-  'pollId' : bigint,
-}
-export interface Post {
-  'id' : bigint,
-  'title' : string,
-  'video' : [] | [ExternalBlob],
-  'body' : string,
-  'createdAt' : Time,
-  'authorName' : [] | [string],
-  'author' : Principal,
-  'image' : [] | [ExternalBlob],
-}
-export interface PostEdit {
-  'title' : string,
-  'video' : [] | [ExternalBlob],
-  'body' : string,
-  'authorName' : [] | [string],
-  'image' : [] | [ExternalBlob],
-}
-export interface PostWithCounts {
-  'likeCount' : bigint,
-  'post' : Post,
-  'commentCount' : bigint,
-}
 export interface SupporterProfile {
   'displayName' : string,
   'addedAt' : Time,
@@ -154,47 +73,13 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
-  'addGalleryMediaItem' : ActorMethod<
-    [
-      { 'video' : null } |
-        { 'image' : null },
-      ExternalBlob,
-      [] | [string],
-      [] | [string],
-    ],
-    bigint
-  >,
-  'approveModerationRequest' : ActorMethod<[bigint], undefined>,
   'approveSupporter' : ActorMethod<[Principal, [] | [Time]], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
-  'createComment' : ActorMethod<[bigint, [] | [string], string], Comment>,
-  'createEvent' : ActorMethod<
-    [[] | [string], string, string, string, Time, Time],
-    bigint
-  >,
-  'createModerationRequest' : ActorMethod<
-    [string, string, [] | [ExternalBlob], [] | [ExternalBlob]],
-    bigint
-  >,
-  'createPoll' : ActorMethod<[string, Array<PollOption>], bigint>,
-  'deleteGalleryMediaItem' : ActorMethod<[bigint], undefined>,
-  'deletePost' : ActorMethod<[bigint], undefined>,
   'doesCallerFollow' : ActorMethod<[Principal], boolean>,
-  'editPost' : ActorMethod<[bigint, PostEdit], undefined>,
   'follow' : ActorMethod<[Principal], undefined>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
-  'getCommentCounts' : ActorMethod<[Array<bigint>], Array<[bigint, bigint]>>,
-  'getComments' : ActorMethod<[bigint], Array<Comment>>,
-  'getEvent' : ActorMethod<[bigint], Event>,
   'getFollowCounts' : ActorMethod<[Principal], FollowCounts>,
-  'getModerationQueue' : ActorMethod<[], Array<[bigint, ModeratedContent]>>,
-  'getPoll' : ActorMethod<[bigint], Poll>,
-  'getPollResults' : ActorMethod<[bigint], PollWithResults>,
-  'getPost' : ActorMethod<[bigint], Post>,
-  'getPostLikeCount' : ActorMethod<[bigint], bigint>,
-  'getPostsWithCounts' : ActorMethod<[], Array<PostWithCounts>>,
-  'getProfileLikeCount' : ActorMethod<[Principal], bigint>,
   'getSupporterRequests' : ActorMethod<
     [],
     Array<[Principal, SupporterRequest]>
@@ -202,16 +87,7 @@ export interface _SERVICE {
   'getSupporters' : ActorMethod<[], Array<[Principal, SupporterProfile]>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
-  'isPostLikedByCaller' : ActorMethod<[bigint], boolean>,
-  'isProfileLikedByCaller' : ActorMethod<[Principal], boolean>,
-  'likePost' : ActorMethod<[bigint], undefined>,
-  'likeProfile' : ActorMethod<[Principal], undefined>,
   'listDirectoryProfiles' : ActorMethod<[], Array<[Principal, UserProfile]>>,
-  'listEvents' : ActorMethod<[], Array<Event>>,
-  'listGalleryMediaItems' : ActorMethod<[], Array<GalleryMediaItem>>,
-  'listPolls' : ActorMethod<[], Array<Poll>>,
-  'listPosts' : ActorMethod<[], Array<Post>>,
-  'rejectModerationRequest' : ActorMethod<[bigint], undefined>,
   'revokeSupporter' : ActorMethod<[Principal], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfileEdit], undefined>,
   'submitSupporterRequest' : ActorMethod<
@@ -219,9 +95,6 @@ export interface _SERVICE {
     undefined
   >,
   'unfollow' : ActorMethod<[Principal], undefined>,
-  'unlikePost' : ActorMethod<[bigint], undefined>,
-  'unlikeProfile' : ActorMethod<[Principal], undefined>,
-  'vote' : ActorMethod<[bigint, bigint], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

@@ -1,28 +1,19 @@
-import { useListPostsWithCounts, useListEvents, useListPolls } from '../hooks/useQueries';
 import { useGetSupporters, useGetSupporterRequests } from '../hooks/useSupporterQueries';
-import { useListGalleryMediaItems } from '../hooks/useGalleryMediaQueries';
+import { useListEvents } from '../hooks/useEventQueries';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart3, Users, FileText, Image, Calendar, Heart, TrendingUp } from 'lucide-react';
+import { BarChart3, Users, Calendar, Heart } from 'lucide-react';
 import LoadingState from '../components/LoadingState';
 
 export default function AnalyticsDashboardPage() {
-  const { data: posts, isLoading: postsLoading } = useListPostsWithCounts();
   const { data: events, isLoading: eventsLoading } = useListEvents();
   const { data: supportersMap, isLoading: supportersLoading } = useGetSupporters();
   const { data: supporterRequests, isLoading: requestsLoading } = useGetSupporterRequests();
-  const { data: galleryItems, isLoading: galleryLoading } = useListGalleryMediaItems();
-  const { data: polls, isLoading: pollsLoading } = useListPolls();
 
-  const isLoading = postsLoading || eventsLoading || supportersLoading || requestsLoading || galleryLoading || pollsLoading;
+  const isLoading = eventsLoading || supportersLoading || requestsLoading;
 
-  const totalPosts = posts?.length || 0;
-  const totalComments = posts?.reduce((sum, p) => sum + Number(p.commentCount), 0) || 0;
-  const totalLikes = posts?.reduce((sum, p) => sum + Number(p.likeCount), 0) || 0;
   const totalEvents = events?.length || 0;
   const totalSupporters = supportersMap?.size || 0;
   const pendingRequests = supporterRequests?.length || 0;
-  const totalGalleryItems = galleryItems?.length || 0;
-  const totalPolls = polls?.length || 0;
 
   const MetricCard = ({ title, value, icon: Icon, description }: { title: string; value: number; icon: any; description: string }) => (
     <Card>
@@ -53,45 +44,12 @@ export default function AnalyticsDashboardPage() {
         <LoadingState message="Loading analytics..." />
       ) : (
         <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <MetricCard
-              title="Total Posts"
-              value={totalPosts}
-              icon={FileText}
-              description="Community board posts"
-            />
-            <MetricCard
-              title="Total Comments"
-              value={totalComments}
-              icon={Users}
-              description="Across all posts"
-            />
-            <MetricCard
-              title="Total Likes"
-              value={totalLikes}
-              icon={Heart}
-              description="Post engagement"
-            />
-            <MetricCard
-              title="Gallery Items"
-              value={totalGalleryItems}
-              icon={Image}
-              description="Uploaded media"
-            />
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <MetricCard
               title="Events"
               value={totalEvents}
               icon={Calendar}
               description="Scheduled events"
-            />
-            <MetricCard
-              title="Polls"
-              value={totalPolls}
-              icon={TrendingUp}
-              description="Community polls"
             />
             <MetricCard
               title="Supporters"
@@ -109,38 +67,31 @@ export default function AnalyticsDashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Content Overview</CardTitle>
-              <CardDescription>Summary of community-generated content</CardDescription>
+              <CardTitle>Community Overview</CardTitle>
+              <CardDescription>Summary of community activity and engagement</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-primary" />
-                    <span className="font-medium">Posts</span>
+                    <Calendar className="h-5 w-5 text-primary" />
+                    <span className="font-medium">Events</span>
                   </div>
-                  <span className="text-2xl font-bold">{totalPosts}</span>
+                  <span className="text-2xl font-bold">{totalEvents}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Heart className="h-5 w-5 text-primary" />
+                    <span className="font-medium">Supporters</span>
+                  </div>
+                  <span className="text-2xl font-bold">{totalSupporters}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Users className="h-5 w-5 text-primary" />
-                    <span className="font-medium">Comments</span>
+                    <span className="font-medium">Pending Requests</span>
                   </div>
-                  <span className="text-2xl font-bold">{totalComments}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Image className="h-5 w-5 text-primary" />
-                    <span className="font-medium">Gallery Items</span>
-                  </div>
-                  <span className="text-2xl font-bold">{totalGalleryItems}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-primary" />
-                    <span className="font-medium">Polls</span>
-                  </div>
-                  <span className="text-2xl font-bold">{totalPolls}</span>
+                  <span className="text-2xl font-bold">{pendingRequests}</span>
                 </div>
               </div>
             </CardContent>

@@ -19,31 +19,13 @@ export const _CaffeineStorageRefillResult = IDL.Record({
   'success' : IDL.Opt(IDL.Bool),
   'topped_up_amount' : IDL.Opt(IDL.Nat),
 });
-export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const Time = IDL.Int;
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
-export const Comment = IDL.Record({
-  'content' : IDL.Text,
-  'createdAt' : Time,
-  'authorName' : IDL.Opt(IDL.Text),
-  'author' : IDL.Principal,
-  'postId' : IDL.Nat,
-});
-export const PollOption = IDL.Record({
-  'optionId' : IDL.Nat,
-  'text' : IDL.Text,
-});
-export const PostEdit = IDL.Record({
-  'title' : IDL.Text,
-  'video' : IDL.Opt(ExternalBlob),
-  'body' : IDL.Text,
-  'authorName' : IDL.Opt(IDL.Text),
-  'image' : IDL.Opt(ExternalBlob),
-});
+export const ExternalBlob = IDL.Vec(IDL.Nat8);
 export const Link = IDL.Record({ 'url' : IDL.Text, 'displayName' : IDL.Text });
 export const UserProfile = IDL.Record({
   'bio' : IDL.Text,
@@ -53,67 +35,9 @@ export const UserProfile = IDL.Record({
   'publicDirectory' : IDL.Bool,
   'avatar' : IDL.Opt(ExternalBlob),
 });
-export const Event = IDL.Record({
-  'id' : IDL.Nat,
-  'startTime' : Time,
-  'title' : IDL.Text,
-  'endTime' : Time,
-  'createdAt' : Time,
-  'authorName' : IDL.Opt(IDL.Text),
-  'description' : IDL.Text,
-  'author' : IDL.Principal,
-  'location' : IDL.Text,
-});
 export const FollowCounts = IDL.Record({
   'followers' : IDL.Nat,
   'following' : IDL.Nat,
-});
-export const ModerationOutcome = IDL.Variant({
-  'allow' : IDL.Null,
-  'manualReview' : IDL.Null,
-  'block' : IDL.Null,
-});
-export const ModeratedContent = IDL.Record({
-  'id' : IDL.Nat,
-  'title' : IDL.Text,
-  'moderationOutcome' : ModerationOutcome,
-  'video' : IDL.Opt(ExternalBlob),
-  'body' : IDL.Text,
-  'submittedAt' : Time,
-  'author' : IDL.Principal,
-  'image' : IDL.Opt(ExternalBlob),
-});
-export const Poll = IDL.Record({
-  'question' : IDL.Text,
-  'createdAt' : Time,
-  'createdBy' : IDL.Principal,
-  'isActive' : IDL.Bool,
-  'options' : IDL.Vec(PollOption),
-  'pollId' : IDL.Nat,
-});
-export const PollWithResults = IDL.Record({
-  'question' : IDL.Text,
-  'createdAt' : Time,
-  'createdBy' : IDL.Principal,
-  'results' : IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Nat)),
-  'isActive' : IDL.Bool,
-  'options' : IDL.Vec(PollOption),
-  'pollId' : IDL.Nat,
-});
-export const Post = IDL.Record({
-  'id' : IDL.Nat,
-  'title' : IDL.Text,
-  'video' : IDL.Opt(ExternalBlob),
-  'body' : IDL.Text,
-  'createdAt' : Time,
-  'authorName' : IDL.Opt(IDL.Text),
-  'author' : IDL.Principal,
-  'image' : IDL.Opt(ExternalBlob),
-});
-export const PostWithCounts = IDL.Record({
-  'likeCount' : IDL.Nat,
-  'post' : Post,
-  'commentCount' : IDL.Nat,
 });
 export const SupporterRequest = IDL.Record({
   'displayName' : IDL.Text,
@@ -126,15 +50,6 @@ export const SupporterProfile = IDL.Record({
   'displayName' : IDL.Text,
   'addedAt' : Time,
   'validUntil' : IDL.Opt(Time),
-});
-export const GalleryMediaItem = IDL.Record({
-  'id' : IDL.Nat,
-  'title' : IDL.Opt(IDL.Text),
-  'blob' : ExternalBlob,
-  'createdAt' : Time,
-  'description' : IDL.Opt(IDL.Text),
-  'author' : IDL.Principal,
-  'mediaType' : IDL.Variant({ 'video' : IDL.Null, 'image' : IDL.Null }),
 });
 export const UserProfileEdit = IDL.Record({
   'bio' : IDL.Text,
@@ -173,61 +88,13 @@ export const idlService = IDL.Service({
     ),
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-  'addGalleryMediaItem' : IDL.Func(
-      [
-        IDL.Variant({ 'video' : IDL.Null, 'image' : IDL.Null }),
-        ExternalBlob,
-        IDL.Opt(IDL.Text),
-        IDL.Opt(IDL.Text),
-      ],
-      [IDL.Nat],
-      [],
-    ),
-  'approveModerationRequest' : IDL.Func([IDL.Nat], [], []),
   'approveSupporter' : IDL.Func([IDL.Principal, IDL.Opt(Time)], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-  'createComment' : IDL.Func(
-      [IDL.Nat, IDL.Opt(IDL.Text), IDL.Text],
-      [Comment],
-      [],
-    ),
-  'createEvent' : IDL.Func(
-      [IDL.Opt(IDL.Text), IDL.Text, IDL.Text, IDL.Text, Time, Time],
-      [IDL.Nat],
-      [],
-    ),
-  'createModerationRequest' : IDL.Func(
-      [IDL.Text, IDL.Text, IDL.Opt(ExternalBlob), IDL.Opt(ExternalBlob)],
-      [IDL.Nat],
-      [],
-    ),
-  'createPoll' : IDL.Func([IDL.Text, IDL.Vec(PollOption)], [IDL.Nat], []),
-  'deleteGalleryMediaItem' : IDL.Func([IDL.Nat], [], []),
-  'deletePost' : IDL.Func([IDL.Nat], [], []),
   'doesCallerFollow' : IDL.Func([IDL.Principal], [IDL.Bool], ['query']),
-  'editPost' : IDL.Func([IDL.Nat, PostEdit], [], []),
   'follow' : IDL.Func([IDL.Principal], [], []),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-  'getCommentCounts' : IDL.Func(
-      [IDL.Vec(IDL.Nat)],
-      [IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Nat))],
-      ['query'],
-    ),
-  'getComments' : IDL.Func([IDL.Nat], [IDL.Vec(Comment)], ['query']),
-  'getEvent' : IDL.Func([IDL.Nat], [Event], ['query']),
   'getFollowCounts' : IDL.Func([IDL.Principal], [FollowCounts], ['query']),
-  'getModerationQueue' : IDL.Func(
-      [],
-      [IDL.Vec(IDL.Tuple(IDL.Nat, ModeratedContent))],
-      ['query'],
-    ),
-  'getPoll' : IDL.Func([IDL.Nat], [Poll], ['query']),
-  'getPollResults' : IDL.Func([IDL.Nat], [PollWithResults], ['query']),
-  'getPost' : IDL.Func([IDL.Nat], [Post], ['query']),
-  'getPostLikeCount' : IDL.Func([IDL.Nat], [IDL.Nat], ['query']),
-  'getPostsWithCounts' : IDL.Func([], [IDL.Vec(PostWithCounts)], ['query']),
-  'getProfileLikeCount' : IDL.Func([IDL.Principal], [IDL.Nat], ['query']),
   'getSupporterRequests' : IDL.Func(
       [],
       [IDL.Vec(IDL.Tuple(IDL.Principal, SupporterRequest))],
@@ -244,24 +111,11 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-  'isPostLikedByCaller' : IDL.Func([IDL.Nat], [IDL.Bool], ['query']),
-  'isProfileLikedByCaller' : IDL.Func([IDL.Principal], [IDL.Bool], ['query']),
-  'likePost' : IDL.Func([IDL.Nat], [], []),
-  'likeProfile' : IDL.Func([IDL.Principal], [], []),
   'listDirectoryProfiles' : IDL.Func(
       [],
       [IDL.Vec(IDL.Tuple(IDL.Principal, UserProfile))],
       ['query'],
     ),
-  'listEvents' : IDL.Func([], [IDL.Vec(Event)], ['query']),
-  'listGalleryMediaItems' : IDL.Func(
-      [],
-      [IDL.Vec(GalleryMediaItem)],
-      ['query'],
-    ),
-  'listPolls' : IDL.Func([], [IDL.Vec(Poll)], ['query']),
-  'listPosts' : IDL.Func([], [IDL.Vec(Post)], ['query']),
-  'rejectModerationRequest' : IDL.Func([IDL.Nat], [], []),
   'revokeSupporter' : IDL.Func([IDL.Principal], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfileEdit], [], []),
   'submitSupporterRequest' : IDL.Func(
@@ -270,9 +124,6 @@ export const idlService = IDL.Service({
       [],
     ),
   'unfollow' : IDL.Func([IDL.Principal], [], []),
-  'unlikePost' : IDL.Func([IDL.Nat], [], []),
-  'unlikeProfile' : IDL.Func([IDL.Principal], [], []),
-  'vote' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
 });
 
 export const idlInitArgs = [];
@@ -289,28 +140,13 @@ export const idlFactory = ({ IDL }) => {
     'success' : IDL.Opt(IDL.Bool),
     'topped_up_amount' : IDL.Opt(IDL.Nat),
   });
-  const ExternalBlob = IDL.Vec(IDL.Nat8);
   const Time = IDL.Int;
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
-  const Comment = IDL.Record({
-    'content' : IDL.Text,
-    'createdAt' : Time,
-    'authorName' : IDL.Opt(IDL.Text),
-    'author' : IDL.Principal,
-    'postId' : IDL.Nat,
-  });
-  const PollOption = IDL.Record({ 'optionId' : IDL.Nat, 'text' : IDL.Text });
-  const PostEdit = IDL.Record({
-    'title' : IDL.Text,
-    'video' : IDL.Opt(ExternalBlob),
-    'body' : IDL.Text,
-    'authorName' : IDL.Opt(IDL.Text),
-    'image' : IDL.Opt(ExternalBlob),
-  });
+  const ExternalBlob = IDL.Vec(IDL.Nat8);
   const Link = IDL.Record({ 'url' : IDL.Text, 'displayName' : IDL.Text });
   const UserProfile = IDL.Record({
     'bio' : IDL.Text,
@@ -320,67 +156,9 @@ export const idlFactory = ({ IDL }) => {
     'publicDirectory' : IDL.Bool,
     'avatar' : IDL.Opt(ExternalBlob),
   });
-  const Event = IDL.Record({
-    'id' : IDL.Nat,
-    'startTime' : Time,
-    'title' : IDL.Text,
-    'endTime' : Time,
-    'createdAt' : Time,
-    'authorName' : IDL.Opt(IDL.Text),
-    'description' : IDL.Text,
-    'author' : IDL.Principal,
-    'location' : IDL.Text,
-  });
   const FollowCounts = IDL.Record({
     'followers' : IDL.Nat,
     'following' : IDL.Nat,
-  });
-  const ModerationOutcome = IDL.Variant({
-    'allow' : IDL.Null,
-    'manualReview' : IDL.Null,
-    'block' : IDL.Null,
-  });
-  const ModeratedContent = IDL.Record({
-    'id' : IDL.Nat,
-    'title' : IDL.Text,
-    'moderationOutcome' : ModerationOutcome,
-    'video' : IDL.Opt(ExternalBlob),
-    'body' : IDL.Text,
-    'submittedAt' : Time,
-    'author' : IDL.Principal,
-    'image' : IDL.Opt(ExternalBlob),
-  });
-  const Poll = IDL.Record({
-    'question' : IDL.Text,
-    'createdAt' : Time,
-    'createdBy' : IDL.Principal,
-    'isActive' : IDL.Bool,
-    'options' : IDL.Vec(PollOption),
-    'pollId' : IDL.Nat,
-  });
-  const PollWithResults = IDL.Record({
-    'question' : IDL.Text,
-    'createdAt' : Time,
-    'createdBy' : IDL.Principal,
-    'results' : IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Nat)),
-    'isActive' : IDL.Bool,
-    'options' : IDL.Vec(PollOption),
-    'pollId' : IDL.Nat,
-  });
-  const Post = IDL.Record({
-    'id' : IDL.Nat,
-    'title' : IDL.Text,
-    'video' : IDL.Opt(ExternalBlob),
-    'body' : IDL.Text,
-    'createdAt' : Time,
-    'authorName' : IDL.Opt(IDL.Text),
-    'author' : IDL.Principal,
-    'image' : IDL.Opt(ExternalBlob),
-  });
-  const PostWithCounts = IDL.Record({
-    'likeCount' : IDL.Nat,
-    'post' : Post,
-    'commentCount' : IDL.Nat,
   });
   const SupporterRequest = IDL.Record({
     'displayName' : IDL.Text,
@@ -393,15 +171,6 @@ export const idlFactory = ({ IDL }) => {
     'displayName' : IDL.Text,
     'addedAt' : Time,
     'validUntil' : IDL.Opt(Time),
-  });
-  const GalleryMediaItem = IDL.Record({
-    'id' : IDL.Nat,
-    'title' : IDL.Opt(IDL.Text),
-    'blob' : ExternalBlob,
-    'createdAt' : Time,
-    'description' : IDL.Opt(IDL.Text),
-    'author' : IDL.Principal,
-    'mediaType' : IDL.Variant({ 'video' : IDL.Null, 'image' : IDL.Null }),
   });
   const UserProfileEdit = IDL.Record({
     'bio' : IDL.Text,
@@ -440,61 +209,13 @@ export const idlFactory = ({ IDL }) => {
       ),
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-    'addGalleryMediaItem' : IDL.Func(
-        [
-          IDL.Variant({ 'video' : IDL.Null, 'image' : IDL.Null }),
-          ExternalBlob,
-          IDL.Opt(IDL.Text),
-          IDL.Opt(IDL.Text),
-        ],
-        [IDL.Nat],
-        [],
-      ),
-    'approveModerationRequest' : IDL.Func([IDL.Nat], [], []),
     'approveSupporter' : IDL.Func([IDL.Principal, IDL.Opt(Time)], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-    'createComment' : IDL.Func(
-        [IDL.Nat, IDL.Opt(IDL.Text), IDL.Text],
-        [Comment],
-        [],
-      ),
-    'createEvent' : IDL.Func(
-        [IDL.Opt(IDL.Text), IDL.Text, IDL.Text, IDL.Text, Time, Time],
-        [IDL.Nat],
-        [],
-      ),
-    'createModerationRequest' : IDL.Func(
-        [IDL.Text, IDL.Text, IDL.Opt(ExternalBlob), IDL.Opt(ExternalBlob)],
-        [IDL.Nat],
-        [],
-      ),
-    'createPoll' : IDL.Func([IDL.Text, IDL.Vec(PollOption)], [IDL.Nat], []),
-    'deleteGalleryMediaItem' : IDL.Func([IDL.Nat], [], []),
-    'deletePost' : IDL.Func([IDL.Nat], [], []),
     'doesCallerFollow' : IDL.Func([IDL.Principal], [IDL.Bool], ['query']),
-    'editPost' : IDL.Func([IDL.Nat, PostEdit], [], []),
     'follow' : IDL.Func([IDL.Principal], [], []),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-    'getCommentCounts' : IDL.Func(
-        [IDL.Vec(IDL.Nat)],
-        [IDL.Vec(IDL.Tuple(IDL.Nat, IDL.Nat))],
-        ['query'],
-      ),
-    'getComments' : IDL.Func([IDL.Nat], [IDL.Vec(Comment)], ['query']),
-    'getEvent' : IDL.Func([IDL.Nat], [Event], ['query']),
     'getFollowCounts' : IDL.Func([IDL.Principal], [FollowCounts], ['query']),
-    'getModerationQueue' : IDL.Func(
-        [],
-        [IDL.Vec(IDL.Tuple(IDL.Nat, ModeratedContent))],
-        ['query'],
-      ),
-    'getPoll' : IDL.Func([IDL.Nat], [Poll], ['query']),
-    'getPollResults' : IDL.Func([IDL.Nat], [PollWithResults], ['query']),
-    'getPost' : IDL.Func([IDL.Nat], [Post], ['query']),
-    'getPostLikeCount' : IDL.Func([IDL.Nat], [IDL.Nat], ['query']),
-    'getPostsWithCounts' : IDL.Func([], [IDL.Vec(PostWithCounts)], ['query']),
-    'getProfileLikeCount' : IDL.Func([IDL.Principal], [IDL.Nat], ['query']),
     'getSupporterRequests' : IDL.Func(
         [],
         [IDL.Vec(IDL.Tuple(IDL.Principal, SupporterRequest))],
@@ -511,24 +232,11 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
-    'isPostLikedByCaller' : IDL.Func([IDL.Nat], [IDL.Bool], ['query']),
-    'isProfileLikedByCaller' : IDL.Func([IDL.Principal], [IDL.Bool], ['query']),
-    'likePost' : IDL.Func([IDL.Nat], [], []),
-    'likeProfile' : IDL.Func([IDL.Principal], [], []),
     'listDirectoryProfiles' : IDL.Func(
         [],
         [IDL.Vec(IDL.Tuple(IDL.Principal, UserProfile))],
         ['query'],
       ),
-    'listEvents' : IDL.Func([], [IDL.Vec(Event)], ['query']),
-    'listGalleryMediaItems' : IDL.Func(
-        [],
-        [IDL.Vec(GalleryMediaItem)],
-        ['query'],
-      ),
-    'listPolls' : IDL.Func([], [IDL.Vec(Poll)], ['query']),
-    'listPosts' : IDL.Func([], [IDL.Vec(Post)], ['query']),
-    'rejectModerationRequest' : IDL.Func([IDL.Nat], [], []),
     'revokeSupporter' : IDL.Func([IDL.Principal], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfileEdit], [], []),
     'submitSupporterRequest' : IDL.Func(
@@ -537,9 +245,6 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'unfollow' : IDL.Func([IDL.Principal], [], []),
-    'unlikePost' : IDL.Func([IDL.Nat], [], []),
-    'unlikeProfile' : IDL.Func([IDL.Principal], [], []),
-    'vote' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
   });
 };
 

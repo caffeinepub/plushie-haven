@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import { useListEvents, useCreateEvent } from '../hooks/useQueries';
+import { useListEvents, useCreateEvent } from '../hooks/useEventQueries';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Calendar, MapPin, User, Clock, AlertCircle } from 'lucide-react';
+import { Calendar, MapPin, Clock, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { normalizeActorError, isStoppedCanisterError } from '../utils/actorError';
 import LoadingState from '../components/LoadingState';
@@ -26,7 +26,6 @@ export default function EventsPage() {
   const [startTime, setStartTime] = useState('');
   const [endDate, setEndDate] = useState('');
   const [endTime, setEndTime] = useState('');
-  const [authorName, setAuthorName] = useState('');
 
   // Check if backend is unavailable due to stopped canister
   const isBackendUnavailable = eventsError && isStoppedCanisterError(eventsError);
@@ -55,7 +54,6 @@ export default function EventsPage() {
       }
 
       await createEventMutation.mutateAsync({
-        authorName: authorName.trim() || null,
         title: title.trim(),
         description: description.trim(),
         location: location.trim(),
@@ -70,7 +68,6 @@ export default function EventsPage() {
       setStartTime('');
       setEndDate('');
       setEndTime('');
-      setAuthorName('');
       toast.success('Event created successfully!');
     } catch (error) {
       toast.error(normalizeActorError(error));
@@ -218,17 +215,6 @@ export default function EventsPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="organizer-name">Organizer Name (optional)</Label>
-                <Input
-                  id="organizer-name"
-                  placeholder="Your name or organization"
-                  value={authorName}
-                  onChange={(e) => setAuthorName(e.target.value)}
-                  maxLength={100}
-                />
-              </div>
-
               <Button
                 type="submit"
                 className="w-full"
@@ -259,36 +245,33 @@ export default function EventsPage() {
             </CardContent>
           </Card>
         ) : (
-          events
-            .sort((a, b) => Number(a.startTime - b.startTime))
-            .map((event) => (
-              <Card key={event.id.toString()} className="border-2 shadow-soft">
+          <div className="grid gap-4">
+            {events.map((event) => (
+              <Card key={Number(event.id)} className="border-2 shadow-soft">
                 <CardHeader>
-                  <CardTitle className="text-xl">{event.title}</CardTitle>
-                  <CardDescription className="flex flex-col gap-2 text-sm">
-                    <span className="flex items-center gap-2">
-                      <User className="h-4 w-4" />
-                      Organized by {event.authorName || 'Anonymous'}
-                    </span>
-                    <span className="flex items-center gap-2">
+                  <CardTitle className="flex items-start justify-between gap-4">
+                    <span>{event.title}</span>
+                  </CardTitle>
+                  <CardDescription className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm">
                       <Calendar className="h-4 w-4" />
-                      {formatDate(event.startTime)}
-                    </span>
-                    <span className="flex items-center gap-2">
+                      <span>{formatDate(event.startTime)}</span>
+                      <span>-</span>
                       <Clock className="h-4 w-4" />
-                      Until {formatDate(event.endTime)}
-                    </span>
-                    <span className="flex items-center gap-2">
+                      <span>{formatDate(event.endTime)}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
                       <MapPin className="h-4 w-4" />
-                      {event.location}
-                    </span>
+                      <span>{event.location}</span>
+                    </div>
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="whitespace-pre-wrap text-foreground">{event.description}</p>
+                  <p className="whitespace-pre-wrap text-sm">{event.description}</p>
                 </CardContent>
               </Card>
-            ))
+            ))}
+          </div>
         )}
       </div>
     </div>

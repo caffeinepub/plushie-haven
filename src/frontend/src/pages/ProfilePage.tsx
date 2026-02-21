@@ -1,39 +1,46 @@
 import { useParams, useNavigate, useSearch } from '@tanstack/react-router';
-import { useGetProfileForPage, useGetFollowSummary, useFollowProfile, useUnfollowProfile, useGetProfileLikeSummary, useLikeProfile, useUnlikeProfile } from '../hooks/useProfileQueries';
+import { useGetUserProfile, useGetCallerUserProfile, useGetFollowCounts, useDoesCallerFollow, useFollowUser, useUnfollowUser } from '../hooks/useProfileQueries';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { User, Heart, Users, UserPlus, UserMinus, Edit, AlertCircle } from 'lucide-react';
+import { User, Users, UserPlus, UserMinus, Edit, AlertCircle } from 'lucide-react';
 import LoadingState from '../components/LoadingState';
 import { ProfileLinksList } from '../components/profiles/ProfileLinksList';
 import { ProfileImageGrid } from '../components/profiles/ProfileImageGrid';
 import { EditProfilePanel } from '../components/profiles/EditProfilePanel';
+import { Principal } from '@dfinity/principal';
 
 export default function ProfilePage() {
-  const { principal } = useParams({ from: '/profiles/$principal' });
+  const { principal: principalString } = useParams({ from: '/profiles/$principal' });
   const search = useSearch({ from: '/profiles/$principal' });
   const navigate = useNavigate();
   const { identity, login } = useInternetIdentity();
 
-  const { data: profile, isLoading, error, isFetched } = useGetProfileForPage(principal);
-  const { data: followSummary } = useGetFollowSummary(principal);
-  const { data: likeSummary } = useGetProfileLikeSummary(principal);
-
-  const followMutation = useFollowProfile();
-  const unfollowMutation = useUnfollowProfile();
-  const likeMutation = useLikeProfile();
-  const unlikeMutation = useUnlikeProfile();
-
+  const principal = Principal.fromText(principalString);
   const isAuthenticated = identity && !identity.getPrincipal().isAnonymous();
-  const isOwnProfile = isAuthenticated && identity.getPrincipal().toString() === principal;
+  const isOwnProfile = isAuthenticated && identity.getPrincipal().toString() === principalString;
+
+  // Use different queries based on whether it's own profile or not
+  const { data: ownProfile, isLoading: ownLoading, isFetched: ownFetched } = useGetCallerUserProfile();
+  const { data: otherProfile, isLoading: otherLoading, error } = useGetUserProfile(isOwnProfile ? null : principal);
+  
+  const profile = isOwnProfile ? ownProfile : otherProfile;
+  const isLoading = isOwnProfile ? ownLoading : otherLoading;
+  const isFetched = isOwnProfile ? ownFetched : true;
+
+  const { data: followCounts } = useGetFollowCounts(principal);
+  const { data: doesCallerFollow } = useDoesCallerFollow(isAuthenticated && !isOwnProfile ? principal : null);
+
+  const followMutation = useFollowUser();
+  const unfollowMutation = useUnfollowUser();
 
   const handleFollowToggle = async () => {
     if (!isAuthenticated) return;
     
     try {
-      if (followSummary?.callerFollowsTarget) {
+      if (doesCallerFollow) {
         await unfollowMutation.mutateAsync(principal);
       } else {
         await followMutation.mutateAsync(principal);
@@ -43,24 +50,10 @@ export default function ProfilePage() {
     }
   };
 
-  const handleLikeToggle = async () => {
-    if (!isAuthenticated) return;
-    
-    try {
-      if (likeSummary?.callerLiked) {
-        await unlikeMutation.mutateAsync(principal);
-      } else {
-        await likeMutation.mutateAsync(principal);
-      }
-    } catch (error) {
-      console.error('Error toggling like:', error);
-    }
-  };
-
   const handleCloseEdit = () => {
     navigate({
       to: '/profiles/$principal',
-      params: { principal },
+      params: { principal: principalString },
       search: {},
     });
   };
@@ -93,7 +86,7 @@ export default function ProfilePage() {
               <Button 
                 onClick={() => navigate({
                   to: '/profiles/$principal',
-                  params: { principal },
+                  params: { principal: principalString },
                   search: { edit: true },
                 })} 
                 size="lg" 
@@ -157,15 +150,11 @@ export default function ProfilePage() {
                     <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Users className="h-4 w-4" />
-                        {Number(followSummary?.followersCount || 0n)} followers
+                        {Number(followCounts?.followers || 0n)} followers
                       </span>
                       <span className="flex items-center gap-1">
                         <Users className="h-4 w-4" />
-                        {Number(followSummary?.followingCount || 0n)} following
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Heart className="h-4 w-4" />
-                        {Number(likeSummary?.likeCount || 0n)} likes
+                        {Number(followCounts?.following || 0n)} following
                       </span>
                     </div>
                   </div>
@@ -175,7 +164,7 @@ export default function ProfilePage() {
                       <Button 
                         onClick={() => navigate({
                           to: '/profiles/$principal',
-                          params: { principal },
+                          params: { principal: principalString },
                           search: { edit: true },
                         })} 
                         className="gap-2"
@@ -184,41 +173,29 @@ export default function ProfilePage() {
                         Edit Profile
                       </Button>
                     ) : isAuthenticated ? (
-                      <>
-                        <Button
-                          variant={followSummary?.callerFollowsTarget ? 'outline' : 'default'}
-                          onClick={handleFollowToggle}
-                          disabled={followMutation.isPending || unfollowMutation.isPending}
-                          className="gap-2"
-                        >
-                          {followSummary?.callerFollowsTarget ? (
-                            <>
-                              <UserMinus className="h-4 w-4" />
-                              Unfollow
-                            </>
-                          ) : (
-                            <>
-                              <UserPlus className="h-4 w-4" />
-                              Follow
-                            </>
-                          )}
-                        </Button>
-                        <Button
-                          variant={likeSummary?.callerLiked ? 'default' : 'outline'}
-                          onClick={handleLikeToggle}
-                          disabled={likeMutation.isPending || unlikeMutation.isPending}
-                          size="icon"
-                        >
-                          <Heart
-                            className={`h-4 w-4 ${likeSummary?.callerLiked ? 'fill-current' : ''}`}
-                          />
-                        </Button>
-                      </>
+                      <Button
+                        variant={doesCallerFollow ? 'outline' : 'default'}
+                        onClick={handleFollowToggle}
+                        disabled={followMutation.isPending || unfollowMutation.isPending}
+                        className="gap-2"
+                      >
+                        {doesCallerFollow ? (
+                          <>
+                            <UserMinus className="h-4 w-4" />
+                            Unfollow
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus className="h-4 w-4" />
+                            Follow
+                          </>
+                        )}
+                      </Button>
                     ) : (
                       <Alert>
                         <AlertCircle className="h-4 w-4" />
                         <AlertDescription className="flex items-center gap-2">
-                          <span>Sign in to follow and like profiles</span>
+                          <span>Sign in to follow profiles</span>
                           <Button size="sm" onClick={login}>
                             Sign In
                           </Button>

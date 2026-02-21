@@ -2,15 +2,13 @@ import { Link, useRouterState } from '@tanstack/react-router';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Menu, Shield, Users, BarChart3, Settings, FileText } from 'lucide-react';
+import { Menu, Shield, Users, BarChart3, Settings, FileText, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import { useIsAdmin } from '../hooks/useUserRole';
 
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/articles', label: 'Articles' },
-  { href: '/gallery', label: 'Gallery' },
-  { href: '/community', label: 'Community' },
   { href: '/events', label: 'Events' },
   { href: '/brands', label: 'Brands' },
   { href: '/pacifier-brands', label: 'Pacifier Brands' },
@@ -21,7 +19,6 @@ const navLinks = [
 
 const adminLinks = [
   { href: '/admin/users', label: 'User Management', icon: Users },
-  { href: '/admin/moderation', label: 'Content Moderation', icon: Shield },
   { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/admin/settings', label: 'System Settings', icon: Settings },
   { href: '/admin/audit-logs', label: 'Audit Logs', icon: FileText },
@@ -51,6 +48,23 @@ export default function Nav() {
             </Link>
           );
         })}
+        
+        {/* External link to Reflect & Create */}
+        <a
+          href="https://reflect-and-create.lovable.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex"
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            className="font-medium rounded-full shadow-xs hover:shadow-soft transition-all gap-1"
+          >
+            Reflect & Create
+            <ExternalLink className="h-3 w-3" />
+          </Button>
+        </a>
         
         {/* Admin dropdown for desktop */}
         {isAdmin && (
@@ -110,6 +124,22 @@ export default function Nav() {
                 </Link>
               );
             })}
+            
+            {/* External link to Reflect & Create for mobile */}
+            <a
+              href="https://reflect-and-create.lovable.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setOpen(false)}
+            >
+              <Button
+                variant="ghost"
+                className="w-full justify-start font-medium rounded-full shadow-xs hover:shadow-soft transition-all gap-2"
+              >
+                Reflect & Create
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+            </a>
             
             {/* Admin section for mobile */}
             {isAdmin && (

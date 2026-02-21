@@ -99,24 +99,24 @@ export default function ProfilesDirectoryPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {profileEntries.map((entry, index) => (
+          {profileEntries.map(([principal, profile]) => (
             <Card
-              key={index}
+              key={principal.toString()}
               className="hover:shadow-gentle transition-shadow cursor-pointer h-full"
               onClick={() => {
                 navigate({
                   to: '/profiles/$principal',
-                  params: { principal: entry.principal },
+                  params: { principal: principal.toString() },
                 });
               }}
             >
               <CardContent className="pt-6">
                 <div className="flex items-start gap-4">
                   <Avatar className="h-16 w-16 border-2 border-primary/20">
-                    {entry.profile.avatar ? (
+                    {profile.avatar ? (
                       <AvatarImage
-                        src={entry.profile.avatar.getDirectURL()}
-                        alt={entry.profile.displayName}
+                        src={profile.avatar.getDirectURL()}
+                        alt={profile.displayName}
                       />
                     ) : null}
                     <AvatarFallback className="bg-primary/10 text-primary">
@@ -125,11 +125,11 @@ export default function ProfilesDirectoryPage() {
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-lg mb-1 truncate">
-                      {entry.profile.displayName}
+                      {profile.displayName}
                     </h3>
-                    {entry.profile.bio && (
+                    {profile.bio && (
                       <p className="text-sm text-muted-foreground line-clamp-2">
-                        {entry.profile.bio}
+                        {profile.bio}
                       </p>
                     )}
                   </div>
